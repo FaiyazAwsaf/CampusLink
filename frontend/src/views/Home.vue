@@ -6,7 +6,7 @@
         <h3>Entrepreneur Hub</h3>
         <p>Student-run businesses</p>
       </div>
-      <div class="card" @click="$router.push('/department-store')">
+      <div class="card" @click="$router.push('/cds')">
         <h3>Department Store</h3>
         <p>Campus store items</p>
       </div>

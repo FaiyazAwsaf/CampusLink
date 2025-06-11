@@ -1,5 +1,5 @@
 <template>
-  <div class="department-store">
+  <div class="cds">
     <h1>Central Department Store</h1>
     
     <div v-if="loading" class="loading">
