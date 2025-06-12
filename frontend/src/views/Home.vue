@@ -1,23 +1,3 @@
-<!-- <template>
-  <div class="home">
-    <h1>CampusLink</h1>
-    <div class="service-cards">
-      <div class="card" @click="$router.push('/entrepreneur-hub')">
-        <h3>Entrepreneur Hub</h3>
-        <p>Student-run businesses</p>
-      </div>
-      <div class="card" @click="$router.push('/cds')">
-        <h3>Department Store</h3>
-        <p>Campus store items</p>
-      </div>
-      <div class="card" @click="$router.push('/laundry')">
-        <h3>Laundry Service</h3>
-        <p>Book laundry services</p>
-      </div>
-    </div>
-  </div>
-</template> -->
-
 <template>
   <TitleBar />
   <div class="min-h-screen bg-[#e5f3ff] flex flex-col items-center justify-center py-8">

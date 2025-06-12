@@ -1,14 +1,3 @@
-# from django.shortcuts import render
-# from django.http import JsonResponse
-# from .models import CDS_Item
-
-# # Create your views here.
-# def get_cds_items(request):
-#     items = CDS_Item.objects.all().values()
-#     items_list = list(items)
-#     return JsonResponse({'items': items_list})
-
-
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
@@ -113,7 +102,7 @@ def add_to_cart(request):
                 'error': 'Item not available or insufficient stock'
             }, status=400)
         
-        # TODO: Implement actual cart functionality
+        # Tmplement actual cart functionality
         # For now, just return success
         return JsonResponse({
             'success': True,
