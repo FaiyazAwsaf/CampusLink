@@ -1,25 +1,7 @@
 <template>
   <div class="min-h-screen bg-[#e5f3ff]">
-    <!-- Header -->
-    <div class="bg-gradient-to-r from-blue-800 to-indigo-900 shadow-sm border-b">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16">
-          <div class="flex items-center">
-            <button 
-              @click="$router.push('/')"
-              class="flex items-center text-white hover:text-gray-900 transition-colors"
-            >
-              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-              </svg>
-              Back to Home
-            </button>
-          </div>
-          <h1 class="text-2xl font-bold text-white">Central Departmental Store</h1>
-          <div class="w-24"></div> <!-- Spacer for centering -->
-        </div>
-      </div>
-    </div>
+
+    <NavBar />
 
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -158,6 +140,7 @@
 </template>
 
 <script setup>
+import NavBar from '@/components/NavBar.vue'
 import { ref, onMounted, computed } from 'vue'
 
 // State variables
