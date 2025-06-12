@@ -21,37 +21,36 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+  import { ref, onMounted } from 'vue'
+  import axios from 'axios'  // 1. Import axios
 
-// State variables using Composition API
-const items = ref([])
-const loading = ref(true)
-const error = ref(null)
+  // State variables
+  const items = ref([])
+  const loading = ref(true)
+  const error = ref(null)
 
-// Fetch data from the backend API
-const fetchItems = async () => {
-  try {
-    loading.value = true
-    const response = await fetch('/api/cds/items/')
-    
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status} ${response.statusText}`)
+  // Fetch data from backend API using Axios
+  const fetchItems = async () => {
+    try {
+      loading.value = true
+      const response = await axios.get('/api/cds/items/') 
+
+      items.value = response.data.items
+    } catch (err) {
+      if (err.response) {
+        error.value = `Failed to load items: ${err.response.status} ${err.response.statusText}`
+      } else {
+        error.value = `Failed to load items: ${err.message}`
+      }
+      console.error('Error fetching CDS items:', err)
+    } finally {
+      loading.value = false
     }
-    
-    const data = await response.json()
-    items.value = data.items
-  } catch (err) {
-    error.value = `Failed to load items: ${err.message}`
-    console.error('Error fetching CDS items:', err)
-  } finally {
-    loading.value = false
   }
-}
 
-// Fetch data when component is mounted
-onMounted(() => {
-  fetchItems()
-})
+  onMounted(() => {
+    fetchItems()
+  })
 </script>
 
 <style scoped>
