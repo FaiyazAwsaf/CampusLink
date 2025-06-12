@@ -1,6 +1,6 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div class="min-h-screen bg-[#e5f3ff]">
-
     <NavBar />
 
     <!-- Main Content -->
@@ -10,24 +10,34 @@
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         <span class="ml-3 text-lg text-gray-600">Loading items...</span>
       </div>
-      
+
       <!-- Error State -->
       <div v-else-if="error" class="text-center py-12">
         <div class="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
-          <svg class="w-12 h-12 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          <svg
+            class="w-12 h-12 text-red-500 mx-auto mb-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            ></path>
           </svg>
           <h3 class="text-lg font-semibold text-red-800 mb-2">Error Loading Items</h3>
           <p class="text-red-600">{{ error }}</p>
-          <button 
-            @click="fetchItems" 
+          <button
+            @click="fetchItems"
             class="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
           >
             Try Again
           </button>
         </div>
       </div>
-      
+
       <!-- Items Grid -->
       <div v-else>
         <!-- Stats Bar -->
@@ -41,38 +51,48 @@
 
         <!-- Products Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          <div 
-            v-for="item in items" 
-            :key="item.item_id" 
+          <div
+            v-for="item in items"
+            :key="item.item_id"
             class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col h-full"
           >
             <!-- Image Section (Top Half) -->
             <div class="relative h-48 bg-gray-100">
-              <img 
-                v-if="item.image" 
-                :src="item.image" 
+              <img
+                v-if="item.image"
+                :src="item.image"
                 :alt="item.name"
                 class="w-full h-full object-cover"
                 @error="handleImageError"
               />
-              <div 
-                v-else 
+              <div
+                v-else
                 class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200"
               >
-                <svg class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                <svg
+                  class="w-16 h-16 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  ></path>
                 </svg>
               </div>
-              
+
               <!-- Availability Badge -->
               <div class="absolute top-3 right-3">
-                <span 
+                <span
                   v-if="item.availability"
                   class="bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded-full"
                 >
                   In Stock
                 </span>
-                <span 
+                <span
                   v-else
                   class="bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded-full"
                 >
@@ -88,7 +108,7 @@
                 <h3 class="font-semibold text-gray-900 text-lg mb-2 line-clamp-2">
                   {{ item.name }}
                 </h3>
-                
+
                 <!-- Product Description -->
                 <p class="text-gray-600 text-sm mb-3 line-clamp-2">
                   {{ item.description }}
@@ -99,27 +119,25 @@
                 <!-- Price and Stock Info -->
                 <div class="flex justify-between items-center mb-4">
                   <div>
-                    <span class="text-2xl font-bold text-blue-600 mt-auto">Tk. {{ item.price }}</span>
+                    <span class="text-2xl font-bold text-blue-600 mt-auto"
+                      >Tk. {{ item.price }}</span
+                    >
                   </div>
                 </div>
 
                 <!-- Add to Cart Button -->
-                <button 
+                <button
                   :disabled="!item.availability"
                   :class="[
                     'w-full py-2 px-4 rounded-lg font-semibold transition-all duration-200 mt-auto',
                     item.availability
                       ? 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-md'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed',
                   ]"
                   @click="addToCart(item)"
                 >
-                  <span v-if="item.availability">
-                    Add to Cart
-                  </span>
-                  <span v-else>
-                    Out of Stock
-                  </span>
+                  <span v-if="item.availability"> Add to Cart </span>
+                  <span v-else> Out of Stock </span>
                 </button>
               </div>
             </div>
@@ -128,8 +146,18 @@
 
         <!-- Empty State -->
         <div v-if="items.length === 0" class="text-center py-12">
-          <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+          <svg
+            class="w-16 h-16 text-gray-400 mx-auto mb-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+            ></path>
           </svg>
           <h3 class="text-lg font-semibold text-gray-600 mb-2">No Items Available</h3>
           <p class="text-gray-500">Check back later for new products!</p>
@@ -141,27 +169,25 @@
 
 <script setup>
 import NavBar from '@/components/NavBar.vue'
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 
 // State variables
 const items = ref([])
 const loading = ref(true)
 const error = ref(null)
 
-
-
 // Fetch data from the backend API
 const fetchItems = async () => {
   try {
     loading.value = true
     error.value = null
-    
+
     const response = await fetch('/api/cds/items/')
-    
+
     if (!response.ok) {
       throw new Error(`Error: ${response.status} ${response.statusText}`)
     }
-    
+
     const data = await response.json()
     items.value = data.items || []
   } catch (err) {
