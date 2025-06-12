@@ -75,22 +75,6 @@ DB_PORT=5432
 # Django Configuration
 SECRET_KEY=your-super-secret-key-here-change-this-in-production
 DEBUG=True
-
-# Email Configuration (optional)
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_HOST_USER=your-email@gmail.com
-EMAIL_HOST_PASSWORD=your-app-password
-
-# Redis Configuration (if using)
-REDIS_URL=redis://localhost:6379/0
-
-# bKash API Configuration (when ready)
-BKASH_APP_KEY=your_bkash_app_key
-BKASH_APP_SECRET=your_bkash_app_secret
-BKASH_USERNAME=your_bkash_username
-BKASH_PASSWORD=your_bkash_password
-BKASH_BASE_URL=https://tokenized.sandbox.bka.sh/v1.2.0-beta
 ```
 
 #### Run Database Migrations
@@ -106,8 +90,7 @@ python manage.py createsuperuser
 
 #### Load Sample Data (optional)
 ```bash
-# If you have fixtures
-python manage.py loaddata sample_data.json
+# sql script to load data
 ```
 
 ### 3. Frontend Setup (Vue.js)
@@ -153,7 +136,7 @@ npm run dev
 ```
 Frontend will be available at: http://localhost:5173
 
-### Method 2: Using Package Scripts (Recommended)
+### Method 2: Using Package Scripts
 Create these scripts in your root `package.json`:
 
 ```json
@@ -189,12 +172,6 @@ python manage.py shell
 python manage.py test
 ```
 
-### Database Reset (if needed)
-```bash
-python manage.py flush
-python manage.py migrate <app_name> zero
-python manage.py migrate <app_name>
-```
 
 ## Common Issues & Solutions
 
@@ -230,11 +207,6 @@ npm install
 - Check `CORS_ALLOWED_ORIGINS` in `backend/settings.py`
 - Make sure frontend URL is included
 
-### Issue 5: Static Files Not Loading
-**Solution:**
-```bash
-python manage.py collectstatic --noinput
-```
 
 ## Production Deployment Notes
 
