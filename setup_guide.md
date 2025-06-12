@@ -13,6 +13,7 @@ Before starting, make sure you have the following installed:
 - **Redis** (optional, for caching and background tasks) - [Download here](https://redis.io/download)
 
 ### Verify installations:
+
 ```bash
 python --version    # Should show Python 3.8+
 node --version      # Should show Node.js 16+
@@ -24,6 +25,7 @@ git --version       # Should show Git version
 ## Project Setup
 
 ### 1. Clone the Repository
+
 ```bash
 git clone <your-repository-url>
 cd CampusLink
@@ -32,6 +34,7 @@ cd CampusLink
 ### 2. Backend Setup (Django)
 
 #### Create Python Virtual Environment
+
 ```bash
 # Create virtual environment
 python -m venv venv
@@ -45,12 +48,15 @@ source venv/bin/activate
 ```
 
 #### Install Python Dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
 
 #### Database Setup
+
 1. **Create PostgreSQL Database:**
+
 ```sql
 -- Connect to PostgreSQL as superuser
 psql -U postgres
@@ -63,7 +69,8 @@ GRANT ALL PRIVILEGES ON DATABASE campuslink_db TO campuslink_user;
 ```
 
 2. **Create Environment Variables File:**
-Create a `.env` file in the root directory:
+   Create a `.env` file in the root directory:
+
 ```bash
 # Database Configuration
 DB_NAME=campuslink_db
@@ -78,17 +85,20 @@ DEBUG=True
 ```
 
 #### Run Database Migrations
+
 ```bash
 python manage.py makemigrations
 python manage.py migrate
 ```
 
 #### Create Superuser
+
 ```bash
 python manage.py createsuperuser
 ```
 
 #### Load Sample Data (optional)
+
 ```bash
 # sql script to load data
 ```
@@ -96,17 +106,21 @@ python manage.py createsuperuser
 ### 3. Frontend Setup (Vue.js)
 
 #### Navigate to Frontend Directory
+
 ```bash
 cd frontend
 ```
 
 #### Install Node Dependencies
+
 ```bash
 npm install
 ```
 
 #### Create Frontend Environment File
+
 Create `.env` file in the `frontend` directory:
+
 ```bash
 VITE_API_BASE_URL=http://127.0.0.1:8000/api
 VITE_BKASH_SCRIPT_URL=https://scripts.sandbox.bka.sh/versions/1.2.0-beta/checkout/bKash-checkout-sandbox.js
@@ -117,6 +131,7 @@ VITE_BKASH_SCRIPT_URL=https://scripts.sandbox.bka.sh/versions/1.2.0-beta/checkou
 ### Method 1: Run Both Servers Separately
 
 #### Terminal 1 - Backend Server
+
 ```bash
 # On Windows:
 campuslink_env\Scripts\activate
@@ -127,16 +142,20 @@ source campuslink_env/bin/activate
 # Run Django development server
 python manage.py runserver
 ```
+
 Backend will be available at: http://127.0.0.1:8000
 
 #### Terminal 2 - Frontend Server
+
 ```bash
 cd frontend
 npm run dev
 ```
+
 Frontend will be available at: http://localhost:5173
 
 ### Method 2: Using Package Scripts
+
 Create these scripts in your root `package.json`:
 
 ```json
@@ -155,6 +174,7 @@ Create these scripts in your root `package.json`:
 ```
 
 Then run:
+
 ```bash
 npm install concurrently
 npm run dev
@@ -163,6 +183,7 @@ npm run dev
 ## Database Management
 
 ### Common Django Commands
+
 ```bash
 python manage.py makemigrations
 python manage.py migrate
@@ -172,21 +193,51 @@ python manage.py shell
 python manage.py test
 ```
 
+## Recommended VS Code Extensions
+
+For the best developer experience, install these extensions in VS Code:
+
+### Vue.js Development
+
+- [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar)  
+  _(Essential for Vue 3 syntax highlighting, IntelliSense, and type checking)_
+
+### Django/Python Development
+
+- [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python)  
+  _(Syntax highlighting, linting, and debugging for Python)_
+- [Django](https://marketplace.visualstudio.com/items?itemName=batisteo.vscode-django)  
+  _(Template syntax, code snippets, and navigation for Django)_
+
+### Code Formatting & Linting
+
+- [Prettier - Code formatter](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)  
+  _(Automatic code formatting for JS, Vue, CSS, etc.)_
+- [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)  
+  _(JavaScript/Vue linting and error highlighting)_
+
+---
+
+**After installing these extensions, enable "Format On Save" in your VS Code settings for automatic formatting.**
 
 ## Common Issues & Solutions
 
 ### Issue 1: PostgreSQL Connection Error
+
 **Error:** `psycopg2.OperationalError: could not connect to server`
 
 **Solution:**
+
 - Make sure PostgreSQL service is running
 - Check database credentials in `.env` file
 - Verify database exists: `psql -U postgres -l`
 
 ### Issue 2: Node Modules Error
+
 **Error:** `Module not found` or `Cannot resolve dependency`
 
 **Solution:**
+
 ```bash
 cd frontend
 rm -rf node_modules package-lock.json
@@ -194,30 +245,35 @@ npm install
 ```
 
 ### Issue 3: Python Virtual Environment Issues
+
 **Error:** `Command not found` or module import errors
 
 **Solution:**
+
 - Make sure virtual environment is activated
 - Reinstall requirements: `pip install -r requirements.txt`
 
 ### Issue 4: CORS Errors
+
 **Error:** `CORS policy: Cross origin requests are blocked`
 
 **Solution:**
+
 - Check `CORS_ALLOWED_ORIGINS` in `backend/settings.py`
 - Make sure frontend URL is included
-
 
 ## Production Deployment Notes
 
 When deploying to production:
 
 1. **Environment Variables:**
+
    - Set `DEBUG=False`
    - Use strong `SECRET_KEY`
    - Configure proper database credentials
 
 2. **Static Files:**
+
    - Configure proper static file serving
    - Use CDN for media files
 
@@ -229,6 +285,7 @@ When deploying to production:
 ## Development Workflow
 
 ### Daily Development
+
 1. Activate virtual environment
 2. Pull latest changes: `git pull`
 3. Install any new dependencies:
@@ -240,6 +297,7 @@ When deploying to production:
 5. Start development servers
 
 ### Before Committing
+
 1. Run tests: `python manage.py test`
 2. Check code formatting: `flake8` (if configured)
 3. Update requirements if new packages added:
@@ -250,18 +308,22 @@ When deploying to production:
 ## Useful Development Tools
 
 ### Django Admin
+
 Access at: http://127.0.0.1:8000/admin
 
 ### API Documentation
+
 - Django REST Framework browsable API: http://127.0.0.1:8000/api/
 
 ### Database GUI Tools
+
 - pgAdmin (for PostgreSQL)
 - DBeaver (cross-platform)
 
 ## Support
 
 If you encounter issues:
+
 1. Check this documentation first
 2. Look at error logs in terminal
 3. Search for error messages online
