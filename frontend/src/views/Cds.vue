@@ -1,6 +1,6 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
-  <div class="min-h-screen bg-[#e5f3ff]">
+  <div class="min-h-screen" style="background-color: var(--color-primaryBg)">
     <NavBar />
 
     <!-- Main Content -->

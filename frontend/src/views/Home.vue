@@ -1,11 +1,14 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <TitleBar />
-  <div class="min-h-screen bg-[#e5f3ff] flex flex-col items-center justify-center py-8">
+  <div
+    class="min-h-screen flex flex-col items-center justify-center py-8"
+    style="background-color: var(--color-primaryBg)"
+  >
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 w-full max-w-5xl">
-      <!-- Card Example Start -->
+      <!-- CDS -->
       <div
-        class="bg-white rounded-2xl shadow-lg hover:shadow-2xl hover:ring-4 hover:ring-blue-400/40 transition-all duration-300 p-6 flex flex-col items-center m-4"
+        class="starting:opacity-0 transition-all duration-500 bg-white rounded-2xl shadow-lg hover:shadow-2xl hover:ring-4 hover:ring-blue-400/40 p-6 flex flex-col items-center m-4"
         @click="$router.push('/cds')"
       >
         <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-4">
@@ -16,15 +19,17 @@
         </h2>
         <p class="text-gray-500 mb-4 text-center">Shop daily essentials and more.</p>
         <button
-          class="mt-auto px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition"
+          class="mt-auto px-4 py-2 text-white rounded-xl hover:bg-blue-700 transition"
+          style="background-color: var(--color-CDSPrimaryBtn)"
         >
           Explore
         </button>
       </div>
-      <!-- Card Example End -->
+
+      <!-- Laundry -->
 
       <div
-        class="bg-white rounded-2xl shadow-lg hover:shadow-2xl hover:ring-4 hover:ring-green-400/40 transition-all duration-300 p-6 flex flex-col items-center m-4"
+        class="starting:opacity-0 transition-all duration-500 bg-white rounded-2xl shadow-lg hover:shadow-2xl hover:ring-4 hover:ring-green-400/40 p-6 flex flex-col items-center m-4"
       >
         <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
           <span class="text-3xl text-green-600">🧺</span>
@@ -38,8 +43,10 @@
         </button>
       </div>
 
+      <!-- E-Hub -->
+
       <div
-        class="bg-white rounded-2xl shadow-lg hover:shadow-2xl hover:ring-4 hover:ring-yellow-400/40 transition-all duration-300 p-6 flex flex-col items-center m-4"
+        class="starting:opacity-0 transition-all duration-500 bg-white rounded-2xl shadow-lg hover:shadow-2xl hover:ring-4 hover:ring-yellow-400/40 p-6 flex flex-col items-center m-4"
       >
         <div class="w-16 h-16 rounded-full bg-yellow-100 flex items-center justify-center mb-4">
           <span class="text-3xl text-yellow-600">💡</span>

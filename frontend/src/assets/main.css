@@ -2,3 +2,11 @@
 /* @tailwind base;
 @tailwind components;
 @tailwind utilities; */
+
+@theme {
+  /* extend the default theme with custom variables */
+  --color-primaryBg: #cedfff;
+  --color-CDSPrimaryBtn: #183cff;
+  /* or override the default theme */
+  --breakpoint-sm: 30rem;
+}
