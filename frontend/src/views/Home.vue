@@ -1,6 +1,6 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
-  <TitleBar />
+  <NavBar />
   <div
     class="min-h-screen flex flex-col items-center justify-center py-8"
     style="background-color: var(--color-primaryBg)"
@@ -30,6 +30,7 @@
 
       <div
         class="starting:opacity-0 transition-all duration-500 bg-white rounded-2xl shadow-lg hover:shadow-2xl hover:ring-4 hover:ring-green-400/40 p-6 flex flex-col items-center m-4"
+        @click="$router.push('/laundry')"
       >
         <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
           <span class="text-3xl text-green-600">🧺</span>
@@ -47,6 +48,7 @@
 
       <div
         class="starting:opacity-0 transition-all duration-500 bg-white rounded-2xl shadow-lg hover:shadow-2xl hover:ring-4 hover:ring-yellow-400/40 p-6 flex flex-col items-center m-4"
+        @click="$router.push('/entrepreneur-hub')"
       >
         <div class="w-16 h-16 rounded-full bg-yellow-100 flex items-center justify-center mb-4">
           <span class="text-3xl text-yellow-600">💡</span>
@@ -64,5 +66,5 @@
 </template>
 
 <script setup>
-import TitleBar from '@/components/TitleBar.vue'
+import NavBar from '@/components/NavBar.vue'
 </script>
