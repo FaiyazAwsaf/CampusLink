@@ -6,15 +6,16 @@
       <div class="flex items-center justify-between py-4">
         <!-- Back Button -->
         <button
+          v-if="showBackButton"
           class="text-white font-semibold mr-4 hover:underline focus:outline-none"
-          @click="$router.push('/')"
+          @click="router.push('/')"
         >
           ← Back to Home
         </button>
 
         <!-- Title -->
         <div class="hidden sm:flex sm:items-center">
-          <h1 class="text-2xl font-bold text-white">Central Departmental Store</h1>
+          <h1 class="text-2xl font-bold text-white">{{ pageTitle }}</h1>
         </div>
 
         <!-- Profile and Cart -->
@@ -76,6 +77,11 @@
 
 <script setup>
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
+import { computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+
+const route = useRoute()
+const router = useRouter()
 
 const user = {
   name: 'Faiyaz Awsaf',
@@ -89,4 +95,16 @@ const userNavigation = [
   { name: 'Settings', href: '#' },
   { name: 'Sign out', href: '#' },
 ]
+
+// --- Dynamic Title ---
+const pageTitles = {
+  '/': 'CampusLink',
+  '/cds': 'Central Departmental Store',
+  '/laundry': 'Laundry',
+  '/entrepreneur': 'Entrepreneur Hub',
+}
+const pageTitle = computed(() => pageTitles[route.path] || 'CampusLink')
+
+// Back button visibility based on route
+const showBackButton = computed(() => route.path !== '/')
 </script>
