@@ -22,7 +22,7 @@
         <div class="hidden md:block">
           <div class="ml-4 flex items-center md:ml-6">
             <!-- Cart Button -->
-            <button>
+            <button v-if="isLoggedIn">
               <a
                 href="#"
                 class="bg-blue-100 text-black text-sm font-semibold px-4 py-2 rounded-lg mr-4 transition-colors duration-200 hover:bg-blue-500 hover:text-white active:bg-blue-700 active:text-white"
@@ -31,15 +31,38 @@
               </a>
             </button>
 
-            <!-- Profile dropdown -->
-            <Menu as="div" class="relative ml-3">
+            <!-- Login/Register Buttons (when not logged in) -->
+            <div v-if="!isLoggedIn" class="flex space-x-2">
+              <router-link
+                to="/login"
+                class="bg-blue-100 text-black text-sm font-semibold px-4 py-2 rounded-lg transition-colors duration-200 hover:bg-blue-500 hover:text-white active:bg-blue-700 active:text-white"
+              >
+                Login
+              </router-link>
+              <router-link
+                to="/register"
+                class="bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors duration-200 hover:bg-indigo-700 active:bg-indigo-800"
+              >
+                Register
+              </router-link>
+            </div>
+
+            <!-- Profile dropdown (when logged in) -->
+            <Menu v-if="isLoggedIn" as="div" class="relative ml-3">
               <div>
                 <MenuButton class="flex items-center px-4 py-2 rounded-lg">
                   <img
+                    v-if="currentUser.image"
                     class="size-12 rounded-full border-2 border-white transition-colors duration-200 hover:border-black"
-                    :src="user.imageUrl"
-                    alt=""
+                    :src="currentUser.image"
+                    alt="Profile"
                   />
+                  <div
+                    v-else
+                    class="size-12 rounded-full border-2 border-white bg-indigo-300 flex items-center justify-center text-xl font-bold text-indigo-800"
+                  >
+                    {{ currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U' }}
+                  </div>
                 </MenuButton>
               </div>
               <transition
@@ -53,11 +76,12 @@
                 <MenuItems
                   class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-hidden"
                 >
-                  <p class="px-4 py-2 text-m text-gray-900">Hello {{ user.name }}!</p>
+                  <p class="px-4 py-2 text-m text-gray-900">Hello {{ currentUser.name }}!</p>
 
                   <MenuItem v-for="item in userNavigation" :key="item.name" v-slot="{ active }">
                     <a
                       :href="item.href"
+                      @click.prevent="item.action && item.action()"
                       :class="[
                         active ? 'bg-gray-100 outline-hidden' : '',
                         'block px-4 py-2 text-sm text-gray-700',
@@ -77,23 +101,43 @@
 
 <script setup>
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
-import { computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import axios from 'axios'
 
 const route = useRoute()
 const router = useRouter()
 
-const user = {
-  name: 'Faiyaz Awsaf',
-  email: 'faiyaz@gmail.com',
-  imageUrl:
-    'https://scontent.fdac14-1.fna.fbcdn.net/v/t39.30808-6/495450570_1847167692742618_6447877769157964880_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=yi4I216YRaQQ7kNvwG9ktOp&_nc_oc=Adn7ZYBXYhzFPEMghV6t4pl7q2Qf2sCSEAiWso_0MX95b62_g37Z5bvSBQMAz-AOKO0&_nc_zt=23&_nc_ht=scontent.fdac14-1.fna&_nc_gid=olRAND5OzPwEoDc19qKdSg&oh=00_AfPGSeJC41fqsMP86fziYnpBhFeBDcoNW6dXX-gZxGdUnw&oe=6851FD30',
+// Authentication state
+const isLoggedIn = ref(false)
+const currentUser = ref({})
+
+// Check if user is logged in on component mount
+onMounted(() => {
+  const storedUser = localStorage.getItem('user')
+  if (storedUser) {
+    currentUser.value = JSON.parse(storedUser)
+    isLoggedIn.value = true
+  }
+})
+
+// Handle logout
+const handleLogout = async () => {
+  try {
+    await axios.post('/api/accounts/logout/')
+    localStorage.removeItem('user')
+    isLoggedIn.value = false
+    currentUser.value = {}
+    router.push('/')
+  } catch (error) {
+    console.error('Logout error:', error)
+  }
 }
 
 const userNavigation = [
   { name: 'Your Profile', href: '#' },
   { name: 'Settings', href: '#' },
-  { name: 'Sign out', href: '#' },
+  { name: 'Sign out', href: '#', action: handleLogout },
 ]
 
 // --- Dynamic Title ---
