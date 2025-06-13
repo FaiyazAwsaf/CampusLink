@@ -8,7 +8,7 @@
         <button
           v-if="showBackButton"
           class="text-white font-semibold mr-4 hover:underline focus:outline-none"
-          @click="router.push('/')"
+          @click="router.push('/home')"
         >
           ← Back to Home
         </button>
@@ -142,7 +142,7 @@ const userNavigation = [
 
 // --- Dynamic Title ---
 const pageTitles = {
-  '/': 'CampusLink',
+  '/home': 'CampusLink',
   '/cds': 'Central Departmental Store',
   '/laundry': 'Laundry',
   '/entrepreneur': 'Entrepreneur Hub',
@@ -150,5 +150,11 @@ const pageTitles = {
 const pageTitle = computed(() => pageTitles[route.path] || 'CampusLink')
 
 // Back button visibility based on route
-const showBackButton = computed(() => route.path !== '/')
+const showBackButton = computed(
+  () =>
+    route.path !== '/home' &&
+    route.path !== '/login' &&
+    route.path !== '/register' &&
+    route.path !== '/',
+)
 </script>
