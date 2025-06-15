@@ -133,10 +133,10 @@ VITE_API_BASE_URL=http://127.0.0.1:8000/api
 
 ```bash
 # On Windows:
-campuslink_env\Scripts\activate
+venv\Scripts\activate
 
 # On macOS/Linux:
-source campuslink_env/bin/activate
+source venv/bin/activate
 
 # Run Django development server
 python manage.py runserver
