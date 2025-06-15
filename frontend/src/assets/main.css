@@ -5,7 +5,7 @@
 
 @theme {
   /* extend the default theme with custom variables */
-  --color-primaryBg: #cedfff;
+  --color-primaryBg: #F0F0F0;
   --color-CDSPrimaryBtn: #183cff;
   /* or override the default theme */
   --breakpoint-sm: 30rem;
