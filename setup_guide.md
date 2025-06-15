@@ -123,7 +123,6 @@ Create `.env` file in the `frontend` directory:
 
 ```bash
 VITE_API_BASE_URL=http://127.0.0.1:8000/api
-VITE_BKASH_SCRIPT_URL=https://scripts.sandbox.bka.sh/versions/1.2.0-beta/checkout/bKash-checkout-sandbox.js
 ```
 
 ## Running the Application
@@ -282,9 +281,9 @@ When deploying to production:
    - Set up HTTPS
    - Configure CORS properly
 
-## Development Workflow
+---
 
-### Daily Development
+# Daily Development Workflow
 
 **Follow these steps every time you pull new changes or start work. This ensures everyone’s backend, database, and environment are consistent.**
 
