@@ -13,18 +13,11 @@
         class="bg-white rounded-xl shadow hover:shadow-md p-4 transition-all duration-300"
       >
         <div class="mb-4">
-                    <img
-            v-if="product.image"
-            :src="product.image"
-            :alt="product.name"
-            class="w-full h-48 object-cover rounded-lg mb-4"
-          />
-          <img
-            v-else
-            src="/Default.jpg"
-            alt="Default product image"
-            class="w-full h-48 object-cover rounded-lg mb-4"
-          />
+            <img
+                :src = "product.image || '/Default.jpg'"
+                alt = "Product Image"
+                class = "w-full h-48 object-cover rounded-lg mb-4"
+            />
           <h2 class="text-xl font-semibold text-gray-900">{{ product.name }}</h2>
           <p class="text-gray-600 text-sm">{{ product.description }}</p>
         </div>
