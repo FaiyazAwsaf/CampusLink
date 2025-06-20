@@ -8,8 +8,25 @@ from rest_framework.response import Response
 # Create your views here.
 class ProductListAPIView(APIView):
     def get(self, request):
+        
+        try:
+            page = int(request.GET.get('page', 1))
+            limit = int(request.GET.get('limit', 10))
+        except ValueError:
+            return Response({'success' : False, 'message' : 'Invalid page or limit'}, status=status.HTTP_400_BAD_REQUEST)
+
+        offset = (page - 1) * limit
+
+        category = request.GET.get('category')
+
         products = Product.objects.all()
-        serializer = ProductSerializer(products, many=True)
+
+        if category:
+            products = products.filter(category__iexact = category)
+            
+        paginated_products = products[offset:offset + limit]
+
+        serializer = ProductSerializer(paginated_products, many=True)
 
         return Response({
             'success' : True,

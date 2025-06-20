@@ -14,10 +14,12 @@ class Storefront(models.Model):
 
 
 class Product(models.Model):
+
     product_id = models.AutoField(primary_key=True)
     store_id = models.ForeignKey(Storefront, on_delete = models.CASCADE)
     name = models.CharField(max_length=100)
-    image = models.URLField(default='https://images.pexels.com/photos/789327/pexels-photo-789327.jpeg')
+    image = models.URLField(default='https://images.pexels.com/photos/789327/pexels-photo-789327.jpeg', blank=True, null=True)
+    category = models.CharField(max_length=50, blank=True, null=True)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     availability = models.BooleanField(default=True)
