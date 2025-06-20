@@ -20,7 +20,7 @@
       <div
         v-for="product in products"
         :key="product.product_id"
-        class="aspect-[3/4] bg-white rounded-xl shadow hover:shadow-lg p-4 transition-all duration-300"
+        class="bg-white rounded-xl shadow-xl hover:shadow-2xl p-4 transition-all duration-300"
       >
         <div class="mb-4">
             <img
