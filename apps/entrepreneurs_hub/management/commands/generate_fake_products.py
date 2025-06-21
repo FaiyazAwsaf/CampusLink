@@ -9,9 +9,8 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         fake = Faker()
 
-        store, _ = Storefront.objects.get_or_create(store_id=1)
-
         placeholder_image = "https://picsum.photos/seed/{}/400/300"
+        stores = list(Storefront.objects.filter(name__in=["IUTian's Waffle", "NiggaTown"]))
 
         for _ in range(100):
 
@@ -21,13 +20,14 @@ class Command(BaseCommand):
                 image_url = None
 
             name = fake.catch_phrase()
+            store_id = random.choice(stores)
             category = random.choice(["Clothing", "Gadgets", "Food"])
             description = fake.text(max_nb_chars=200)
             price = round(random.uniform(50, 999), 2)
             availability = random.choice([True, False])
 
             Product.objects.create(
-                store_id=store,
+                store_id=store_id,
                 name=name,
                 category=category,
                 description=description,

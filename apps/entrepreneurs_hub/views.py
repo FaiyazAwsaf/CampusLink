@@ -3,33 +3,29 @@ from .models import Product
 from .serializers import ProductSerializer
 from rest_framework import status
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
+from rest_framework.pagination import CursorPagination
 from rest_framework.response import Response
 
 # Create your views here.
-class ProductListAPIView(APIView):
-    def get(self, request):
-        
-        try:
-            page = int(request.GET.get('page', 1))
-            limit = int(request.GET.get('limit', 10))
-        except ValueError:
-            return Response({'success' : False, 'message' : 'Invalid page or limit'}, status=status.HTTP_400_BAD_REQUEST)
+class ProductCursorPagination(CursorPagination):
+    page_size = 10
+    ordering = 'created_at'
 
-        offset = (page - 1) * limit
+class ProductListAPIView(ListAPIView):
+    serializer_class = ProductSerializer
+    pagination_class = ProductCursorPagination
 
-        category = request.GET.get('category')
+    def get_queryset(self):
+        queryset = Product.objects.all()
 
-        products = Product.objects.all()
+        category = self.request.query_params.get('category')
+        store = self.request.query_params.get('store')
 
         if category:
-            products = products.filter(category__iexact = category)
-            
-        paginated_products = products[offset:offset + limit]
+            queryset = queryset.filter(category__iexact=category)
 
-        serializer = ProductSerializer(paginated_products, many=True)
+        if store:
+            queryset = queryset.filter(store_id__name__iexact=store)
 
-        return Response({
-            'success' : True,
-            'items' : serializer.data,
-            'total_count' : len(serializer.data)
-        }, status=status.HTTP_200_OK)
+        return queryset

@@ -3,15 +3,26 @@
 
   <div class="container mx-auto px-4 py-8">
 
-    <div class="mb-4">
-      <label for="category" class="block font-medium mb-1">Category:</label>
-        <select v-model="selected_category" @change="onFilterChange" class="border p-2 rounded">
-          <option value="">All</option>
-          <option value="Clothing">Clothing</option>
-          <option value="Gadgets">Gadgets</option>
-          <option value="Food">Food</option>
-    <!-- Add your categories -->
-        </select>
+    <div class="flex gap-4">
+      <div class="mb-8">
+        <label for="category" class="block font-medium mb-1">Category:</label>
+          <select v-model="selected_category" @change="onFilterChange" class="border p-2 rounded">
+            <option value="">All</option>
+            <option value="Clothing">Clothing</option>
+            <option value="Gadgets">Gadgets</option>
+            <option value="Food">Food</option>
+          </select>
+      <!-- Add your categories -->
+      </div>
+
+      <div class="mb-8">
+        <label for="store" class="block font-medium mb-1">Store</label>
+          <select v-model="selected_store" @change="onFilterChange" class="border p-2 rounded">
+            <option value="">All Stores</option>
+            <option value="NiggaTown">NiggaTown</option>
+            <option value="IUTian's Waffle">Iutian's Waffle</option>
+          </select>
+      </div>
     </div>
 
     <div v-if="products.length === 0" class="text-gray-500">No products available.</div>
@@ -56,51 +67,59 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 import NavBar from '@/components/NavBar.vue'
 
 const products = ref([])
-const page = ref(1)
-const selected_category = ref("")
-const limit = 10
+const next_cursor = ref(null)
+const selected_category = ref('')
+const selected_store = ref('')
 const loading = ref(false)
-const all_loaded = ref(false)
+const allLoaded = ref(false)
 
 const loadProducts = async () => {
 
-  if(loading.value || all_loaded.value) 
-    return loading.value = true
+  if(loading.value || allLoaded.value) {
+    return 
+  }
+
+  loading.value = true
 
   try {
 
-    const params = new URLSearchParams({
-      page : page.value,
-      limit : limit
-    })
+    const params = new URLSearchParams()
+
+    if(next_cursor.value){
+      params.append('cursor', next_cursor.value)
+    }
 
     if(selected_category.value){
       params.append('category', selected_category.value)
     }
 
+    if(selected_store.value){
+      params.append('store', selected_store.value)
+    }
+    
     const res = await fetch(`/api/entrepreneurs_hub/products/?${params.toString()}`)
     const data = await res.json()
 
-    if (data.success) {
-      if(data.items.length < limit){
-        all_loaded.value = true
-      }
+    products.value.push(...data.results)
 
-      products.value.push(...data.items)
-      page.value += 1
-    } 
-    else {
-      console.error('Error fetching products:', data.error)
+    next_cursor.value = data.next
+      ? new URL(data.next, window.location.origin).searchParams.get("cursor")
+      : null
+
+    if(!data.next){
+      allLoaded.value = true
     }
-  } catch (err) {
-    console.error('Network/API error:', err)
-  }
+    } catch (err) {
+    console.error('Cursor loading failed', err)
+    } finally {
+      loading.value = false
+    }
 }
 
 const onFilterChange = () => {
-  page.value = 1
   products.value = []
-  all_loaded.value = false
+  next_cursor.value = null
+  allLoaded.value = false
   loadProducts()
 }
 
