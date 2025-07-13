@@ -44,22 +44,42 @@
           </div>
         </div>
     </div>
-
-    <div v-if="products.length === 0" class="text-gray-500">No products available.</div>
-
-    <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6">
-      <ProductCard 
-        v-for="product in products"
-          :key="product.id"
-          :product="product"
-          @add-to-cart="onAddToCart"
-      />
-    </div>
+    
+  <div>
+      <div v-if="loading" class="flex justify-center items-center py-12">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <span class="ml-3 text-lg text-gray-600">Loading products...</span>
+      </div>
   </div>
 
-  <div class="text-center mt-6">
-    <span v-if="loading" class="text-gray-500">Loading more products...</span>
-    <span v-else-if="allLoaded" class="text-gray-400">No more products.</span>
+    <div v-if="products.length === 0" class="text-center py-12">
+          <svg
+            class="w-16 h-16 text-gray-400 mx-auto mb-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+            ></path>
+          </svg>
+          <h3 class="text-lg font-semibold text-gray-600 mb-2">No Products Available</h3>
+          <p class="text-gray-500">Check back later for new products!</p>
+    </div>
+
+    <div v-else>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6">
+        <ProductCard
+          v-for="product in products"
+            :key="product.id"
+            :product="product"
+            @add-to-cart="onAddToCart"
+        />
+      </div>
+    </div>
   </div>
 
 </template>
@@ -120,7 +140,7 @@ const loadProducts = async () => {
     if(!data.next){
       allLoaded.value = true
     }
-    
+
     } catch (err) {
     console.error('Cursor loading failed', err)
     } finally {
