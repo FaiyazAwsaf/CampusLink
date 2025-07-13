@@ -120,6 +120,7 @@ const loadProducts = async () => {
     if(!data.next){
       allLoaded.value = true
     }
+    
     } catch (err) {
     console.error('Cursor loading failed', err)
     } finally {

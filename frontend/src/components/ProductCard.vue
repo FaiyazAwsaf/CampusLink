@@ -94,4 +94,8 @@
             },
         },
     }
+
+    const handleImageError = (event) =>{
+        event.target.src = '/Default.jpg'
+    }
 </script>
