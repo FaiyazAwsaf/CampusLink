@@ -23,35 +23,37 @@
             <option value="IUTian's Waffle">Iutian's Waffle</option>
           </select>
       </div>
+
+      <div class="mb-8">
+        <label for="price_range" class="block font-medium mb-1">Price Range</label>
+          
+          <Slider
+            v-model="price_range"
+              :min="0"
+              :max="1000"
+              :step="10"
+              :tooltip="false"
+              :lazy="true"
+              :range="true"
+              class="mt-2"
+              @update:modelValue="onFilterChange"
+          />
+          <div class="flex justify-between text-sm text-gray-700 mt-2">
+            <span>Min: {{ price_range[0] }}</span>
+            <span>Max: {{ price_range[1] }}</span>
+          </div>
+        </div>
     </div>
 
     <div v-if="products.length === 0" class="text-gray-500">No products available.</div>
 
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6">
-      <div
+      <ProductCard 
         v-for="product in products"
-        :key="product.product_id"
-        class="bg-white rounded-xl shadow-xl hover:shadow-2xl p-4 transition-all duration-300"
-      >
-        <div class="mb-4">
-            <img
-                :src = "product.image || '/Default.jpg'"
-                alt = "Product Image"
-                class = "w-full h-48 object-cover rounded-lg mb-4"
-            />
-          <h2 class="text-xl font-semibold text-gray-900">{{ product.name }}</h2>
-          <p class="text-gray-600 text-sm">{{ product.description }}</p>
-        </div>
-        <div class="flex justify-between items-center">
-          <span class="text-gray-700 font-bold">BDT {{ product.price }}</span>
-          <span
-            class="text-sm font-medium"
-            :class="product.availability ? 'text-green-600' : 'text-red-500'"
-          >
-            {{ product.availability ? 'Available' : 'Out of Stock' }}
-          </span>
-        </div>
-      </div>
+          :key="product.id"
+          :product="product"
+          @add-to-cart="onAddToCart"
+      />
     </div>
   </div>
 
@@ -65,11 +67,15 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import NavBar from '@/components/NavBar.vue'
+import ProductCard from '@/components/ProductCard.vue'
+import '@vueform/slider/themes/default.css'
+import Slider from '@vueform/slider'
 
 const products = ref([])
 const next_cursor = ref(null)
 const selected_category = ref('')
 const selected_store = ref('')
+const price_range = ref([0,1000])
 const loading = ref(false)
 const allLoaded = ref(false)
 
@@ -95,6 +101,11 @@ const loadProducts = async () => {
 
     if(selected_store.value){
       params.append('store', selected_store.value)
+    }
+
+    if(price_range.value){
+      params.append('min_price', price_range.value[0])
+      params.append('max_price', price_range.value[1])
     }
     
     const res = await fetch(`/api/entrepreneurs_hub/products/?${params.toString()}`)
@@ -131,6 +142,10 @@ const handleScroll = () => {
   if(scrollTop + windowHeight >= fullHeight - 200){
     loadProducts()
   }
+}
+
+function onAddToCart(product){
+  console.log("Added ", product, " to cart")
 }
 
 onMounted(() => {

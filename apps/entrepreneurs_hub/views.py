@@ -21,6 +21,8 @@ class ProductListAPIView(ListAPIView):
 
         category = self.request.query_params.get('category')
         store = self.request.query_params.get('store')
+        min_price = self.request.query_params.get('min_price')
+        max_price = self.request.query_params.get('max_price')
 
         if category:
             queryset = queryset.filter(category__iexact=category)
@@ -28,4 +30,18 @@ class ProductListAPIView(ListAPIView):
         if store:
             queryset = queryset.filter(store_id__name__iexact=store)
 
+        if min_price:
+            try:
+                min_price=float(min_price)
+                queryset = queryset.filter(price__gte=float(min_price))
+            except ValueError:
+                pass
+        
+        if max_price:
+            try:
+                max_price=float(max_price)
+                queryset = queryset.filter(price__lte=float(max_price))
+            except ValueError:
+                pass
+        
         return queryset

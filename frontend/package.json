@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@headlessui/vue": "^1.7.23",
+    "@vueform/slider": "^2.1.10",
     "axios": "^1.9.0",
     "pinia": "^3.0.3",
     "vue": "^3.5.13",
