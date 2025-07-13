@@ -73,9 +73,9 @@ GRANT ALL PRIVILEGES ON DATABASE campuslink_db TO campuslink_user;
 
 ```bash
 # Database Configuration
-DB_NAME=campuslink_db
-DB_USER=campuslink_user
-DB_PASSWORD=your_password_here
+DB_NAME=campuslink_db 
+DB_USER=campuslink_user (change this)
+DB_PASSWORD=your_password_here (change this)
 DB_HOST=localhost
 DB_PORT=5432
 
