@@ -1,13 +1,3 @@
-<!-- <template>
-  <NavBar />
-  <div>
-    <h1>Welcome to Laundry Service</h1>
-  </div>
-</template>
-
-<script setup>
-import NavBar from '@/components/NavBar.vue'
-</script> -->
 <template>
   <NavBar />
   <div class="max-w-xl mx-auto mt-10 p-6 bg-white rounded-xl shadow">
