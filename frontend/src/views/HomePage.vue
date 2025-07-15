@@ -1,4 +1,3 @@
-<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <NavBar />
   <div
@@ -19,8 +18,8 @@
         </h2>
         <p class="text-gray-500 mb-4 text-center">Shop daily essentials and more.</p>
         <button
-          class="mt-auto px-4 py-2 text-white rounded-xl hover:bg-blue-700 transition"
-          style="background-color: var(--color-CDSPrimaryBtn)"
+          class="mt-auto px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-700 transition"
+          
         >
           Explore
         </button>

@@ -145,7 +145,7 @@ const pageTitles = {
   '/home': 'CampusLink',
   '/cds': 'Central Departmental Store',
   '/laundry': 'Laundry',
-  '/entrepreneur': 'Entrepreneur Hub',
+  '/entrepreneur-hub': 'Entrepreneur Hub',
 }
 const pageTitle = computed(() => pageTitles[route.path] || 'CampusLink')
 

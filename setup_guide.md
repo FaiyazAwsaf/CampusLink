@@ -73,9 +73,9 @@ GRANT ALL PRIVILEGES ON DATABASE campuslink_db TO campuslink_user;
 
 ```bash
 # Database Configuration
-DB_NAME=campuslink_db
-DB_USER=campuslink_user
-DB_PASSWORD=your_password_here
+DB_NAME=campuslink_db 
+DB_USER=campuslink_user (change this)
+DB_PASSWORD=your_password_here (change this)
 DB_HOST=localhost
 DB_PORT=5432
 
@@ -123,7 +123,6 @@ Create `.env` file in the `frontend` directory:
 
 ```bash
 VITE_API_BASE_URL=http://127.0.0.1:8000/api
-VITE_BKASH_SCRIPT_URL=https://scripts.sandbox.bka.sh/versions/1.2.0-beta/checkout/bKash-checkout-sandbox.js
 ```
 
 ## Running the Application
@@ -134,10 +133,10 @@ VITE_BKASH_SCRIPT_URL=https://scripts.sandbox.bka.sh/versions/1.2.0-beta/checkou
 
 ```bash
 # On Windows:
-campuslink_env\Scripts\activate
+venv\Scripts\activate
 
 # On macOS/Linux:
-source campuslink_env/bin/activate
+source venv/bin/activate
 
 # Run Django development server
 python manage.py runserver
@@ -282,9 +281,90 @@ When deploying to production:
    - Set up HTTPS
    - Configure CORS properly
 
-## Development Workflow
+---
 
-### Daily Development
+# Daily Development Workflow
+
+**Follow these steps every time you pull new changes or start work. This ensures everyone’s backend, database, and environment are consistent.**
+
+---
+
+##  Sync Your Codebase
+
+- Pull the latest code (and migration files) from your main branch:
+    ```bash
+    git checkout main   # or your project’s main branch
+    git pull
+    ```
+
+---
+
+##  Update Virtual Environment and Python Dependencies (Stay on project root)
+
+- If your virtual environment is not active, activate it:
+    ```bash
+    # On Windows
+    venv\Scripts\activate
+    # On Mac/Linux
+    source venv/bin/activate
+    ```
+- Install any new requirements:
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+---
+
+
+##  Run Django Migrations
+
+- **Always run migrations after pulling code:**
+    ```bash
+    python manage.py migrate
+    ```
+
+---
+
+##  Update Frontend
+
+    ```bash
+    cd frontend
+    npm install
+    ```
+
+---
+
+
+##  Start Your Servers
+
+- Backend:
+    ```bash
+    python manage.py runserver
+    ```
+- Frontend :
+    ```bash
+    npm run dev
+    ```
+
+---
+
+## 👥 Team Collaboration Best Practices
+
+- **Never** manually delete or edit migration files unless everyone on the team resets together.
+- If you see migration errors, **communicate first**—don’t try to fix it solo.
+- Only **one person at a time** should make big model or migration changes.
+- In production, **never** drop the DB or delete migrations—always use migrations to change schema.
+
+---
+
+## 💡 TL;DR (Quick Reference)
+
+```bash
+git pull
+pip install -r requirements.txt
+python manage.py migrate
+cd frontend && npm install
+
 
 1. Activate virtual environment
 2. Pull latest changes: `git pull`
@@ -296,14 +376,7 @@ When deploying to production:
 4. Run migrations: `python manage.py migrate`
 5. Start development servers
 
-### Before Committing
 
-1. Run tests: `python manage.py test`
-2. Check code formatting: `flake8` (if configured)
-3. Update requirements if new packages added:
-   ```bash
-   pip freeze > requirements.txt
-   ```
 
 ## Useful Development Tools
 
