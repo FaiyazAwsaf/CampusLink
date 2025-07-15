@@ -1,4 +1,7 @@
 <template>
+    <router-link
+        :to="`/product/${product.product_id}`"
+    >
     <div class="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col h-full">
         <!-- Image Section (Top Half) -->
         <div class="relative h-48 bg-gray-100">
@@ -81,6 +84,7 @@
         </div>
     </div>
     </div>
+    </router-link> 
 </template>
 
 <script>
