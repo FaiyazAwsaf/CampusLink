@@ -1,6 +1,6 @@
 <template>
 
-  <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+  <div class="fixed inset-0 bg-black/50 z-60 flex items-center justify-center">
 
     <div class="bg-white p-6 rounded-xl max-w-5xl w-full relative shadow-xl animate-fadeIn">
       

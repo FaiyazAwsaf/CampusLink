@@ -10,7 +10,7 @@ class Command(BaseCommand):
         fake = Faker()
 
         placeholder_image = "https://picsum.photos/seed/{}/400/300"
-        stores = list(Storefront.objects.filter(name__in=["IUTian's Waffle", "NiggaTown"]))
+        stores = list(Storefront.objects.filter(name__in=["IUTian's Waffle", "MechX", "Frios"]))
 
         for _ in range(100):
 
