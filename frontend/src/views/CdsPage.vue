@@ -1,6 +1,5 @@
-<!-- eslint-disable vue/multi-word-component-names -->
 <template>
-  <div class="min-h-screen" style="background-color: var(--color-primaryBg)">
+  <div class="min-h-screen bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-200">
     <NavBar />
 
     <!-- Main Content -->
@@ -218,15 +217,13 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Custom styles for line clamping */
-.line-clamp-2 {
+/* .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
+} */
 
-/* Smooth hover animations */
 .group:hover .group-hover\:scale-105 {
   transform: scale(1.05);
 }

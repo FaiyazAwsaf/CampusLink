@@ -54,9 +54,10 @@
                   <img
                     v-if="currentUser.image"
                     class="size-12 rounded-full border-2 border-white transition-colors duration-200 hover:border-black"
-                    :src="currentUser.image"
+                    :src="getProfileImage(currentUser)"
                     alt="Profile"
                   />
+                  
                   <div
                     v-else
                     class="size-12 rounded-full border-2 border-white bg-indigo-300 flex items-center justify-center text-xl font-bold text-indigo-800"
@@ -140,12 +141,20 @@ const userNavigation = [
   { name: 'Sign out', href: '#', action: handleLogout },
 ]
 
+function getProfileImage(user) {
+  if (user?.image) {
+    return user.image.startsWith('http')
+      ? user.image
+      : `http://127.0.0.1:8000${user.image}`
+  }
+}
+
 // --- Dynamic Title ---
 const pageTitles = {
   '/home': 'CampusLink',
   '/cds': 'Central Departmental Store',
   '/laundry': 'Laundry',
-  '/entrepreneur': 'Entrepreneur Hub',
+  '/entrepreneur-hub': 'Entrepreneur Hub',
 }
 const pageTitle = computed(() => pageTitles[route.path] || 'CampusLink')
 

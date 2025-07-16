@@ -1,9 +1,7 @@
-<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <NavBar />
   <div
-    class="min-h-screen flex flex-col items-center justify-center py-8"
-    style="background-color: var(--color-primaryBg)"
+    class="min-h-screen flex flex-col items-center justify-center py-8 bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-200"
   >
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 w-full max-w-5xl">
       <!-- CDS -->
@@ -19,8 +17,8 @@
         </h2>
         <p class="text-gray-500 mb-4 text-center">Shop daily essentials and more.</p>
         <button
-          class="mt-auto px-4 py-2 text-white rounded-xl hover:bg-blue-700 transition"
-          style="background-color: var(--color-CDSPrimaryBtn)"
+          class="mt-auto px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-700 transition"
+          
         >
           Explore
         </button>
