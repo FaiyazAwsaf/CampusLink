@@ -13,7 +13,7 @@
       </button>
 
 
-      <div class="grid md:grid-cols-2 gap-8">
+      <div class="grid md:grid-cols-2 gap-8 m-4">
 
         <div>
           <img
@@ -33,6 +33,18 @@
           </div>
 
           <div class="mt-auto space-y-3">
+            <div>
+              <span class="w-full py-3 px-4 rounded-lg font-semibold transition-all duration-200">
+                Storefront : {{product.store_name}}
+              </span>
+            </div>
+
+              <div>
+              <span class="w-full py-3 px-4 rounded-lg font-semibold transition-all duration-200">
+                Category : {{product.category}}
+              </span>
+
+            </div>
             <div>
               <span
                 v-if="product.availability"
