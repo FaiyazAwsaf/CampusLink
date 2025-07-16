@@ -20,7 +20,7 @@
             v-if="product.image"
             :src="product.image"
             alt="Product Image"
-            class="w-full h-auto rounded-lg shadow-md"
+            class="w-full h-full rounded-lg shadow-md"
             @error="handleImageError"
           />
         </div>

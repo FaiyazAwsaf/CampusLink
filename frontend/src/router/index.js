@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Home from '@/views/Home.vue'
+import Home from '@/views/HomePage.vue'
 
 
 const router = createRouter({
@@ -7,7 +7,7 @@ const router = createRouter({
   routes: [
     { path: '/', 
       name: 'landing', 
-      component: () => import('../views/Landing.vue') },
+      component: () => import('../views/LandingPage.vue') },
 
     {
       path: '/home',
@@ -18,31 +18,31 @@ const router = createRouter({
     {
       path: '/cds',
       name: 'cds',
-      component: () => import('../views/Cds.vue'),
+      component: () => import('../views/CdsPage.vue'),
     },
 
     {
       path: '/laundry',
       name: 'laundry',
-      component: () => import('../views/Laundry.vue'),
+      component: () => import('../views/LaundryPage.vue'),
     },
 
     {
       path: '/entrepreneur-hub',
       name: 'entrepreneur-hub',
-      component: () => import('../views/EntrepreneurHub.vue'),
+      component: () => import('../views/EntrepreneurHubPage.vue'),
     },
 
     {
       path: '/login',
       name: 'login',
-      component: () => import('../views/Login.vue'),
+      component: () => import('../views/LoginPage.vue'),
     },
 
     {
       path: '/register',
       name: 'register',
-      component: () => import('../views/Register.vue'),
+      component: () => import('../views/RegisterPage.vue'),
     }
   ],
 })
