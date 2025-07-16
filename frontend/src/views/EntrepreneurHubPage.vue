@@ -14,7 +14,7 @@
                 :value="category"
             >{{ category }}</option>
           </select>
-      <!-- Add your categories -->
+
       </div>
 
       <div class="mb-8">
@@ -37,10 +37,10 @@
               :min="0"
               :max="1000"
               :step="10"
-              :tooltip="false"
+              :tooltip="'hover'"
               :lazy="true"
               :range="true"
-              class="mt-2"
+              class="mt-2 custom-slider"
               @update:modelValue="onFilterChange"
           />
           <div class="flex justify-between text-sm text-gray-700 mt-2">
@@ -57,7 +57,7 @@
       </div>
   </div>
 
-    <div v-if="products.length === 0" class="text-center py-12">
+    <div v-if="products.length === 0 && !loading" class="text-center py-12">
           <svg
             class="w-16 h-16 text-gray-400 mx-auto mb-4"
             fill="none"
@@ -223,3 +223,16 @@ onBeforeUnmount(() => {
 })
 
 </script>
+
+<style scoped>
+.custom-slider{
+  --slider-handle-size : 16px;
+  --slider-height : 6px;
+  --slider-connect-bg : #4b5563;
+  --slider-handle-bg : #4b5563;
+  --slider-tooltip-bg : #000000;
+
+
+}
+
+</style>
