@@ -1,4 +1,8 @@
 <template>
+<div
+    @click="$emit('product-detail', product)"
+    class = "cursor-pointer"
+>
     <div class="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col h-full">
         <!-- Image Section (Top Half) -->
         <div class="relative h-48 bg-gray-100">
@@ -61,38 +65,36 @@
         <div>
             <!-- Price and Stock Info -->
             <div class="flex justify-between items-center mb-4">
-            <span class="text-2xl font-bold text-gray-700">Tk. {{ product.price }}</span>
+            <span class="text-xl font-semibold text-gray-700">৳{{ product.price }}</span>
             </div>
 
             <!-- Add to Cart Button -->
             <button
-            :disabled="!product.availability"
-            :class="[
-                'w-full py-2 px-4 rounded-lg font-semibold transition-all duration-200',
-                product.availability
-                ? 'bg-gray-700 hover:bg-gray-800 text-white hover:shadow-md'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed',
-            ]"
-            @click="$emit('add-to-cart', product)"
-            >
-            <span v-if="product.availability">Add to Cart</span>
-            <span v-else>Out of Stock</span>
+                :disabled="!product.availability"
+                :class="[
+                    'w-full py-2 px-4 rounded-lg font-semibold transition-all duration-200',
+                    product.availability
+                    ? 'bg-gray-700 hover:bg-gray-800 text-white hover:shadow-md'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed',
+                ]"
+                @click="$emit('add-to-cart', product)"
+                >
+                <span v-if="product.availability">Add to Cart</span>
+                <span v-else>Out of Stock</span>
             </button>
         </div>
     </div>
     </div>
+</div>
 </template>
 
-<script>
-    export default{
-        name : 'ProductCard',
-        props : {
-            product : {
-                type : Object,
-                required : true,
-            },
+<script setup>
+    defineProps({
+        product:{
+            type:Object,
+            required:true,
         },
-    }
+    })
 
     const handleImageError = (event) =>{
         event.target.src = '/Default.jpg'

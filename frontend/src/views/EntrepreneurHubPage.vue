@@ -77,9 +77,19 @@
             :key="product.id"
             :product="product"
             @add-to-cart="onAddToCart"
+            @product-detail="handleProductDetail"
         />
       </div>
     </div>
+
+    <ProductModal
+      v-if="showModal"
+      :key="selectedProduct.id"
+      :product="selectedProduct"
+      @close="closeModal"
+      @click.self="closeModal"
+    />
+
   </div>
 
 </template>
@@ -88,6 +98,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import NavBar from '@/components/NavBar.vue'
 import ProductCard from '@/components/ProductCard.vue'
+import ProductModal from '@/components/ProductModal.vue'
 import '@vueform/slider/themes/default.css'
 import Slider from '@vueform/slider'
 
@@ -98,6 +109,8 @@ const selected_store = ref('')
 const price_range = ref([0,1000])
 const loading = ref(false)
 const allLoaded = ref(false)
+const selectedProduct = ref(null)
+const showModal = ref(false)
 
 const loadProducts = async () => {
 
@@ -163,6 +176,16 @@ const handleScroll = () => {
   if(scrollTop + windowHeight >= fullHeight - 200){
     loadProducts()
   }
+}
+
+function handleProductDetail(product){
+  selectedProduct.value = product
+  showModal.value = true
+}
+
+function closeModal(){
+  showModal.value = false
+  selectedProduct.value = null
 }
 
 function onAddToCart(product){

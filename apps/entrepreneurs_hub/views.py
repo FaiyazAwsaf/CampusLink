@@ -4,6 +4,7 @@ from .serializers import ProductSerializer
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.pagination import CursorPagination
 from rest_framework.response import Response
 
@@ -45,3 +46,8 @@ class ProductListAPIView(ListAPIView):
                 pass
         
         return queryset
+    
+class ProductDetailsAPIView(RetrieveAPIView):
+    serializer_class = ProductSerializer
+    queryset = Product.objects.all()
+    lookup_field = 'pk'
