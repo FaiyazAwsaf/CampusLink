@@ -1,84 +1,85 @@
 <template>
   <NavBar />
+  <div class="min-h-screen bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-200">
+    <div class="container mx-auto px-4 py-8">
 
-  <div class="container mx-auto px-4 py-8">
+      <div class="flex gap-4">
+        <div class="mb-8">
+          <label for="category" class="block font-medium mb-1">Category:</label>
+            <select v-model="selected_category" @change="onFilterChange" class="border p-2 rounded">
+              <option value="">All</option>
+              <option value="Clothing">Clothing</option>
+              <option value="Gadgets">Gadgets</option>
+              <option value="Food">Food</option>
+            </select>
+        <!-- Add your categories -->
+        </div>
 
-    <div class="flex gap-4">
-      <div class="mb-8">
-        <label for="category" class="block font-medium mb-1">Category:</label>
-          <select v-model="selected_category" @change="onFilterChange" class="border p-2 rounded">
-            <option value="">All</option>
-            <option value="Clothing">Clothing</option>
-            <option value="Gadgets">Gadgets</option>
-            <option value="Food">Food</option>
-          </select>
-      <!-- Add your categories -->
-      </div>
+        <div class="mb-8">
+          <label for="store" class="block font-medium mb-1">Store</label>
+            <select v-model="selected_store" @change="onFilterChange" class="border p-2 rounded">
+              <option value="">All Stores</option>
+              <option value="NiggaTown">NiggaTown</option>
+              <option value="IUTian's Waffle">Iutian's Waffle</option>
+            </select>
+        </div>
 
-      <div class="mb-8">
-        <label for="store" class="block font-medium mb-1">Store</label>
-          <select v-model="selected_store" @change="onFilterChange" class="border p-2 rounded">
-            <option value="">All Stores</option>
-            <option value="NiggaTown">NiggaTown</option>
-            <option value="IUTian's Waffle">Iutian's Waffle</option>
-          </select>
-      </div>
-
-      <div class="mb-8">
-        <label for="price_range" class="block font-medium mb-1">Price Range</label>
-          
-          <Slider
-            v-model="price_range"
-              :min="0"
-              :max="1000"
-              :step="10"
-              :tooltip="false"
-              :lazy="true"
-              :range="true"
-              class="mt-2"
-              @update:modelValue="onFilterChange"
-          />
-          <div class="flex justify-between text-sm text-gray-700 mt-2">
-            <span>Min: {{ price_range[0] }}</span>
-            <span>Max: {{ price_range[1] }}</span>
+        <div class="mb-8">
+          <label for="price_range" class="block font-medium mb-1">Price Range</label>
+            
+            <Slider
+              v-model="price_range"
+                :min="0"
+                :max="1000"
+                :step="10"
+                :tooltip="false"
+                :lazy="true"
+                :range="true"
+                class="mt-2"
+                @update:modelValue="onFilterChange"
+            />
+            <div class="flex justify-between text-sm text-gray-700 mt-2">
+              <span>Min: {{ price_range[0] }}</span>
+              <span>Max: {{ price_range[1] }}</span>
+            </div>
           </div>
+      </div>
+      
+    <div>
+        <div v-if="loading" class="flex justify-center items-center py-12">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <span class="ml-3 text-lg text-gray-600">Loading products...</span>
         </div>
     </div>
-    
-  <div>
-      <div v-if="loading" class="flex justify-center items-center py-12">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        <span class="ml-3 text-lg text-gray-600">Loading products...</span>
+
+      <div v-if="products.length === 0" class="text-center py-12">
+            <svg
+              class="w-16 h-16 text-gray-400 mx-auto mb-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+              ></path>
+            </svg>
+            <h3 class="text-lg font-semibold text-gray-600 mb-2">No Products Available</h3>
+            <p class="text-gray-500">Check back later for new products!</p>
       </div>
-  </div>
 
-    <div v-if="products.length === 0" class="text-center py-12">
-          <svg
-            class="w-16 h-16 text-gray-400 mx-auto mb-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-            ></path>
-          </svg>
-          <h3 class="text-lg font-semibold text-gray-600 mb-2">No Products Available</h3>
-          <p class="text-gray-500">Check back later for new products!</p>
-    </div>
-
-    <div v-else>
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6">
-        <ProductCard
-          v-for="product in products"
-            :key="product.id"
-            :product="product"
-            @add-to-cart="onAddToCart"
-            @product-detail="handleProductDetail"
-        />
+      <div v-else>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6">
+          <ProductCard
+            v-for="product in products"
+              :key="product.id"
+              :product="product"
+              @add-to-cart="onAddToCart"
+              @product-detail="handleProductDetail"
+          />
+        </div>
       </div>
     </div>
 
