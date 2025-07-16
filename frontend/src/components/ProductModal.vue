@@ -30,33 +30,30 @@
             <h2 class="text-3xl font-bold mb-3">{{ product.name }}</h2>
             <p class="text-gray-700 mb-4">{{ product.description }}</p>
             <div class="text-2xl font-semibold text-gray-800 mb-4">৳{{ product.price }}</div>
-          </div>
-
-          <div class="mt-auto space-y-3">
-            <div>
-              <span class="w-full py-3 px-4 rounded-lg font-semibold transition-all duration-200">
-                Storefront : {{product.store_name}}
-              </span>
-            </div>
-
-              <div>
-              <span class="w-full py-3 px-4 rounded-lg font-semibold transition-all duration-200">
-                Category : {{product.category}}
-              </span>
-
-            </div>
-            <div>
+            <div class="text-xl font-medium text-gray-800 mb-4">
               <span
                 v-if="product.availability"
-                class="bg-green-500 text-white text-xs font-semibold px-3 py-1 rounded-full"
               >
                 In Stock
               </span>
               <span
                 v-else
-                class="bg-red-500 text-white text-xs font-semibold px-3 py-1 rounded-full"
               >
                 Out of Stock
+              </span>
+            </div>
+          </div>
+
+          <div class="mt-auto space-y-3">
+            <div class="bg-gray-100 rounded-lg px-4 py-3 text-gray-800 font-medium shadow-sm border border-gray-200">
+              <span class="block">
+                <span class="font-semibold text-gray-600">Storefront:</span> {{ product.store_name }}
+              </span>
+            </div>
+
+            <div class="bg-gray-100 rounded-lg px-4 py-3 text-gray-800 font-medium shadow-sm border border-gray-200">
+              <span class="block">
+                <span class="font-semibold text-gray-600">Category:</span> {{ product.category }}
               </span>
             </div>
 
