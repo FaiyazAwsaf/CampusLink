@@ -3,26 +3,31 @@
   <div class="min-h-screen bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-200">
     <div class="container mx-auto px-4 py-8">
 
-      <div class="flex gap-4">
-        <div class="mb-8">
-          <label for="category" class="block font-medium mb-1">Category:</label>
-            <select v-model="selected_category" @change="onFilterChange" class="border p-2 rounded">
-              <option value="">All</option>
-              <option value="Clothing">Clothing</option>
-              <option value="Gadgets">Gadgets</option>
-              <option value="Food">Food</option>
-            </select>
-        <!-- Add your categories -->
-        </div>
+    <div class="flex gap-4">
+      <div class="mb-8">
+        <label for="category" class="block font-medium mb-1">Category:</label>
+          <select v-model="selected_category" @change="onFilterChange" class="border p-2 rounded">
+            <option value="">All</option>
+            <option 
+              v-for="category in categories"
+                :key="category"
+                :value="category"
+            >{{ category }}</option>
+          </select>
+      <!-- Add your categories -->
+      </div>
 
-        <div class="mb-8">
-          <label for="store" class="block font-medium mb-1">Store</label>
-            <select v-model="selected_store" @change="onFilterChange" class="border p-2 rounded">
-              <option value="">All Stores</option>
-              <option value="NiggaTown">NiggaTown</option>
-              <option value="IUTian's Waffle">Iutian's Waffle</option>
-            </select>
-        </div>
+      <div class="mb-8">
+        <label for="store" class="block font-medium mb-1">Store</label>
+          <select v-model="selected_store" @change="onFilterChange" class="border p-2 rounded">
+            <option value="">All Stores</option>
+            <option 
+              v-for="store in stores"
+                :key="store"
+                :value="store"
+            >{{ store }}</option>
+          </select>
+      </div>
 
         <div class="mb-8">
           <label for="price_range" class="block font-medium mb-1">Price Range</label>
@@ -112,6 +117,8 @@ const loading = ref(false)
 const allLoaded = ref(false)
 const selectedProduct = ref(null)
 const showModal = ref(false)
+const categories = ref([])
+const stores = ref([])
 
 const loadProducts = async () => {
 
@@ -162,6 +169,19 @@ const loadProducts = async () => {
     }
 }
 
+const fetchFilters = async () =>{
+  try{
+    const storeRes = await fetch(`/api/entrepreneurs_hub/products/storefronts/`)
+    const categoryRes = await fetch(`/api/entrepreneurs_hub/products/categories/`)
+
+    stores.value = await storeRes.json()
+    categories.value = await categoryRes.json()
+  }
+  catch(err){
+    console.log("Cannot fetch categories/store : ", err)
+  }
+}
+
 const onFilterChange = () => {
   products.value = []
   next_cursor.value = null
@@ -196,6 +216,7 @@ function onAddToCart(product){
 onMounted(() => {
   window.addEventListener('scroll', handleScroll)
   loadProducts()
+  fetchFilters()
 })
 
 onBeforeUnmount(() => {
