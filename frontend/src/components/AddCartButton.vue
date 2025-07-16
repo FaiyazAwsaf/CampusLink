@@ -13,6 +13,7 @@
     </button>
 </template>
 
+
 <script setup>
     defineProps({
         product : {
