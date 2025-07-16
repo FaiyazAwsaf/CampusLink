@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import Product
+from .models import Product, Storefront
 from .serializers import ProductSerializer
 from rest_framework import status
 from rest_framework.views import APIView
@@ -51,3 +51,15 @@ class ProductDetailsAPIView(RetrieveAPIView):
     serializer_class = ProductSerializer
     queryset = Product.objects.all()
     lookup_field = 'pk'
+
+class StorefrontAPIView(APIView):
+    def get(self, request):
+        store_names = Storefront.objects.values_list("name", flat=True).distinct()
+        return Response(store_names)
+    
+
+
+class ProductCategoryAPIView(APIView):
+    def get(self, request):
+        category_names = Product.objects.values_list("category", flat=True).distinct().order_by("category")
+        return Response(category_names)

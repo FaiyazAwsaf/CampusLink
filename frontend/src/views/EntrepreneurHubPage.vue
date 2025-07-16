@@ -8,19 +8,24 @@
         <label for="category" class="block font-medium mb-1">Category:</label>
           <select v-model="selected_category" @change="onFilterChange" class="border p-2 rounded">
             <option value="">All</option>
-            <option value="Clothing">Clothing</option>
-            <option value="Gadgets">Gadgets</option>
-            <option value="Food">Food</option>
+            <option 
+              v-for="category in categories"
+                :key="category"
+                :value="category"
+            >{{ category }}</option>
           </select>
-      <!-- Add your categories -->
+
       </div>
 
       <div class="mb-8">
         <label for="store" class="block font-medium mb-1">Store</label>
           <select v-model="selected_store" @change="onFilterChange" class="border p-2 rounded">
             <option value="">All Stores</option>
-            <option value="NiggaTown">NiggaTown</option>
-            <option value="IUTian's Waffle">Iutian's Waffle</option>
+            <option 
+              v-for="store in stores"
+                :key="store"
+                :value="store"
+            >{{ store }}</option>
           </select>
       </div>
 
@@ -32,10 +37,10 @@
               :min="0"
               :max="1000"
               :step="10"
-              :tooltip="false"
+              :tooltip="'hover'"
               :lazy="true"
               :range="true"
-              class="mt-2"
+              class="mt-2 custom-slider"
               @update:modelValue="onFilterChange"
           />
           <div class="flex justify-between text-sm text-gray-700 mt-2">
@@ -52,7 +57,7 @@
       </div>
   </div>
 
-    <div v-if="products.length === 0" class="text-center py-12">
+    <div v-if="products.length === 0 && !loading" class="text-center py-12">
           <svg
             class="w-16 h-16 text-gray-400 mx-auto mb-4"
             fill="none"
@@ -111,6 +116,8 @@ const loading = ref(false)
 const allLoaded = ref(false)
 const selectedProduct = ref(null)
 const showModal = ref(false)
+const categories = ref([])
+const stores = ref([])
 
 const loadProducts = async () => {
 
@@ -161,6 +168,19 @@ const loadProducts = async () => {
     }
 }
 
+const fetchFilters = async () =>{
+  try{
+    const storeRes = await fetch(`/api/entrepreneurs_hub/products/storefronts/`)
+    const categoryRes = await fetch(`/api/entrepreneurs_hub/products/categories/`)
+
+    stores.value = await storeRes.json()
+    categories.value = await categoryRes.json()
+  }
+  catch(err){
+    console.log("Cannot fetch categories/store : ", err)
+  }
+}
+
 const onFilterChange = () => {
   products.value = []
   next_cursor.value = null
@@ -195,6 +215,7 @@ function onAddToCart(product){
 onMounted(() => {
   window.addEventListener('scroll', handleScroll)
   loadProducts()
+  fetchFilters()
 })
 
 onBeforeUnmount(() => {
@@ -202,3 +223,16 @@ onBeforeUnmount(() => {
 })
 
 </script>
+
+<style scoped>
+.custom-slider{
+  --slider-handle-size : 16px;
+  --slider-height : 6px;
+  --slider-connect-bg : #4b5563;
+  --slider-handle-bg : #4b5563;
+  --slider-tooltip-bg : #000000;
+
+
+}
+
+</style>
