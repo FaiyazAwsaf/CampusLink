@@ -118,6 +118,8 @@ const selectedProduct = ref(null)
 const showModal = ref(false)
 const categories = ref([])
 const stores = ref([])
+const recentlyAdded = ref([])
+const popularProducts = ref([])
 
 const loadProducts = async () => {
 
@@ -181,6 +183,18 @@ const fetchFilters = async () =>{
   }
 }
 
+const fetchRecentlyAdded = async () =>{
+  try{
+    const res = await fetch(`/api/entrepreneurs_hub/products/recent/`)
+    recentlyAdded.value = await res.json()
+  }
+  catch(err){
+    console.log("Cannot fetch recently added")
+  }
+}
+
+
+
 const onFilterChange = () => {
   products.value = []
   next_cursor.value = null
@@ -223,6 +237,19 @@ onBeforeUnmount(() => {
 })
 
 </script>
+
+<style scoped>
+.custom-slider{
+  --slider-handle-size : 16px;
+  --slider-height : 6px;
+  --slider-connect-bg : #4b5563;
+  --slider-handle-bg : #4b5563;
+  --slider-tooltip-bg : #000000;
+
+
+}
+
+</style>
 
 <style scoped>
 .custom-slider{

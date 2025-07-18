@@ -1,6 +1,6 @@
 <template>
   <NavBar />
-  <div class="max-w-4xl mx-auto mt-10 p-6 bg-white rounded-xl shadow">
+  <div class="max-w-4xl mx-auto mt-10 p-6 bg-white rounded-xl shadow bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-200">
     <h2 class="text-2xl font-bold mb-4 text-center text-indigo-800">Laundry Service</h2>
 
     <!-- Add Item Form -->

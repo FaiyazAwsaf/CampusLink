@@ -1,8 +1,7 @@
 <template>
   <NavBar />
   <div
-    class="min-h-screen flex flex-col items-center justify-center py-8"
-    style="background-color: var(--color-primaryBg)"
+    class="min-h-screen flex flex-col items-center justify-center py-8 bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-200"
   >
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 w-full max-w-5xl">
       <!-- CDS -->
