@@ -24,6 +24,7 @@ class ProductListAPIView(ListAPIView):
         store = self.request.query_params.get('store')
         min_price = self.request.query_params.get('min_price')
         max_price = self.request.query_params.get('max_price')
+        availability = self.request.query_params.get('availability')
 
         if category:
             queryset = queryset.filter(category__iexact=category)
@@ -44,7 +45,13 @@ class ProductListAPIView(ListAPIView):
                 queryset = queryset.filter(price__lte=float(max_price))
             except ValueError:
                 pass
-        
+
+        if availability:
+            if availability.lower() == 'true':
+                queryset = queryset.filter(availability=True)
+            elif availability.lower() == 'false':
+                queryset = queryset.filter(availability=False)
+
         return queryset
     
 class ProductDetailsAPIView(RetrieveAPIView):
@@ -63,3 +70,9 @@ class ProductCategoryAPIView(APIView):
     def get(self, request):
         category_names = Product.objects.values_list("category", flat=True).distinct().order_by("category")
         return Response(category_names)
+    
+class RecentlyAddedProducts(APIView):
+    def get(self, request):
+        recent_products = Product.objects.order_by('-created_at')[:10]
+        serializer = ProductSerializer(recent_products, many=True)
+        return Response(serializer.data)
