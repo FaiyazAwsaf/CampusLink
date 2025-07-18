@@ -3,40 +3,79 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from .models import CDS_Item
+from django.core.paginator import Paginator
+from django.db.models import Q
+from .models import CDS_Item
 import json
 
 @require_http_methods(["GET"])
 def get_cds_items(request):
-    """
-    Get all CDS items with enhanced information
-    """
     try:
-        items = CDS_Item.objects.all().values(
-            'item_id',
-            'name', 
-            'description', 
-            'price',
-            'image',
-            'availability',
-        )
-        items_list = list(items)
-        
-        # Convert Decimal to float for JSON serialization
-        for item in items_list:
-            item['price'] = float(item['price'])
+        page = int(request.GET.get('page', 1))
+        page_size = int(request.GET.get('page_size', 12))  
+
+        min_price = request.GET.get('min_price')
+        max_price = request.GET.get('max_price')
+        category = request.GET.get('category')
+        availability = request.GET.get('availability')
+
+        items_qs = CDS_Item.objects.all()
+
+        if min_price:
+            items_qs = items_qs.filter(price__gte=float(min_price))
+        if max_price:
+            items_qs = items_qs.filter(price__lte=float(max_price))
+        if category:    
+            items_qs = items_qs.filter(category=category)
+        if availability is not None:
+            if availability.lower() in ["1", "true", "yes"]:
+                items_qs = items_qs.filter(availability=True)
+            elif availability.lower() in ["0", "false", "no"]:
+                items_qs = items_qs.filter(availability=False)
+
+        # --- Pagination ---
+        paginator = Paginator(items_qs, page_size)
+        page_obj = paginator.get_page(page)
+
+        items_list = [
+            {
+                "item_id": item.item_id,
+                "name": item.name,
+                "category": item.category,
+                "description": item.description,
+                "price": float(item.price),
+                "image": item.image,
+                "availability": item.availability,
+            }
+            for item in page_obj.object_list
+        ]
 
         return JsonResponse({
-            'success': True,
-            'items': items_list,
-            'total_count': len(items_list)
+            "success": True,
+            "items": items_list,
+            "total_count": paginator.count,
+            "total_pages": paginator.num_pages,
+            "current_page": page_obj.number,
+            "page_size": page_size,
         })
-    
+
     except Exception as e:
         return JsonResponse({
-            'success': False,
-            'error': str(e),
-            'items': []
+            "success": False,
+            "error": str(e),
+            "items": []
         }, status=500)
+ 
+ 
+@require_http_methods(["GET"])
+def get_cds_categories(request):
+    cats = CDS_Item.objects.values_list('category', flat=True)
+    unique_cats = set()
+    for c in cats:
+        if c:
+            unique_cats.add(c.strip())
+    return JsonResponse({'categories': sorted(unique_cats)})
+
 
 @require_http_methods(["GET"])
 def get_cds_item_detail(request, item_id):
