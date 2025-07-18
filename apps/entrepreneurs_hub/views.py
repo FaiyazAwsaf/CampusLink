@@ -63,3 +63,9 @@ class ProductCategoryAPIView(APIView):
     def get(self, request):
         category_names = Product.objects.values_list("category", flat=True).distinct().order_by("category")
         return Response(category_names)
+    
+class RecentlyAddedProducts(APIView):
+    def get(self, request):
+        recent_products = Product.objects.order_by('-created_at')[:10]
+        serializer = ProductSerializer(recent_products, many=True)
+        return Response(serializer.data)
