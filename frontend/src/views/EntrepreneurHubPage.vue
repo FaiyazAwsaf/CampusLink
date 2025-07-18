@@ -1,7 +1,7 @@
 <template>
   <NavBar />
-
-  <div class="container mx-auto px-4 py-8">
+  <div class="bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-200">
+    <div class="container mx-auto px-4 py-8 ">
 
     <div class="flex gap-4">
       <div class="mb-8">
@@ -96,6 +96,8 @@
     />
 
   </div>
+  </div>
+  
 
 </template>
 
