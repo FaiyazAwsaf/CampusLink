@@ -14,7 +14,6 @@
                 :value="category"
             >{{ category }}</option>
           </select>
-
       </div>
 
       <div class="mb-8">
@@ -48,6 +47,69 @@
             <span>Max: {{ price_range[1] }}</span>
           </div>
         </div>
+
+        <div class="mb-8">
+          <label for="stock" class="black font-medium mb-1 group">Stock</label>
+            <div class="flex flex-col space-y-3">
+              <label class="flex items-center cursor-pointer">
+                <input
+                  type="radio"
+                  v-model="selectedAvailability"
+                  value=""
+                  @change="onFilterChange"
+                  class="sr-only"
+                />
+                <div class="relative">
+                  <div class="w-5 h-5 rounded-full border-2 border-gray-300 group-hover:border-blue-400 transition-colors duration-200"
+                    :class="selectedAvailability === '' ? 'border-blue-500 bg-blue-500' : ''">
+                    <div v-if="selectedAvailability === ''" class="absolute inset-0 flex items-center justify-center">
+                      <div class="w-2 h-2 rounded-full bg-white"></div>
+                    </div>
+                  </div>
+                </div>
+                <span class="ml-3 text-gray-700 group-hover:text-gray-900 transition-colors duration-200">All Products</span>
+              </label>
+
+              <label class="flex items-center cursor-pointer">
+                <input
+                  type="radio"
+                  v-model="selectedAvailability"
+                  value="true"
+                  @change="onFilterChange"
+                  class="sr-only"
+                />
+                <div class="relative">
+                  <div class="w-5 h-5 rounded-full border-2 border-gray-300 group-hover:border-blue-400 transition-colors duration-200"
+                  :class="selectedAvailability === 'true' ? 'border-blue-500 bg-blue-500' : ''">
+                    <div v-if="selectedAvailability === 'true'" class="absolute inset-0 flex items-center justify-center">
+                      <div class="w-2 h-2 rounded-full bg-white"></div>
+                    </div>
+                  </div>
+                </div>
+                <span class="ml-3 text-gray-700 group-hover:text-gray-900 transition-colors duration-200">In stock</span>
+              </label>
+
+              <label class="flex items-center cursor-pointer">
+                <input
+                  type="radio"
+                  v-model="selectedAvailability"
+                  value="false"
+                  @change="onFilterChange"
+                  class="sr-only"
+                />
+                <div class="relative">
+                  <div class="w-5 h-5 rounded-full border-2 border-gray-300 group-hover:border-blue-400 transition-colors duration-200"
+                  :class="selectedAvailability === 'false' ? 'border-blue-500 bg-blue-500' : ''">
+                    <div v-if="selectedAvailability === 'false'" class="absolute inset-0 flex items-center justify-center">
+                      <div class="w-2 h-2 rounded-full bg-white"></div>
+                    </div>
+                  </div>
+                </div>
+                <span class="ml-3 text-gray-700 group-hover:text-gray-900 transition-colors duration-200">Out of stock</span>
+              </label>
+            </div >
+        </div>
+
     </div>
     
   <div>
@@ -122,6 +184,7 @@ const categories = ref([])
 const stores = ref([])
 const recentlyAdded = ref([])
 const popularProducts = ref([])
+const selectedAvailability = ref('')
 
 const loadProducts = async () => {
 
@@ -150,6 +213,10 @@ const loadProducts = async () => {
     if(price_range.value){
       params.append('min_price', price_range.value[0])
       params.append('max_price', price_range.value[1])
+
+    if(selectedAvailability.value){
+      params.append('availability', selectedAvailability.value)
+    }
     }
     
     const res = await fetch(`/api/entrepreneurs_hub/products/?${params.toString()}`)
