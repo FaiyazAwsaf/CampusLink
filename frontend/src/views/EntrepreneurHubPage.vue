@@ -4,17 +4,12 @@
     <div class="container mx-auto px-4 py-8 ">
 
     <div class="flex gap-4">
-      <div class="mb-8">
-        <label for="category" class="block font-medium mb-1">Category:</label>
-          <select v-model="selected_category" @change="onFilterChange" class="border p-2 rounded">
-            <option value="">All</option>
-            <option 
-              v-for="category in categories"
-                :key="category"
-                :value="category"
-            >{{ category }}</option>
-          </select>
-      </div>
+      <CategoryFilter
+        v-model="selected_category"
+        @on-filter-change="onFilterChange"
+        :categories="categories"
+      >        
+      </CategoryFilter>
 
       <div class="mb-8">
         <label for="store" class="block font-medium mb-1">Store</label>
@@ -49,66 +44,39 @@
         </div>
 
         <div class="mb-8">
-          <label for="stock" class="black font-medium mb-1 group">Stock</label>
-            <div class="flex flex-col space-y-3">
-              <label class="flex items-center cursor-pointer">
+
+          <label for="stock" class="block font-medium mb-1">Product</label>
+
+              <label
+                v-for="option in availabilityOptions"
+                :key="option.value"
+                class="flex items-center cursor-pointer group"
+              >
                 <input
                   type="radio"
                   v-model="selectedAvailability"
-                  value=""
+                  :value="option.value"
                   @change="onFilterChange"
                   class="sr-only"
                 />
                 <div class="relative">
                   <div class="w-5 h-5 rounded-full border-2 border-gray-300 group-hover:border-blue-400 transition-colors duration-200"
-                    :class="selectedAvailability === '' ? 'border-blue-500 bg-blue-500' : ''">
-                    <div v-if="selectedAvailability === ''" class="absolute inset-0 flex items-center justify-center">
-                      <div class="w-2 h-2 rounded-full bg-white"></div>
+                    :class="selectedAvailability === option.value ? 'border-gray-700 bg-gray-700' : ''"
+                  >
+                    <div
+                      v-if="selectedAvailability === option.value"
+                      class="absolute inset-0 flex items-center justify-center">
+                        <div class="w-2 h-2 rounded-full bg-white"></div>
                     </div>
                   </div>
                 </div>
-                <span class="ml-3 text-gray-700 group-hover:text-gray-900 transition-colors duration-200">All Products</span>
+                <span class="ml-3 text-gray-700 group-hover:text-gray-900 transition-colors duration-200">
+                  {{ option.label }}
+                </span>
               </label>
 
-              <label class="flex items-center cursor-pointer">
-                <input
-                  type="radio"
-                  v-model="selectedAvailability"
-                  value="true"
-                  @change="onFilterChange"
-                  class="sr-only"
-                />
-                <div class="relative">
-                  <div class="w-5 h-5 rounded-full border-2 border-gray-300 group-hover:border-blue-400 transition-colors duration-200"
-                  :class="selectedAvailability === 'true' ? 'border-blue-500 bg-blue-500' : ''">
-                    <div v-if="selectedAvailability === 'true'" class="absolute inset-0 flex items-center justify-center">
-                      <div class="w-2 h-2 rounded-full bg-white"></div>
-                    </div>
-                  </div>
-                </div>
-                <span class="ml-3 text-gray-700 group-hover:text-gray-900 transition-colors duration-200">In stock</span>
-              </label>
-
-              <label class="flex items-center cursor-pointer">
-                <input
-                  type="radio"
-                  v-model="selectedAvailability"
-                  value="false"
-                  @change="onFilterChange"
-                  class="sr-only"
-                />
-                <div class="relative">
-                  <div class="w-5 h-5 rounded-full border-2 border-gray-300 group-hover:border-blue-400 transition-colors duration-200"
-                  :class="selectedAvailability === 'false' ? 'border-blue-500 bg-blue-500' : ''">
-                    <div v-if="selectedAvailability === 'false'" class="absolute inset-0 flex items-center justify-center">
-                      <div class="w-2 h-2 rounded-full bg-white"></div>
-                    </div>
-                  </div>
-                </div>
-                <span class="ml-3 text-gray-700 group-hover:text-gray-900 transition-colors duration-200">Out of stock</span>
-              </label>
-            </div >
         </div>
+
 
     </div>
     
@@ -159,7 +127,6 @@
 
   </div>
   </div>
-  
 
 </template>
 
@@ -168,6 +135,7 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 import NavBar from '@/components/NavBar.vue'
 import ProductCard from '@/components/ProductCard.vue'
 import ProductModal from '@/components/ProductModal.vue'
+import CategoryFilter from '@/components/CategoryFilter.vue'
 import '@vueform/slider/themes/default.css'
 import Slider from '@vueform/slider'
 
@@ -185,6 +153,11 @@ const stores = ref([])
 const recentlyAdded = ref([])
 const popularProducts = ref([])
 const selectedAvailability = ref('')
+const availabilityOptions = [
+  {label : 'All Products', value : ''},
+  {label : 'In Stock', value : 'true'},
+  {label : 'Out of Stock', value : 'false'},
+]
 
 const loadProducts = async () => {
 
@@ -261,8 +234,6 @@ const fetchRecentlyAdded = async () =>{
     console.log("Cannot fetch recently added")
   }
 }
-
-
 
 const onFilterChange = () => {
   products.value = []
