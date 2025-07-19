@@ -49,7 +49,7 @@
         </div>
 
         <!-- Products Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
           <div
             v-for="item in items"
             :key="item.item_id"
@@ -161,6 +161,51 @@
           <h3 class="text-lg font-semibold text-gray-600 mb-2">No Items Available</h3>
           <p class="text-gray-500">Check back later for new products!</p>
         </div>
+        <div class="flex justify-between items-center px-6 py-4 bg-gray-100 rounded mb-8">
+          <!-- Page Controls -->
+          <div class="flex items-center space-x-2">
+            <button
+              @click="changePage(currentPage - 1)"
+              :disabled="currentPage === 1"
+              class="text-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed"
+            >
+              PREV
+            </button>
+
+            <button
+              v-for="page in visiblePages"
+              :key="page"
+              @click="changePage(page)"
+              :class="[
+                'px-4 py-2 rounded',
+                currentPage === page
+                  ? 'bg-red-600 text-white font-bold'
+                  : 'text-black hover:bg-gray-200',
+              ]"
+            >
+              {{ page }}
+            </button>
+
+            <button
+              @click="changePage(currentPage + 1)"
+              :disabled="currentPage === totalPages"
+              class="text-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed"
+            >
+              NEXT
+            </button>
+          </div>
+
+          <!-- Page Info -->
+          <div class="text-sm text-gray-800">
+            Showing
+            <strong>{{ startItem }}</strong>
+            to
+            <strong>{{ endItem }}</strong>
+            of
+            <strong>{{ totalItems }}</strong>
+            ({{ totalPages }} Pages)
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -168,27 +213,34 @@
 
 <script setup>
 import NavBar from '@/components/NavBar.vue'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 
-// State variables
 const items = ref([])
 const loading = ref(true)
 const error = ref(null)
 
-// Fetch data from the backend API
+const currentPage = ref(1)
+const totalPages = ref(1)
+const totalItems = ref(0)
+const pageSize = ref(12)
+
 const fetchItems = async () => {
+  loading.value = true
+  error.value = null
+
   try {
-    loading.value = true
-    error.value = null
-
-    const response = await fetch('/api/cds/items/')
-
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status} ${response.statusText}`)
-    }
+    const response = await fetch(
+      `/api/cds/items/?page=${currentPage.value}&page_size=${pageSize.value}`,
+    )
+    if (!response.ok) throw new Error(`Error: ${response.status} ${response.statusText}`)
 
     const data = await response.json()
+
     items.value = data.items || []
+    currentPage.value = data.current_page
+    totalPages.value = data.total_pages
+    totalItems.value = data.total_count
+    pageSize.value = data.page_size
   } catch (err) {
     error.value = `Failed to load items: ${err.message}`
     console.error('Error fetching CDS items:', err)
@@ -197,20 +249,44 @@ const fetchItems = async () => {
   }
 }
 
-// Handle image loading errors
+const changePage = (page) => {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
+  }
+}
+
+// Watch currentPage to re-fetch items when changed
+watch(currentPage, () => {
+  fetchItems()
+})
+
+// Computed values for pagination UI
+const visiblePages = computed(() => {
+  const pages = []
+  for (let i = 1; i <= totalPages.value; i++) {
+    pages.push(i)
+  }
+  return pages
+})
+
+const startItem = computed(() => {
+  return (currentPage.value - 1) * pageSize.value + 1
+})
+
+const endItem = computed(() => {
+  const end = currentPage.value * pageSize.value
+  return end > totalItems.value ? totalItems.value : end
+})
+
 const handleImageError = (event) => {
-  // Hide broken image and show placeholder
   event.target.style.display = 'none'
 }
 
-// Add to cart function (placeholder for future implementation)
 const addToCart = (item) => {
-  // TODO: Implement cart functionality
   console.log('Adding to cart:', item)
   alert(`Added "${item.name}" to cart! (Cart functionality coming soon)`)
 }
 
-// Fetch data when component is mounted
 onMounted(() => {
   fetchItems()
 })
