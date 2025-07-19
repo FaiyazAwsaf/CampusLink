@@ -11,7 +11,7 @@
                 :src="product.image"
                 :alt="product.name"
                 class="w-full h-full object-cover"
-                @error="handleImageError"
+                @error="$emit('handle-image-error', product)"
             />
         <div
             v-else
@@ -89,14 +89,12 @@
 </template>
 
 <script setup>
-    defineProps({
-        product:{
-            type:Object,
-            required:true,
-        },
-    })
 
-    const handleImageError = (event) =>{
-        event.target.src = '/Default.jpg'
-    }
+defineProps({
+    product:{
+        type:Object,
+        required:true,
+    },
+})
+
 </script>

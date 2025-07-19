@@ -7,7 +7,8 @@ class StorefrontSerializer(serializers.ModelSerializer):
 
         fields = [
             'store_id',
-            'name'
+            'name',
+            'image'
         ]
 
 class ProductSerializer(serializers.ModelSerializer):
