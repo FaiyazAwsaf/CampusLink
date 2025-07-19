@@ -43,7 +43,20 @@
         <div class="mb-6 bg-white rounded-lg shadow-sm p-4">
           <div class="flex justify-between items-center">
             <p class="text-gray-600">
-              Showing <span class="font-semibold">{{ items.length }}</span> items
+              Items per page:
+              <select v-model="pageSize" @change="changePage(1)" class="border p-2 rounded">
+                <option :value="12">12</option>
+                <option :value="30">30</option>
+                <option :value="50">50</option>
+              </select>
+            </p>
+            <p class="text-gray-600">
+              Sort by:
+              <select v-model="sortOrder" @change="fetchItems" class="border p-2 rounded ml-2">
+                <option value="">Default</option>
+                <option value="price_asc">Price: Low to High</option>
+                <option value="price_desc">Price: High to Low</option>
+              </select>
             </p>
           </div>
         </div>
@@ -167,7 +180,7 @@
             <button
               @click="changePage(currentPage - 1)"
               :disabled="currentPage === 1"
-              class="text-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed"
+              class="px-3 py-2 rounded transition-all duration-150 text-gray-700 hover:bg-gray-300 active:scale-95 disabled:text-gray-400 disabled:bg-gray-100 disabled:cursor-not-allowed"
             >
               PREV
             </button>
@@ -189,7 +202,7 @@
             <button
               @click="changePage(currentPage + 1)"
               :disabled="currentPage === totalPages"
-              class="text-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed"
+              class="px-3 py-2 rounded transition-all duration-150 text-gray-700 hover:bg-gray-300 active:scale-95 disabled:text-gray-400 disabled:bg-gray-100 disabled:cursor-not-allowed"
             >
               NEXT
             </button>
@@ -218,7 +231,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 const items = ref([])
 const loading = ref(true)
 const error = ref(null)
-
+const sortOrder = ref('Default')
 const currentPage = ref(1)
 const totalPages = ref(1)
 const totalItems = ref(0)
@@ -230,7 +243,7 @@ const fetchItems = async () => {
 
   try {
     const response = await fetch(
-      `/api/cds/items/?page=${currentPage.value}&page_size=${pageSize.value}`,
+      `/api/cds/items/?page=${currentPage.value}&page_size=${pageSize.value}&sort_by=${sortOrder.value}`,
     )
     if (!response.ok) throw new Error(`Error: ${response.status} ${response.statusText}`)
 
@@ -241,6 +254,7 @@ const fetchItems = async () => {
     totalPages.value = data.total_pages
     totalItems.value = data.total_count
     pageSize.value = data.page_size
+    sortOrder.value = data.sort_by
   } catch (err) {
     error.value = `Failed to load items: ${err.message}`
     console.error('Error fetching CDS items:', err)
@@ -252,11 +266,12 @@ const fetchItems = async () => {
 const changePage = (page) => {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page
+    fetchItems()
   }
 }
 
-// Watch currentPage to re-fetch items when changed
-watch(currentPage, () => {
+watch(sortOrder, () => {
+  currentPage.value = 1
   fetchItems()
 })
 

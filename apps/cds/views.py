@@ -18,15 +18,24 @@ def get_cds_items(request):
         max_price = request.GET.get('max_price')
         category = request.GET.get('category')
         availability = request.GET.get('availability')
+        sort_by = request.GET.get('sort_by') 
+
 
         items_qs = CDS_Item.objects.all()
+
+        if sort_by == 'price_asc':
+            items_qs = items_qs.order_by('price')
+        elif sort_by == 'price_desc':
+            items_qs = items_qs.order_by('-price')
 
         if min_price:
             items_qs = items_qs.filter(price__gte=float(min_price))
         if max_price:
             items_qs = items_qs.filter(price__lte=float(max_price))
+
         if category:    
             items_qs = items_qs.filter(category=category)
+
         if availability is not None:
             if availability.lower() in ["1", "true", "yes"]:
                 items_qs = items_qs.filter(availability=True)
@@ -46,6 +55,7 @@ def get_cds_items(request):
                 "price": float(item.price),
                 "image": item.image,
                 "availability": item.availability,
+                "sort_by": sort_by,
             }
             for item in page_obj.object_list
         ]
