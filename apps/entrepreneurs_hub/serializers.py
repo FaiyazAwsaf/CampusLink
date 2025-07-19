@@ -3,7 +3,7 @@ from .models import Product, Storefront
 
 class StorefrontSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Product
+        model = Storefront
 
         fields = [
             'store_id',

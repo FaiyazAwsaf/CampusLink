@@ -31,7 +31,7 @@
               :min="0"
               :max="1000"
               :step="10"
-              :tooltip="'hover'"
+              :tooltip="false"
               :lazy="true"
               :range="true"
               class="mt-2 custom-slider"
@@ -79,6 +79,19 @@
     </div>
 
     <div v-else>
+
+      <div class="overflow-x-auto whitespace-nowrap border border-gray-300 bg-white p-4">
+        <div class="inline-flex space-x-4">
+          <div v-for="storefront in storefronts" 
+            :key="storefront.store_id" 
+            class="flex-shrink-0 w-40 p-4 bg-gray-100 rounded-lg text-center">
+            <h3 class="font-semibold text-lg text-gray-700 ">
+                {{ storefront.name }}
+            </h3>
+          </div>
+        </div>
+      </div>
+
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6">
         <ProductCard
           v-for="product in products"
@@ -132,6 +145,7 @@ const availabilityOptions = [
   {label : 'In Stock', value : 'true'},
   {label : 'Out of Stock', value : 'false'},
 ]
+const storefronts = ref([])
 
 const loadProducts = async () => {
 
@@ -188,11 +202,13 @@ const loadProducts = async () => {
 
 const fetchFilters = async () =>{
   try{
-    const storeRes = await fetch(`/api/entrepreneurs_hub/products/storefronts/`)
+    const storeRes = await fetch(`/api/entrepreneurs_hub/products/storefront_name/`)
     const categoryRes = await fetch(`/api/entrepreneurs_hub/products/categories/`)
+    const storefrontRes = await fetch(`/api/entrepreneurs_hub/products/storefronts/`)
 
     stores.value = await storeRes.json()
     categories.value = await categoryRes.json()
+    storefronts.value = await storefrontRes.json()
   }
   catch(err){
     console.log("Cannot fetch categories/store : ", err)
@@ -254,26 +270,10 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .custom-slider{
-  --slider-handle-size : 16px;
+  --slider-handle-size : 25px;
   --slider-height : 6px;
   --slider-connect-bg : #4b5563;
   --slider-handle-bg : #4b5563;
   --slider-tooltip-bg : #000000;
-
-
 }
-
-</style>
-
-<style scoped>
-.custom-slider{
-  --slider-handle-size : 16px;
-  --slider-height : 6px;
-  --slider-connect-bg : #4b5563;
-  --slider-handle-bg : #4b5563;
-  --slider-tooltip-bg : #000000;
-
-
-}
-
 </style>
