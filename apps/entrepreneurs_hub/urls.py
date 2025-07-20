@@ -5,7 +5,8 @@ urlpatterns = [
     # Public endpoints
     path('products/', ProductListAPIView.as_view(), name='product-list'),
     path('products/<int:pk>/', ProductDetailsAPIView.as_view(), name='product-detail'),
-    path('products/storefronts/', StorefrontAPIView.as_view(), name='storefront-list'),
+    path('products/storefront_name/', StorefrontAPIView.as_view(), name='storefront-names'),
+    path('products/storefronts/', StorefrontsAPIView.as_view(), name='storefront-list'),
     path('products/categories/', ProductCategoryAPIView.as_view(), name='product-categories'),
     path('products/recent/', RecentlyAddedProducts.as_view(), name='recent-products'),
     

@@ -6,6 +6,7 @@ class Storefront(models.Model):
     store_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100, default = "NiggaTown")
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='storefronts')
+    image = models.URLField(default='https://images.pexels.com/photos/789327/pexels-photo-789327.jpeg', blank=True, null=True)
 
     def __str__(self):
         return self.name
