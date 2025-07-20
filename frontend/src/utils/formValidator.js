@@ -201,6 +201,36 @@ class FormValidator {
         return errors;
     }
     
+    static validateProfileUpdate(formData) {
+        const errors = {};
+        
+        // Validate name if provided
+        if (formData.name !== undefined) {
+            const nameErrors = this.validateName(formData.name);
+            if (nameErrors.length > 0) {
+                errors.name = nameErrors;
+            }
+        }
+        
+        // Validate phone if provided
+        if (formData.phone !== undefined) {
+            const phoneErrors = this.validatePhone(formData.phone);
+            if (phoneErrors.length > 0) {
+                errors.phone = phoneErrors;
+            }
+        }
+        
+        // Validate image if provided
+        if (formData.image !== undefined) {
+            const imageErrors = this.validateImage(formData.image);
+            if (imageErrors.length > 0) {
+                errors.image = imageErrors;
+            }
+        }
+        
+        return errors;
+    }
+    
     static displayErrors(errors, errorContainer) {
         // Clear previous errors
         errorContainer.innerHTML = '';
