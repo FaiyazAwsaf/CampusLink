@@ -21,6 +21,73 @@
         <!-- Profile and Cart -->
         <div class="hidden md:block">
           <div class="ml-4 flex items-center md:ml-6">
+            <!-- Role-based Navigation (when logged in) -->
+            <div v-if="isLoggedIn" class="flex items-center space-x-4 mr-4">
+              <!-- Home -->
+              <router-link
+                to="/home"
+                class="text-white hover:text-blue-200 text-sm font-medium"
+              >
+                Home
+              </router-link>
+              
+              <!-- Services -->
+              <router-link
+                to="/cds"
+                class="text-white hover:text-blue-200 text-sm font-medium"
+              >
+                CDS
+              </router-link>
+              
+              <router-link
+                to="/laundry"
+                class="text-white hover:text-blue-200 text-sm font-medium"
+              >
+                Laundry
+              </router-link>
+              
+              <router-link
+                to="/entrepreneur-hub"
+                class="text-white hover:text-blue-200 text-sm font-medium"
+              >
+                Entrepreneur Hub
+              </router-link>
+              
+              <!-- Admin Links (Role-based) -->
+              <router-link
+                v-if="currentUser?.role === 'CDS_OWNER' || currentUser?.is_superuser"
+                to="/cds/admin"
+                class="text-yellow-300 hover:text-yellow-100 text-sm font-medium"
+              >
+                CDS Admin
+              </router-link>
+              
+              <router-link
+                v-if="currentUser?.role === 'LAUNDRY_STAFF'"
+                to="/laundry/admin"
+                class="text-purple-300 hover:text-purple-100 text-sm font-medium"
+              >
+                Laundry Admin
+              </router-link>
+              
+              <router-link
+                v-if="currentUser?.role === 'ENTREPRENEUR'"
+                to="/entrepreneur/dashboard"
+                class="text-green-300 hover:text-green-100 text-sm font-medium"
+              >
+                My Dashboard
+              </router-link>
+              
+              <!-- Test Route (Development only) -->
+              <router-link
+                to="/test-guards"
+                class="text-red-300 hover:text-red-100 text-xs font-medium"
+                title="Route Guards Test"
+              >
+                Test
+              </router-link>
+            </div>
+
             <!-- Cart Button -->
             <button v-if="isLoggedIn">
               <a
