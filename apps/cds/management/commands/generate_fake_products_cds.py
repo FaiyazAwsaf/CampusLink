@@ -24,6 +24,7 @@ class Command(BaseCommand):
             name = fake.unique.word().capitalize() + " " + random.choice(categories)
             description = fake.text(max_nb_chars=200)
             price = round(random.uniform(20, 500), 2)
+            category = random.choice(categories)
             availability = random.choice([True, False])
             if random.random() < 0.8:
                 image_url = placeholder_image.format(fake.uuid4())
@@ -36,6 +37,7 @@ class Command(BaseCommand):
                 price=price,
                 image=image_url,
                 availability=availability,
+                category=category,
             )
 
         self.stdout.write(
