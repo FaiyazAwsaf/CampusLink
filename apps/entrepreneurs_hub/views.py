@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from .models import Product, Storefront
-from .serializers import ProductSerializer
+from .serializers import ProductSerializer, StorefrontSerializer
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView
@@ -64,12 +64,19 @@ class StorefrontAPIView(APIView):
         store_names = Storefront.objects.values_list("name", flat=True).distinct()
         return Response(store_names)
     
-
-
 class ProductCategoryAPIView(APIView):
     def get(self, request):
         category_names = Product.objects.values_list("category", flat=True).distinct().order_by("category")
         return Response(category_names)
+
+class StorefrontsAPIView(ListAPIView):
+
+    serializer_class = StorefrontSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+        queryset = Storefront.objects.all()
+        return queryset
     
 class RecentlyAddedProducts(APIView):
     def get(self, request):
