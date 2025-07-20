@@ -68,12 +68,22 @@
             placeholder="Search by name or category"
             class="bg-white border border-gray-300 rounded-lg px-4 py-2 w-full max-w-lg"
           />
+
           <button
             @click="applySearch"
             class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
           >
             Search
           </button>
+          <select
+            v-model="availabilityFilter"
+            class="w-full max-w-xs bg-white border border-gray-300 rounded-lg px-4 py-2"
+          >
+            <option value="" disabled hidden selected>Select Availability</option>
+            <option value="">All</option>
+            <option value="true">In Stock</option>
+            <option value="false">Out of Stock</option>
+          </select>
         </div>
 
         <!-- Products Grid -->
@@ -252,6 +262,7 @@ const totalPages = ref(1)
 const totalItems = ref(0)
 const pageSize = ref(12)
 const searchQuery = ref('')
+const availabilityFilter = ref('')
 
 const fetchItems = async () => {
   loading.value = true
@@ -259,7 +270,7 @@ const fetchItems = async () => {
 
   try {
     const response = await fetch(
-      `/api/cds/items/?page=${currentPage.value}&page_size=${pageSize.value}&sort_by=${sortOrder.value}&search=${encodeURIComponent(searchQuery.value)}`,
+      `/api/cds/items/?page=${currentPage.value}&page_size=${pageSize.value}&sort_by=${sortOrder.value}&search=${encodeURIComponent(searchQuery.value)}&availability=${availabilityFilter.value}`,
     )
     if (!response.ok) throw new Error(`Error: ${response.status} ${response.statusText}`)
 
@@ -293,8 +304,13 @@ const changePage = (page) => {
 }
 
 watch(sortOrder, () => {
-  currentPage.value = 1
   fetchItems()
+  currentPage.value = 1
+})
+
+watch(availabilityFilter, () => {
+  fetchItems()
+  currentPage.value = 1
 })
 
 // Computed values for pagination UI
