@@ -1,7 +1,7 @@
 <template>
     <div class="mb-8">
         <label for="category" class="block font-medium mb-1">Category:</label>
-            <select v-model="selected_category" @change="$emit('update:modelValue', $event.target.value); $emit('on-filter-change')" class="border p-2 rounded">
+            <select :value="modelValue" @change="$emit('update:modelValue', $event.target.value); $emit('on-filter-change')" class="border p-2 rounded">
                 <option value="">All</option>
                 <option 
                     v-for="category in categories"
@@ -22,8 +22,10 @@ defineProps({
 
     modelValue : {
         type : String,
-        default : '',
+        default : ''
     }
 })
+
+defineEmits(['update:modelValue', 'on-filter-change'])
 
 </script>

@@ -13,13 +13,13 @@
 
       <div class="mb-8">
         <label for="store" class="block font-medium mb-1">Store</label>
-          <select v-model="selected_store" @change="onFilterChange" class="border p-2 rounded">
+          <select v-model="selectedStore" @change="onFilterChange" class="border p-2 rounded">
             <option value="">All Stores</option>
             <option 
-              v-for="store in stores"
-                :key="store"
-                :value="store"
-            >{{ store }}</option>
+              v-for="storefront in storefronts"
+                :key="storefront.store_id"
+                :value="storefront.name"
+            >{{ storefront.name }}</option>
           </select>
       </div>
 
@@ -31,7 +31,7 @@
               :min="0"
               :max="1000"
               :step="10"
-              :tooltip="'hover'"
+              :tooltip="false"
               :lazy="true"
               :range="true"
               class="mt-2 custom-slider"
@@ -79,6 +79,54 @@
     </div>
 
     <div v-else>
+      <div class="relative">
+
+      <button
+        @click="scrollLeft"
+        class="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white backdrop-blur-sm p-3 rounded-full shadow-lg border border-gray-200 transition-all duration-200 hover:scale-105"
+      >
+        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+      </button>
+      
+        <div class="font-semibold text-xl text-gray-700">
+          Check out our storefronts
+        </div>
+
+        <div 
+          ref="carousel"
+          class="overflow-x-hidden whitespace-nowrap pl-4 pr-4 pb-8">
+
+          <div class="flex justify-center min-w-full p-4">
+            <div class="inline-flex space-x-4">
+              <div v-for="storefront in storefronts" 
+                :key="storefront.store_id" 
+                class="relative flex-col flex-shrink-0 justify-center w-40 m-4 bg-gray-100 rounded-lg text-center">
+                  <img
+                    :src="storefront.image"
+                    class="w-full h-full object-cover"
+                    @error="handleImageError"
+                  />
+
+                  <h3 class="font-semibold text-lg text-gray-700 p-2">
+                      {{ storefront.name }}
+                  </h3>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      <button
+        @click="scrollRight"
+        class="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white backdrop-blur-sm p-3 rounded-full shadow-lg border border-gray-200 transition-all duration-200 hover:scale-105"
+      >
+        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </button>
+      </div>
+
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6">
         <ProductCard
           v-for="product in products"
@@ -86,6 +134,7 @@
             :product="product"
             @add-to-cart="onAddToCart"
             @product-detail="handleProductDetail"
+            @handle-image-error="handleImageError"
         />
       </div>
     </div>
@@ -116,14 +165,13 @@ import Slider from '@vueform/slider'
 const products = ref([])
 const next_cursor = ref(null)
 const selected_category = ref('')
-const selected_store = ref('')
+const selectedStore = ref('')
 const price_range = ref([0,1000])
 const loading = ref(false)
 const allLoaded = ref(false)
 const selectedProduct = ref(null)
 const showModal = ref(false)
 const categories = ref([])
-const stores = ref([])
 const recentlyAdded = ref([])
 const popularProducts = ref([])
 const selectedAvailability = ref('')
@@ -132,6 +180,8 @@ const availabilityOptions = [
   {label : 'In Stock', value : 'true'},
   {label : 'Out of Stock', value : 'false'},
 ]
+const storefronts = ref([])
+const carousel = ref([])
 
 const loadProducts = async () => {
 
@@ -153,8 +203,8 @@ const loadProducts = async () => {
       params.append('category', selected_category.value)
     }
 
-    if(selected_store.value){
-      params.append('store', selected_store.value)
+    if(selectedStore.value){
+      params.append('store', selectedStore.value)
     }
 
     if(price_range.value){
@@ -188,11 +238,11 @@ const loadProducts = async () => {
 
 const fetchFilters = async () =>{
   try{
-    const storeRes = await fetch(`/api/entrepreneurs_hub/products/storefronts/`)
     const categoryRes = await fetch(`/api/entrepreneurs_hub/products/categories/`)
+    const storefrontRes = await fetch(`/api/entrepreneurs_hub/products/storefronts/`)
 
-    stores.value = await storeRes.json()
     categories.value = await categoryRes.json()
+    storefronts.value = await storefrontRes.json()
   }
   catch(err){
     console.log("Cannot fetch categories/store : ", err)
@@ -226,6 +276,14 @@ const handleScroll = () => {
   }
 }
 
+const scrollLeft = () => {
+  carousel.value.scrollBy({left : -300, behavior : 'smooth'})
+}
+
+const scrollRight = () => {
+  carousel.value.scrollBy({left : 300, behavior : 'smooth'})
+}
+
 function handleProductDetail(product){
   selectedProduct.value = product
   showModal.value = true
@@ -238,6 +296,10 @@ function closeModal(){
 
 function onAddToCart(product){
   console.log("Added ", product, " to cart")
+}
+
+const handleImageError = (event) =>{
+    event.target.src = '/Default.jpg'
 }
 
 onMounted(() => {
@@ -254,26 +316,10 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .custom-slider{
-  --slider-handle-size : 16px;
+  --slider-handle-size : 25px;
   --slider-height : 6px;
   --slider-connect-bg : #4b5563;
   --slider-handle-bg : #4b5563;
   --slider-tooltip-bg : #000000;
-
-
 }
-
-</style>
-
-<style scoped>
-.custom-slider{
-  --slider-handle-size : 16px;
-  --slider-height : 6px;
-  --slider-connect-bg : #4b5563;
-  --slider-handle-bg : #4b5563;
-  --slider-tooltip-bg : #000000;
-
-
-}
-
 </style>
