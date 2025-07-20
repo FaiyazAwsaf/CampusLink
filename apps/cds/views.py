@@ -19,9 +19,15 @@ def get_cds_items(request):
         category = request.GET.get('category')
         availability = request.GET.get('availability')
         sort_by = request.GET.get('sort_by') 
+        search_query = request.GET.get('search', '').strip()
 
 
         items_qs = CDS_Item.objects.all()
+        
+        if search_query:
+            items_qs = items_qs.filter(
+                Q(name__icontains=search_query) | Q(category__icontains=search_query)
+        )
 
         if sort_by == 'price_asc':
             items_qs = items_qs.order_by('price')

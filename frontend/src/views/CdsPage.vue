@@ -61,6 +61,21 @@
           </div>
         </div>
 
+        <div class="flex items-center space-x-2 mb-6">
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Search by name or category"
+            class="bg-white border border-gray-300 rounded-lg px-4 py-2 w-full max-w-lg"
+          />
+          <button
+            @click="applySearch"
+            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Search
+          </button>
+        </div>
+
         <!-- Products Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
           <div
@@ -236,6 +251,7 @@ const currentPage = ref(1)
 const totalPages = ref(1)
 const totalItems = ref(0)
 const pageSize = ref(12)
+const searchQuery = ref('')
 
 const fetchItems = async () => {
   loading.value = true
@@ -243,7 +259,7 @@ const fetchItems = async () => {
 
   try {
     const response = await fetch(
-      `/api/cds/items/?page=${currentPage.value}&page_size=${pageSize.value}&sort_by=${sortOrder.value}`,
+      `/api/cds/items/?page=${currentPage.value}&page_size=${pageSize.value}&sort_by=${sortOrder.value}&search=${encodeURIComponent(searchQuery.value)}`,
     )
     if (!response.ok) throw new Error(`Error: ${response.status} ${response.statusText}`)
 
@@ -261,6 +277,12 @@ const fetchItems = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const applySearch = () => {
+  currentPage.value = 1
+  fetchItems()
+  searchQuery.value = ''
 }
 
 const changePage = (page) => {
