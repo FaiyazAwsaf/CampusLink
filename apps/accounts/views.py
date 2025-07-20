@@ -10,8 +10,16 @@ from django.core.exceptions import ValidationError
 import json
 import os
 
-from .models import User
-from .decorators import login_required_json, admin_required, staff_required
+from .models import User, Roles
+from .decorators import (
+    login_required_json, 
+    admin_required, 
+    staff_required,
+    role_required,
+    cds_owner_required,
+    laundry_staff_required,
+    entrepreneur_required
+)
 from .permissions import PermissionManager, AuthorizationChecker
 from .validators import ValidationUtils
 
@@ -53,8 +61,15 @@ def register_user(request):
             user.image = validated_data['image']
             user.save()
 
-        # Assign user to appropriate group based on role (default is student)
-        PermissionManager.assign_user_to_group(user, 'Students')
+        # Assign user to appropriate group based on role
+        if user.role == Roles.CDS_OWNER:
+            PermissionManager.assign_user_to_group(user, 'CDS Owners')
+        elif user.role == Roles.LAUNDRY_STAFF:
+            PermissionManager.assign_user_to_group(user, 'Laundry Staff')
+        elif user.role == Roles.ENTREPRENEUR:
+            PermissionManager.assign_user_to_group(user, 'Entrepreneurs')
+        else:  # student (default)
+            PermissionManager.assign_user_to_group(user, 'Students')
 
         # Log the user in
         login(request, user)
@@ -228,6 +243,35 @@ def check_permission(request):
 
 @login_required_json
 @require_http_methods(["GET"])
+def get_user_role(request):
+    """
+    Get current user's role and permissions for frontend
+    """
+    try:
+        user = request.user
+        
+        return JsonResponse({
+            'success': True,
+            'user_role': {
+                'role': user.role,
+                'role_display': user.get_role_display(),
+                'permissions': user.get_permissions_list(),
+                'is_staff': user.is_staff,
+                'is_superuser': user.is_superuser,
+                'can_manage_users': user.is_superuser,
+                'can_access_admin': user.role in [Roles.CDS_OWNER, Roles.LAUNDRY_STAFF] or user.is_superuser
+            }
+        })
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+@login_required_json
+@require_http_methods(["GET"])
 def get_user_permissions(request):
     """
     Get all permissions for current user
@@ -244,7 +288,7 @@ def get_user_permissions(request):
 @require_http_methods(["GET"])
 def list_users(request):
     """
-    List all users (admin only)
+    List all users (superuser only)
     """
     users = User.objects.all().values(
         'id', 'email', 'name', 'phone', 'role', 
@@ -261,7 +305,7 @@ def list_users(request):
 @require_http_methods(["POST"])
 def change_user_role(request):
     """
-    Change user role (admin only)
+    Change user role (superuser only)
     """
     try:
         data = json.loads(request.body)
@@ -275,7 +319,7 @@ def change_user_role(request):
             }, status=400)
         
         # Validate role
-        valid_roles = [choice[0] for choice in User.ROLE_CHOICES]
+        valid_roles = [choice[0] for choice in Roles.CHOICES]
         if new_role not in valid_roles:
             return JsonResponse({
                 'success': False,
@@ -290,13 +334,13 @@ def change_user_role(request):
         # Update user groups
         user.groups.clear()  # Remove from all groups
         
-        if new_role == 'admin':
-            PermissionManager.assign_user_to_group(user, 'Administrators')
-        elif new_role == 'staff':
-            PermissionManager.assign_user_to_group(user, 'Staff')
-        elif new_role == 'entrepreneur':
+        if new_role == Roles.CDS_OWNER:
+            PermissionManager.assign_user_to_group(user, 'CDS Owners')
+        elif new_role == Roles.LAUNDRY_STAFF:
+            PermissionManager.assign_user_to_group(user, 'Laundry Staff')
+        elif new_role == Roles.ENTREPRENEUR:
             PermissionManager.assign_user_to_group(user, 'Entrepreneurs')
-        else:
+        else:  # student
             PermissionManager.assign_user_to_group(user, 'Students')
         
         return JsonResponse({
@@ -334,7 +378,7 @@ def change_user_role(request):
 @require_http_methods(["POST"])
 def toggle_user_status(request):
     """
-    Toggle user active/inactive status (admin only)
+    Toggle user active/inactive status (superuser only)
     """
     try:
         data = json.loads(request.body)
@@ -392,7 +436,7 @@ def toggle_user_status(request):
 @require_http_methods(["POST"])
 def update_profile(request):
     """
-    Update user profile (own profile only, unless admin)
+    Update user profile (users can only update their own profile, unless superuser)
     """
     try:
         target_user_id = request.POST.get('user_id')
@@ -401,22 +445,52 @@ def update_profile(request):
         if not target_user_id:
             target_user = request.user
         else:
-            target_user = User.objects.get(id=target_user_id)
-            
-            # Check if user can modify this profile
-            if not request.user.can_modify_user_data(target_user):
+            # Only superusers can update other users' profiles
+            if not request.user.is_superuser:
                 return JsonResponse({
                     'success': False,
-                    'error': 'Permission denied'
+                    'error': 'Permission denied: You can only update your own profile'
                 }, status=403)
+            
+            try:
+                target_user = User.objects.get(id=target_user_id)
+            except User.DoesNotExist:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'User not found'
+                }, status=404)
         
-        # Update allowed fields
-        if 'name' in request.POST:
-            target_user.name = request.POST.get('name')
-        if 'phone' in request.POST:
-            target_user.phone = request.POST.get('phone')
+        # Prepare update data for validation
+        update_data = {}
+        
+        # Only allow updating specific fields
+        allowed_fields = ['name', 'phone']
+        
+        for field in allowed_fields:
+            if field in request.POST:
+                update_data[field] = request.POST.get(field)
+        
+        # Handle image separately
         if 'image' in request.FILES:
-            target_user.image = request.FILES.get('image')
+            update_data['image'] = request.FILES.get('image')
+        
+        # Validate the update data
+        try:
+            validated_data = ValidationUtils.validate_profile_update_data(update_data, target_user)
+        except ValidationError as e:
+            return JsonResponse({
+                'success': False,
+                'errors': e.message_dict if hasattr(e, 'message_dict') else {'general': str(e)}
+            }, status=400)
+        
+        # Update the user with validated data
+        for field, value in validated_data.items():
+            if field != 'image':  # Handle image separately
+                setattr(target_user, field, value)
+        
+        # Handle image update
+        if 'image' in validated_data:
+            target_user.image = validated_data['image']
         
         target_user.save()
         
@@ -428,6 +502,7 @@ def update_profile(request):
                 'email': target_user.email,
                 'name': target_user.name,
                 'phone': target_user.phone,
+                'role': target_user.role,
                 'image': target_user.image.url if target_user.image else None
             }
         })
@@ -437,6 +512,54 @@ def update_profile(request):
             'success': False,
             'error': 'User not found'
         }, status=404)
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+@login_required_json
+@require_http_methods(["GET"])
+def get_user_profile(request, user_id=None):
+    """
+    Get user profile (own profile or any profile if superuser)
+    """
+    try:
+        # If no user_id provided, get own profile
+        if not user_id:
+            target_user = request.user
+        else:
+            # Only superusers can view other users' profiles
+            if not request.user.is_superuser:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Permission denied: You can only view your own profile'
+                }, status=403)
+            
+            try:
+                target_user = User.objects.get(id=user_id)
+            except User.DoesNotExist:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'User not found'
+                }, status=404)
+        
+        return JsonResponse({
+            'success': True,
+            'user': {
+                'id': target_user.id,
+                'email': target_user.email,
+                'name': target_user.name,
+                'phone': target_user.phone,
+                'role': target_user.role,
+                'is_verified': target_user.is_verified,
+                'is_active': target_user.is_active,
+                'created_at': target_user.created_at.isoformat() if target_user.created_at else None,
+                'image': target_user.image.url if target_user.image else None
+            }
+        })
     
     except Exception as e:
         return JsonResponse({

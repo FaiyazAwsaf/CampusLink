@@ -21,7 +21,7 @@ def login_required_json(view_func):
 
 def admin_required(view_func):
     """
-    Decorator to require admin privileges
+    Decorator to require superuser privileges (since admin role was removed)
     """
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
@@ -31,10 +31,10 @@ def admin_required(view_func):
                 'error': 'Authentication required'
             }, status=401)
         
-        if not request.user.is_admin:
+        if not request.user.is_superuser:
             return JsonResponse({
                 'success': False,
-                'error': 'Admin privileges required'
+                'error': 'Superuser privileges required'
             }, status=403)
         
         return view_func(request, *args, **kwargs)
@@ -134,3 +134,51 @@ def permission_required(permission_name):
             return view_func(request, *args, **kwargs)
         return wrapper
     return decorator
+
+
+def role_required(required_role):
+    """
+    Decorator to require specific role
+    """
+    def decorator(view_func):
+        @wraps(view_func)
+        def wrapper(request, *args, **kwargs):
+            if not request.user.is_authenticated:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Authentication required'
+                }, status=401)
+            
+            if not request.user.has_role(required_role):
+                return JsonResponse({
+                    'success': False,
+                    'error': f'Permission denied: {required_role} role required'
+                }, status=403)
+            
+            return view_func(request, *args, **kwargs)
+        return wrapper
+    return decorator
+
+
+def cds_owner_required(view_func):
+    """
+    Decorator to require CDS owner role
+    """
+    from .models import Roles
+    return role_required(Roles.CDS_OWNER)(view_func)
+
+
+def laundry_staff_required(view_func):
+    """
+    Decorator to require laundry staff role
+    """
+    from .models import Roles
+    return role_required(Roles.LAUNDRY_STAFF)(view_func)
+
+
+def entrepreneur_required(view_func):
+    """
+    Decorator to require entrepreneur role
+    """
+    from .models import Roles
+    return role_required(Roles.ENTREPRENEUR)(view_func)

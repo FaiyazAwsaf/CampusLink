@@ -38,16 +38,23 @@ class CustomUserManager(BaseUserManager):
         email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
         return re.match(email_pattern, email) is not None
 
+class Roles:
+    CDS_OWNER = 'cds_owner'
+    LAUNDRY_STAFF = 'laundry_staff'
+    STUDENT = 'student'
+    ENTREPRENEUR = 'entrepreneur'
+
+    CHOICES = [
+        (CDS_OWNER, 'CDS Owner'),
+        (LAUNDRY_STAFF, 'Laundry Staff'),
+        (STUDENT, 'Student'),
+        (ENTREPRENEUR, 'Entrepreneur'),
+    ]
 
 class User(AbstractUser):
     """Custom User model with email as the unique identifier"""
     
-    ROLE_CHOICES = [
-        ('admin', 'Admin'),
-        ('staff', 'Staff'),
-        ('student', 'Student'),
-        ('entrepreneur', 'Entrepreneur'),
-    ]
+    ROLE_CHOICES = Roles.CHOICES
     
     # Phone number validator
     phone_validator = RegexValidator(
@@ -79,7 +86,7 @@ class User(AbstractUser):
     )
     image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
     is_admin = models.BooleanField(default=False)
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='student')
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default=Roles.STUDENT)
     is_verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -144,7 +151,12 @@ class User(AbstractUser):
     
     def can_modify_user_data(self, target_user):
         """Check if this user can modify target user's data"""
-        return self == target_user or self.is_admin
+        # Users can only modify their own data, except superusers who can modify anyone's
+        if self == target_user:
+            return True
+        if self.is_superuser:
+            return True
+        return False
     
     def get_permissions_list(self):
         """Get list of permissions for this user"""
