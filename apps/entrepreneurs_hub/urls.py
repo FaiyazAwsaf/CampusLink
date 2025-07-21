@@ -8,4 +8,5 @@ urlpatterns = [
     path('products/storefronts/', StorefrontsAPIView.as_view(), name='storefront-list'),
     path('products/categories/', ProductCategoryAPIView.as_view(), name='product-categories'),
     path('products/recent/', RecentlyAddedProducts.as_view(), name='recent-products'),
+    path('search/', SearchViewAPI.as_view(), name='search-query')
 ]

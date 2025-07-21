@@ -77,6 +77,19 @@ class StorefrontsAPIView(ListAPIView):
     def get_queryset(self):
         queryset = Storefront.objects.all()
         return queryset
+
+class SearchViewAPI(APIView):
+    def get(self, request):
+        query = request.GET.get('query', '').strip()
+
+        if not query:
+            return Response([])
+
+        products = Product.objects.filter(name__icontains=query)
+        product_data = ProductSerializer(products, many=True).data
+        
+        return Response(product_data)
+
     
 class RecentlyAddedProducts(APIView):
     def get(self, request):

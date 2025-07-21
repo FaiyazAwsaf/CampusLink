@@ -50,6 +50,17 @@
         >
         </StockFilter>
 
+        <div class="mb-8">
+          <label for="search" class="block font-medium mb-1">Search Products</label>
+          <input
+            v-model="queryProducts"
+            @input="fetchSearchQuery"
+            type="text"
+            placeholder="Enter product name or related keywords..."
+            class="border p-2 rounded w-full"
+          />
+        </div>
+
 
     </div>
     
@@ -182,6 +193,7 @@ const availabilityOptions = [
 ]
 const storefronts = ref([])
 const carousel = ref([])
+const queryProducts = ref([])
 
 const loadProducts = async () => {
 
@@ -249,6 +261,30 @@ const fetchFilters = async () =>{
   }
 }
 
+const fetchSearchQuery = async () =>{
+
+  if(!queryProducts.value.trim()){
+    products.value = []
+    next_cursor.value = null
+    allLoaded.value = false
+    loadProducts()
+    return
+  }
+
+  const query = queryProducts.value.trim()
+
+  try{
+    const searchRes = await fetch(`/api/entrepreneurs_hub/search/?query=${encodeURIComponent(query)}`)
+    const searchResults = await searchRes.json()
+    
+    products.value = searchResults
+    allLoaded.value = true
+  }
+  catch(err){
+    console.log("Error fetching products:", err)
+  }
+}
+
 const fetchRecentlyAdded = async () =>{
   try{
     const res = await fetch(`/api/entrepreneurs_hub/products/recent/`)
@@ -260,6 +296,8 @@ const fetchRecentlyAdded = async () =>{
 }
 
 const onFilterChange = () => {
+  // Clear search when filters change
+  queryProducts.value = ''
   products.value = []
   next_cursor.value = null
   allLoaded.value = false
