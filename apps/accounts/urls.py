@@ -1,7 +1,21 @@
 from django.urls import path
+from rest_framework_simplejwt.views import TokenVerifyView
 from . import views
+from . import jwt_views
 
 urlpatterns = [
+    # JWT Authentication endpoints
+    path("auth/login/", jwt_views.LoginView.as_view(), name="jwt_login"),
+    path("auth/logout/", jwt_views.logout_view, name="jwt_logout"),
+    path("auth/register/", jwt_views.RegisterView.as_view(), name="jwt_register"),
+    path("auth/refresh/", jwt_views.TokenRefreshView.as_view(), name="jwt_refresh"),
+    path("auth/verify/", TokenVerifyView.as_view(), name="jwt_verify"),
+    path("auth/current-user/", jwt_views.current_user_view, name="jwt_current_user"),
+    path("auth/update-profile/", jwt_views.update_profile_view, name="jwt_update_profile"),
+    path("auth/change-password/", jwt_views.change_password_view, name="jwt_change_password"),
+    path("auth/verify-token/", jwt_views.verify_token_view, name="jwt_verify_token"),
+    
+    # Legacy endpoints (for backward compatibility)
     path("register/", views.register_user, name="register"),
     path("login/", views.login_user, name="login"),
     path("logout/", views.logout_user, name="logout"),
