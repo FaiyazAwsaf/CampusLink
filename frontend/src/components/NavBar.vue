@@ -147,15 +147,27 @@
                   <p class="px-4 py-2 text-m text-gray-900">Hello {{ currentUser.name }}!</p>
 
                   <MenuItem v-for="item in userNavigation" :key="item.name" v-slot="{ active }">
+                    <router-link
+                      v-if="item.isRoute"
+                      :to="item.href"
+                      :class="[
+                        active ? 'bg-gray-100 outline-hidden' : '',
+                        'block px-4 py-2 text-sm text-gray-700',
+                      ]"
+                    >
+                      {{ item.name }}
+                    </router-link>
                     <a
+                      v-else
                       :href="item.href"
                       @click.prevent="item.action && item.action()"
                       :class="[
                         active ? 'bg-gray-100 outline-hidden' : '',
                         'block px-4 py-2 text-sm text-gray-700',
                       ]"
-                      >{{ item.name }}</a
                     >
+                      {{ item.name }}
+                    </a>
                   </MenuItem>
                 </MenuItems>
               </transition>
@@ -169,9 +181,9 @@
 
 <script setup>
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
+import jwtAuthService from '@/utils/jwtAuthService.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -180,20 +192,37 @@ const router = useRouter()
 const isLoggedIn = ref(false)
 const currentUser = ref({})
 
+// Check authentication status
+const checkAuthStatus = () => {
+  if (jwtAuthService.isAuthenticated()) {
+    const user = jwtAuthService.getCurrentUser()
+    if (user) {
+      currentUser.value = user
+      isLoggedIn.value = true
+    } else {
+      isLoggedIn.value = false
+      currentUser.value = {}
+    }
+  } else {
+    isLoggedIn.value = false
+    currentUser.value = {}
+  }
+}
+
 // Check if user is logged in on component mount
 onMounted(() => {
-  const storedUser = localStorage.getItem('user')
-  if (storedUser) {
-    currentUser.value = JSON.parse(storedUser)
-    isLoggedIn.value = true
-  }
+  checkAuthStatus()
+})
+
+// Watch for authentication changes (e.g., login/logout from other components)
+watch(() => jwtAuthService.isAuthenticated(), () => {
+  checkAuthStatus()
 })
 
 // Handle logout
 const handleLogout = async () => {
   try {
-    await axios.post('/api/accounts/logout/')
-    localStorage.removeItem('user')
+    await jwtAuthService.logout()
     isLoggedIn.value = false
     currentUser.value = {}
     router.push('/')
@@ -203,7 +232,7 @@ const handleLogout = async () => {
 }
 
 const userNavigation = [
-  { name: 'Your Profile', href: '#' },
+  { name: 'Your Profile', href: '/profile', isRoute: true },
   { name: 'Settings', href: '#' },
   { name: 'Sign out', href: '#', action: handleLogout },
 ]

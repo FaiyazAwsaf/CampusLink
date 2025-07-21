@@ -179,8 +179,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { getCurrentUser } from '@/utils/authGuards'
-import axios from 'axios'
+import jwtAuthService from '@/utils/jwtAuthService.js'
 
 const user = ref(null)
 const isLoading = ref(false)
@@ -197,7 +196,7 @@ const formData = reactive({
 })
 
 onMounted(async () => {
-  user.value = getCurrentUser()
+  user.value = jwtAuthService.getCurrentUser()
   if (user.value) {
     formData.name = user.value.name || ''
     formData.phone = user.value.phone || ''
@@ -240,27 +239,22 @@ const updateProfile = async () => {
   errorMessage.value = ''
 
   try {
-    const updateData = new FormData()
-    updateData.append('name', formData.name)
-    updateData.append('phone', formData.phone)
+    const updateData = {
+      name: formData.name,
+      phone: formData.phone
+    }
     
     if (formData.image) {
-      updateData.append('image', formData.image)
+      updateData.image = formData.image
     }
 
-    const response = await axios.post('/api/accounts/update-profile/', updateData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
+    const result = await jwtAuthService.updateProfile(updateData)
 
-    if (response.data.success) {
+    if (result.success) {
       successMessage.value = 'Profile updated successfully!'
       
-      // Update local storage with new user data
-      const updatedUser = { ...user.value, ...response.data.user }
-      localStorage.setItem('user', JSON.stringify(updatedUser))
-      user.value = updatedUser
+      // User data is automatically updated in JWT service
+      user.value = result.user
       
       // Clear form state
       formData.image = null
@@ -269,22 +263,15 @@ const updateProfile = async () => {
         imageInput.value.value = ''
       }
     } else {
-      if (response.data.errors) {
-        errors.value = response.data.errors
+      if (result.errors) {
+        errors.value = result.errors
       } else {
-        errorMessage.value = response.data.error || 'Failed to update profile'
+        errorMessage.value = 'Failed to update profile'
       }
     }
   } catch (error) {
     console.error('Profile update error:', error)
-    
-    if (error.response?.data?.errors) {
-      errors.value = error.response.data.errors
-    } else if (error.response?.data?.error) {
-      errorMessage.value = error.response.data.error
-    } else {
-      errorMessage.value = 'Failed to update profile. Please try again.'
-    }
+    errorMessage.value = 'Failed to update profile. Please try again.'
   } finally {
     isLoading.value = false
   }

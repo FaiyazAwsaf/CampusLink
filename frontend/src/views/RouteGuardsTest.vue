@@ -95,6 +95,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import jwtAuthService from '@/utils/jwtAuthService.js'
 import { 
   isAuthenticated, 
   getCurrentUser, 
@@ -239,14 +240,18 @@ const addResult = (message, type = 'info') => {
 }
 
 const clearAuth = () => {
-  localStorage.removeItem('user')
+  jwtAuthService.clearAuth()
   updateCurrentUser()
   addResult('Authentication cleared', 'info')
 }
 
 const loginAs = (role) => {
   const user = testUsers[role]
-  localStorage.setItem('user', JSON.stringify(user))
+  // Simulate JWT auth by setting user data directly
+  jwtAuthService.setUser(user)
+  // Set a dummy token for testing purposes
+  jwtAuthService.setAccessToken('dummy_test_token')
+  jwtAuthService.setRefreshToken('dummy_refresh_token')
   updateCurrentUser()
   addResult(`Logged in as ${role}: ${user.name}`, 'success')
 }
