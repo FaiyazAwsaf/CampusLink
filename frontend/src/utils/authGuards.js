@@ -1,41 +1,33 @@
-// Authentication and authorization guards for Vue Router
+// Authentication and authorization guards for Vue Router with JWT
 import axios from 'axios'
+import jwtAuthService from './jwtAuthService.js'
 
 /**
- * Check if user is authenticated
+ * Check if user is authenticated with JWT
  */
 export function isAuthenticated() {
-  const user = localStorage.getItem('user')
-  return user !== null
+  return jwtAuthService.isAuthenticated()
 }
 
 /**
- * Get current user data
+ * Get current user data from JWT auth service
  */
 export function getCurrentUser() {
-  const user = localStorage.getItem('user')
-  return user ? JSON.parse(user) : null
+  return jwtAuthService.getCurrentUser()
 }
 
 /**
  * Check if user has specific role
  */
 export function hasRole(requiredRole) {
-  const user = getCurrentUser()
-  return user ? user.role === requiredRole : false
+  return jwtAuthService.hasRole(requiredRole)
 }
 
 /**
  * Check if user has specific permission
  */
 export async function hasPermission(permission) {
-  try {
-    const response = await axios.get(`/api/accounts/check-permission/?permission=${permission}`)
-    return response.data.has_permission
-  } catch (error) {
-    console.error('Permission check failed:', error)
-    return false
-  }
+  return jwtAuthService.hasPermission(permission)
 }
 
 /**
@@ -43,6 +35,8 @@ export async function hasPermission(permission) {
  */
 export function requireAuth(to, from, next) {
   if (isAuthenticated()) {
+    // Check if token needs refresh
+    jwtAuthService.refreshIfNeeded()
     next()
   } else {
     next('/login')
@@ -88,7 +82,7 @@ export function requireCDSOwner(to, from, next) {
   }
   
   const user = getCurrentUser()
-  if (user.role === 'CDS_OWNER' || user.is_superuser) {
+  if (user && (user.role === 'CDS_OWNER' || user.is_superuser)) {
     next()
   } else {
     next('/unauthorized')
