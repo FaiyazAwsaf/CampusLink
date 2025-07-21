@@ -64,15 +64,15 @@ class AuthorizationTestCase(TestCase):
         # Create test storefront and product
         self.storefront = Storefront.objects.create(
             name='Test Storefront',
-            description='Test Description',
             owner=self.entrepreneur
         )
         
         self.product = Product.objects.create(
             name='Test Product',
             description='Test Product Description',
+            category='Test Category',
             price=10.00,
-            storefront=self.storefront
+            store_id=self.storefront
         )
         
         self.client = Client()
@@ -82,16 +82,20 @@ class AuthorizationTestCase(TestCase):
         registration_data = {
             'email': 'newuser@test.com',
             'name': 'New User',
-            'password': 'newpass123',
-            'phone': '1234567890'
+            'password': 'TestPass123!',
+            'confirm_password': 'TestPass123!',
+            'phone': '01234567890'
         }
         
-        response = self.client.post('/api/accounts/register/', registration_data)
-        self.assertEqual(response.status_code, 200)
+        response = self.client.post('/api/accounts/auth/register/', registration_data)
+        self.assertEqual(response.status_code, 201)
         
         data = json.loads(response.content)
         self.assertTrue(data['success'])
         self.assertEqual(data['user']['role'], Roles.STUDENT)  # Default role
+        # Check JWT tokens are provided
+        self.assertIn('access', data)
+        self.assertIn('refresh', data)
 
     def test_user_login(self):
         """Test user login functionality"""
@@ -100,25 +104,27 @@ class AuthorizationTestCase(TestCase):
             'password': 'testpass123'
         }
         
-        response = self.client.post('/api/accounts/login/', 
+        response = self.client.post('/api/accounts/auth/login/', 
                                    json.dumps(login_data),
                                    content_type='application/json')
         self.assertEqual(response.status_code, 200)
         
         data = json.loads(response.content)
-        self.assertTrue(data['success'])
+        # Check JWT tokens are provided
+        self.assertIn('access', data)
+        self.assertIn('refresh', data)
         self.assertEqual(data['user']['role'], Roles.STUDENT)
 
     def test_role_based_access_control(self):
         """Test role-based access to different endpoints"""
         # Test student access to entrepreneur endpoints
         self.client.login(email='student@test.com', password='testpass123')
-        response = self.client.post('/api/entrepreneurs-hub/create-product/')
+        response = self.client.post('/api/entrepreneurs_hub/entrepreneur/products/create/')
         self.assertEqual(response.status_code, 403)
         
         # Test entrepreneur access to their endpoints
         self.client.login(email='entrepreneur@test.com', password='testpass123')
-        response = self.client.get('/api/entrepreneurs-hub/my-products/')
+        response = self.client.get('/api/entrepreneurs_hub/entrepreneur/products/')
         self.assertEqual(response.status_code, 200)
 
     def test_product_ownership_validation(self):
@@ -139,7 +145,7 @@ class AuthorizationTestCase(TestCase):
             'price': 15.00
         }
         
-        response = self.client.put(f'/api/entrepreneurs-hub/products/{self.product.id}/update/',
+        response = self.client.put(f'/api/entrepreneurs_hub/entrepreneur/products/{self.product.product_id}/update/',
                                   json.dumps(update_data),
                                   content_type='application/json')
         
@@ -168,16 +174,16 @@ class AuthorizationTestCase(TestCase):
         self.client.login(email='admin@test.com', password='testpass123')
         
         # Test user management endpoint
-        response = self.client.get('/api/accounts/list-users/')
+        response = self.client.get('/api/accounts/users/')
         self.assertEqual(response.status_code, 200)
         
         # Test role change endpoint
         role_change_data = {
             'user_id': self.student.id,
-            'new_role': Roles.ENTREPRENEUR
+            'role': Roles.ENTREPRENEUR
         }
         
-        response = self.client.post('/api/accounts/change-user-role/',
+        response = self.client.post('/api/accounts/change-role/',
                                    json.dumps(role_change_data),
                                    content_type='application/json')
         self.assertEqual(response.status_code, 200)
@@ -199,10 +205,10 @@ class AuthorizationTestCase(TestCase):
         self.student.save()
         
         self.client.login(email='student@test.com', password='testpass123')
-        response = self.client.get('/api/accounts/get-current-user/')
+        response = self.client.get('/api/accounts/current-user/')
         
-        # Should be forbidden for inactive user
-        self.assertEqual(response.status_code, 403)
+        # Should be unauthorized for inactive user (401 is correct since login fails)
+        self.assertEqual(response.status_code, 401)
 
     def test_database_level_constraints(self):
         """Test database-level validation constraints"""
@@ -216,15 +222,24 @@ class AuthorizationTestCase(TestCase):
         
         another_storefront = Storefront.objects.create(
             name='Another Storefront',
-            description='Another Description',
             owner=another_entrepreneur
         )
         
         # Try to create a product with wrong storefront ownership
         # This should be caught by model validation
         with self.assertRaises(Exception):
-            # This would violate the ownership constraint
-            pass
+            # Create a student user (non-entrepreneur) and try to create a storefront
+            student_user = User.objects.create_user(
+                email='student2@test.com',
+                name='Student Two',
+                password='testpass123',
+                role=Roles.STUDENT
+            )
+            # This should raise ValidationError since student is not an entrepreneur
+            Storefront.objects.create(
+                name='Invalid Storefront',
+                owner=student_user
+            )
 
 def run_authorization_tests():
     """Run all authorization tests"""
