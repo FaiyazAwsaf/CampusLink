@@ -126,7 +126,7 @@
                 
                 <div 
                   ref="carousel"
-                  class="overflow-x-auto scrollbar-hide mx-8"
+                  class="overflow-hidden mx-8"
                 >
                   <div class="flex space-x-4 pb-2">
                     <div v-for="storefront in storefronts" 
@@ -323,7 +323,7 @@ const loadProducts = async () => {
     const data = await res.json()
 
     products.value = data.results
-    totalPages.value = Math.ceil(data.count / 10) // 10 is page_size
+    totalPages.value = Math.ceil(data.count / 12) // 12 is page_size
 
   } catch (err) {
     console.error('Loading products failed', err)
