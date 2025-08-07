@@ -35,7 +35,7 @@
               :lazy="true"
               :range="true"
               class="mt-2 custom-slider"
-              @update:modelValue="onFilterChange"
+              @update:modelValue="debouncedFilterChnage"
           />
           <div class="flex justify-between text-sm text-gray-700 mt-2">
             <span>Min: {{ price_range[0] }}</span>
@@ -172,6 +172,7 @@ import CategoryFilter from '@/components/CategoryFilter.vue'
 import StockFilter from '@/components/StockFilter.vue'
 import '@vueform/slider/themes/default.css'
 import Slider from '@vueform/slider'
+import debounce from 'lodash.debounce'
 
 const products = ref([])
 const next_cursor = ref(null)
@@ -219,13 +220,13 @@ const loadProducts = async () => {
       params.append('store', selectedStore.value)
     }
 
-    if(price_range.value){
+    if(price_range.value && price_range.value.length === 2){
       params.append('min_price', price_range.value[0])
       params.append('max_price', price_range.value[1])
+    }
 
     if(selectedAvailability.value){
       params.append('availability', selectedAvailability.value)
-    }
     }
     
     const res = await fetch(`/api/entrepreneurs_hub/products/?${params.toString()}`)
@@ -296,13 +297,14 @@ const fetchRecentlyAdded = async () =>{
 }
 
 const onFilterChange = () => {
-  // Clear search when filters change
   queryProducts.value = ''
   products.value = []
   next_cursor.value = null
   allLoaded.value = false
   loadProducts()
 }
+
+const debouncedFilterChnage = debounce(onFilterChange, 300)
 
 const handleScroll = () => {
   const scrollTop = window.scrollY
