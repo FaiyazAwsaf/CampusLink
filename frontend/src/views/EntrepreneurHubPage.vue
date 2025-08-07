@@ -43,6 +43,11 @@
           </div>
         </div>
 
+        <PriceL2HFilter
+          v-model="sortOrder"
+          @on-filter-change="onFilterChange">
+        </PriceL2HFilter>
+
         <StockFilter
           v-model="selectedAvailability"
           @on-filter-change="onFilterChange"
@@ -148,6 +153,50 @@
             @handle-image-error="handleImageError"
         />
       </div>
+
+      <div v-if="totalPages > 1" class="flex justify-center items-center mt-8 space-x-2">
+        <button
+          @click="goToPage(currentPage - 1)"
+          :disabled="currentPage === 1"
+          :class="[
+            'px-4 py-2 rounded-lg font-medium transition-all duration-200',
+            currentPage === 1
+              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-gray-400'
+          ]"
+        >
+          Previous
+        </button>
+
+        <div class="flex space-x-1">
+          <button
+            v-for="page in visiblePages"
+            :key="page"
+            @click="goToPage(page)"
+            :class="[
+              'px-3 py-2 rounded-lg font-medium transition-all duration-200',
+              page === currentPage
+                ? 'bg-blue-600 text-white'
+                : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-gray-400'
+            ]"
+          >
+            {{ page }}
+          </button>
+        </div>
+
+        <button
+          @click="goToPage(currentPage + 1)"
+          :disabled="currentPage === totalPages"
+          :class="[
+            'px-4 py-2 rounded-lg font-medium transition-all duration-200',
+            currentPage === totalPages
+              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-gray-400'
+          ]"
+        >
+          Next
+        </button>
+      </div>
     </div>
 
     <ProductModal
@@ -164,10 +213,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import NavBar from '@/components/NavBar.vue'
 import ProductCard from '@/components/ProductCard.vue'
 import ProductModal from '@/components/ProductModal.vue'
+import PriceL2HFilter from '@/components/PriceL2HFilter.vue'
 import CategoryFilter from '@/components/CategoryFilter.vue'
 import StockFilter from '@/components/StockFilter.vue'
 import '@vueform/slider/themes/default.css'
@@ -175,15 +225,16 @@ import Slider from '@vueform/slider'
 import debounce from 'lodash.debounce'
 
 const products = ref([])
-const next_cursor = ref(null)
+const currentPage = ref(1)
+const totalPages = ref(1)
 const selected_category = ref('')
 const selectedStore = ref('')
 const price_range = ref([0,1000])
 const loading = ref(false)
-const allLoaded = ref(false)
 const selectedProduct = ref(null)
 const showModal = ref(false)
 const categories = ref([])
+const sortOrder = ref('')
 const recentlyAdded = ref([])
 const popularProducts = ref([])
 const selectedAvailability = ref('')
@@ -196,21 +247,41 @@ const storefronts = ref([])
 const carousel = ref([])
 const queryProducts = ref([])
 
-const loadProducts = async () => {
+const visiblePages = computed(() => {
+  const pages = []
+  const maxVisible = 5
+  let start = Math.max(1, currentPage.value - Math.floor(maxVisible / 2))
+  let end = Math.min(totalPages.value, start + maxVisible - 1)
 
-  if(loading.value || allLoaded.value) {
+  if (end - start + 1 < maxVisible) {
+    start = Math.max(1, end - maxVisible + 1)
+  }
+  
+  for (let i = start; i <= end; i++) {
+    pages.push(i)
+  }
+  
+  return pages
+})
+
+const goToPage = (page) => {
+  if (page >= 1 && page <= totalPages.value && page !== currentPage.value) {
+    currentPage.value = page
+    loadProducts()
+  }
+}
+
+const loadProducts = async () => {
+  if(loading.value) {
     return 
   }
 
   loading.value = true
 
   try {
-
     const params = new URLSearchParams()
 
-    if(next_cursor.value){
-      params.append('cursor', next_cursor.value)
-    }
+    params.append('page', currentPage.value)
 
     if(selected_category.value){
       params.append('category', selected_category.value)
@@ -225,6 +296,10 @@ const loadProducts = async () => {
       params.append('max_price', price_range.value[1])
     }
 
+    if(sortOrder.value){
+      params.append('ordering', sortOrder.value)
+    }
+
     if(selectedAvailability.value){
       params.append('availability', selectedAvailability.value)
     }
@@ -232,21 +307,14 @@ const loadProducts = async () => {
     const res = await fetch(`/api/entrepreneurs_hub/products/?${params.toString()}`)
     const data = await res.json()
 
-    products.value.push(...data.results)
+    products.value = data.results
+    totalPages.value = Math.ceil(data.count / 10) // 10 is page_size
 
-    next_cursor.value = data.next
-      ? new URL(data.next, window.location.origin).searchParams.get("cursor")
-      : null
-
-    if(!data.next){
-      allLoaded.value = true
-    }
-
-    } catch (err) {
-    console.error('Cursor loading failed', err)
-    } finally {
-      loading.value = false
-    }
+  } catch (err) {
+    console.error('Loading products failed', err)
+  } finally {
+    loading.value = false
+  }
 }
 
 const fetchFilters = async () =>{
@@ -263,11 +331,8 @@ const fetchFilters = async () =>{
 }
 
 const fetchSearchQuery = async () =>{
-
   if(!queryProducts.value.trim()){
-    products.value = []
-    next_cursor.value = null
-    allLoaded.value = false
+    currentPage.value = 1
     loadProducts()
     return
   }
@@ -279,7 +344,6 @@ const fetchSearchQuery = async () =>{
     const searchResults = await searchRes.json()
     
     products.value = searchResults
-    allLoaded.value = true
   }
   catch(err){
     console.log("Error fetching products:", err)
@@ -298,23 +362,14 @@ const fetchRecentlyAdded = async () =>{
 
 const onFilterChange = () => {
   queryProducts.value = ''
-  products.value = []
-  next_cursor.value = null
-  allLoaded.value = false
+  currentPage.value = 1
   loadProducts()
 }
 
+
 const debouncedFilterChnage = debounce(onFilterChange, 300)
 
-const handleScroll = () => {
-  const scrollTop = window.scrollY
-  const windowHeight = window.innerHeight
-  const fullHeight = document.body.offsetHeight
-
-  if(scrollTop + windowHeight >= fullHeight - 200){
-    loadProducts()
-  }
-}
+// Removed scroll-based pagination - using page numbers now
 
 const scrollLeft = () => {
   carousel.value.scrollBy({left : -300, behavior : 'smooth'})
@@ -343,13 +398,8 @@ const handleImageError = (event) =>{
 }
 
 onMounted(() => {
-  window.addEventListener('scroll', handleScroll)
   loadProducts()
   fetchFilters()
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener('scroll', handleScroll)
 })
 
 </script>

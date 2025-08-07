@@ -5,17 +5,18 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView
 from rest_framework.generics import RetrieveAPIView
-from rest_framework.pagination import CursorPagination
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
 # Create your views here.
-class ProductCursorPagination(CursorPagination):
+class ProductPagePagination(PageNumberPagination):
     page_size = 10
-    ordering = 'created_at'
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
 class ProductListAPIView(ListAPIView):
     serializer_class = ProductSerializer
-    pagination_class = ProductCursorPagination
+    pagination_class = ProductPagePagination
 
     def get_queryset(self):
         queryset = Product.objects.all()
@@ -25,6 +26,7 @@ class ProductListAPIView(ListAPIView):
         min_price = self.request.query_params.get('min_price')
         max_price = self.request.query_params.get('max_price')
         availability = self.request.query_params.get('availability')
+        ordering = self.request.query_params.get('ordering')
 
         if category:
             queryset = queryset.filter(category__iexact=category)
@@ -51,6 +53,11 @@ class ProductListAPIView(ListAPIView):
                 queryset = queryset.filter(availability=True)
             elif availability.lower() == 'false':
                 queryset = queryset.filter(availability=False)
+
+        if ordering in ['price', '-price']:
+            queryset = queryset.order_by(ordering)
+        else:
+            queryset = queryset.order_by('created_at')  # Default ordering
 
         return queryset
     
