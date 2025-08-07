@@ -1,213 +1,228 @@
 <template>
   <NavBar />
-  <div class="bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-200">
-    <div class="container mx-auto px-4 py-8 ">
+  <div class="min-h-screen bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-200">
+    <div class="container mx-auto px-4 py-8">
 
-    <div class="flex gap-4">
-      <CategoryFilter
-        v-model="selected_category"
-        @on-filter-change="onFilterChange"
-        :categories="categories"
-      >        
-      </CategoryFilter>
-
+      <!-- Search Bar at Top -->
       <div class="mb-8">
-        <label for="store" class="block font-medium mb-1">Store</label>
-          <select v-model="selectedStore" @change="onFilterChange" class="border p-2 rounded">
-            <option value="">All Stores</option>
-            <option 
-              v-for="storefront in storefronts"
-                :key="storefront.store_id"
-                :value="storefront.name"
-            >{{ storefront.name }}</option>
-          </select>
-      </div>
-
-      <div class="mb-8">
-        <label for="price_range" class="block font-medium mb-1">Price Range</label>
-          
-          <Slider
-            v-model="price_range"
-              :min="0"
-              :max="1000"
-              :step="10"
-              :tooltip="false"
-              :lazy="true"
-              :range="true"
-              class="mt-2 custom-slider"
-              @update:modelValue="debouncedFilterChnage"
-          />
-          <div class="flex justify-between text-sm text-gray-700 mt-2">
-            <span>Min: {{ price_range[0] }}</span>
-            <span>Max: {{ price_range[1] }}</span>
+        <div class="max-w-2xl mx-auto">
+          <label for="search" class="block font-medium mb-3 text-center text-gray-700">Search Products</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+            </div>
+            <input
+              v-model="queryProducts"
+              @input="fetchSearchQuery"
+              type="text"
+              placeholder="Enter product name or related keywords..."
+              class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg text-lg placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+            />
           </div>
         </div>
-
-        <PriceL2HFilter
-          v-model="sortOrder"
-          @on-filter-change="onFilterChange">
-        </PriceL2HFilter>
-
-        <StockFilter
-          v-model="selectedAvailability"
-          @on-filter-change="onFilterChange"
-          :availabilityOptions="availabilityOptions"
-        >
-        </StockFilter>
-
-        <div class="mb-8">
-          <label for="search" class="block font-medium mb-1">Search Products</label>
-          <input
-            v-model="queryProducts"
-            @input="fetchSearchQuery"
-            type="text"
-            placeholder="Enter product name or related keywords..."
-            class="border p-2 rounded w-full"
-          />
-        </div>
-
-
-    </div>
-    
-  <div>
-      <div v-if="loading" class="flex justify-center items-center py-12">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        <span class="ml-3 text-lg text-gray-600">Loading products...</span>
       </div>
-  </div>
 
-    <div v-if="products.length === 0 && !loading" class="text-center py-12">
-          <svg
-            class="w-16 h-16 text-gray-400 mx-auto mb-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-            ></path>
-          </svg>
-          <h3 class="text-lg font-semibold text-gray-600 mb-2">No Products Available</h3>
-          <p class="text-gray-500">Check back later for new products!</p>
-    </div>
+      <!-- Main Content -->
+      <div class="lg:flex lg:gap-6">
+        <!-- Sidebar with Filters -->
+        <div class="lg:w-64 lg:flex-shrink-0 mb-6 lg:mb-0">
+          <div class="bg-white rounded-lg shadow-md p-4 lg:sticky lg:top-4">
+            <h3 class="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Filters</h3>
+            
+            <div class="space-y-4">
+              <CategoryFilter
+                v-model="selected_category"
+                @on-filter-change="onFilterChange"
+                :categories="categories"
+              />
 
-    <div v-else>
-      <div class="relative">
-
-      <button
-        @click="scrollLeft"
-        class="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white backdrop-blur-sm p-3 rounded-full shadow-lg border border-gray-200 transition-all duration-200 hover:scale-105"
-      >
-        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-        </svg>
-      </button>
-      
-        <div class="font-semibold text-xl text-gray-700">
-          Check out our storefronts
-        </div>
-
-        <div 
-          ref="carousel"
-          class="overflow-x-hidden whitespace-nowrap pl-4 pr-4 pb-8">
-
-          <div class="flex justify-center min-w-full p-4">
-            <div class="inline-flex space-x-4">
-              <div v-for="storefront in storefronts" 
-                :key="storefront.store_id" 
-                class="relative flex-col flex-shrink-0 justify-center w-40 m-4 bg-gray-100 rounded-lg text-center">
-                  <img
-                    :src="storefront.image"
-                    class="w-full h-full object-cover"
-                    @error="handleImageError"
-                  />
-
-                  <h3 class="font-semibold text-lg text-gray-700 p-2">
-                      {{ storefront.name }}
-                  </h3>
+              <div>
+                <label for="store" class="block font-medium mb-2 text-gray-700">Store</label>
+                <select v-model="selectedStore" @change="onFilterChange" class="w-full border border-gray-300 p-2 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  <option value="">All Stores</option>
+                  <option 
+                    v-for="storefront in storefronts"
+                      :key="storefront.store_id"
+                      :value="storefront.name"
+                  >{{ storefront.name }}</option>
+                </select>
               </div>
+
+              <div>
+                <label for="price_range" class="block font-medium mb-2 text-gray-700">Price Range</label>
+                <Slider
+                  v-model="price_range"
+                    :min="0"
+                    :max="1000"
+                    :step="10"
+                    :tooltip="false"
+                    :lazy="true"
+                    :range="true"
+                    class="mt-2 custom-slider"
+                    @update:modelValue="debouncedFilterChnage"
+                />
+                <div class="flex justify-between text-sm text-gray-600 mt-2">
+                  <span>৳{{ price_range[0] }}</span>
+                  <span>৳{{ price_range[1] }}</span>
+                </div>
+              </div>
+
+              <PriceL2HFilter
+                v-model="sortOrder"
+                @on-filter-change="onFilterChange">
+              </PriceL2HFilter>
+
+              <StockFilter
+                v-model="selectedAvailability"
+                @on-filter-change="onFilterChange"
+                :availabilityOptions="availabilityOptions"
+              />
             </div>
           </div>
         </div>
 
-      <button
-        @click="scrollRight"
-        class="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white backdrop-blur-sm p-3 rounded-full shadow-lg border border-gray-200 transition-all duration-200 hover:scale-105"
-      >
-        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-        </svg>
-      </button>
-      </div>
+        <!-- Main Content Area -->
+        <div class="flex-1 min-w-0">
+          <div>
+            <div v-if="loading" class="flex justify-center items-center py-12">
+              <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+              <span class="ml-3 text-lg text-gray-600">Loading products...</span>
+            </div>
+          </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6">
-        <ProductCard
-          v-for="product in products"
-            :key="product.id"
-            :product="product"
-            @add-to-cart="onAddToCart"
-            @product-detail="handleProductDetail"
-            @handle-image-error="handleImageError"
-        />
-      </div>
+          <div v-if="products.length === 0 && !loading" class="text-center py-12 bg-white rounded-lg shadow-sm">
+            <svg
+              class="w-16 h-16 text-gray-400 mx-auto mb-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+              ></path>
+            </svg>
+            <h3 class="text-lg font-semibold text-gray-600 mb-2">No Products Available</h3>
+            <p class="text-gray-500">Check back later for new products!</p>
+          </div>
 
-      <div v-if="totalPages > 1" class="flex justify-center items-center mt-8 space-x-2">
-        <button
-          @click="goToPage(currentPage - 1)"
-          :disabled="currentPage === 1"
-          :class="[
-            'px-4 py-2 rounded-lg font-medium transition-all duration-200',
-            currentPage === 1
-              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-gray-400'
-          ]"
-        >
-          Previous
-        </button>
+          <div v-else class="space-y-8">
+            <!-- Storefronts Section -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+              <h2 class="text-xl font-semibold text-gray-800 mb-4">Featured Storefronts</h2>
+              <div class="relative">
+                <button
+                  @click="scrollLeft"
+                  class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white hover:bg-gray-50 p-2 rounded-full shadow-md border border-gray-200 transition-all duration-200"
+                >
+                  <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                  </svg>
+                </button>
+                
+                <div 
+                  ref="carousel"
+                  class="overflow-x-auto scrollbar-hide mx-8"
+                >
+                  <div class="flex space-x-4 pb-2">
+                    <div v-for="storefront in storefronts" 
+                      :key="storefront.store_id" 
+                      class="flex-shrink-0 w-32 bg-gray-50 rounded-lg text-center hover:shadow-md transition-shadow duration-200">
+                      <img
+                        :src="storefront.image"
+                        class="w-full h-24 object-cover rounded-t-lg"
+                        @error="handleImageError"
+                      />
+                      <h3 class="font-medium text-sm text-gray-700 p-2 truncate">
+                        {{ storefront.name }}
+                      </h3>
+                    </div>
+                  </div>
+                </div>
 
-        <div class="flex space-x-1">
-          <button
-            v-for="page in visiblePages"
-            :key="page"
-            @click="goToPage(page)"
-            :class="[
-              'px-3 py-2 rounded-lg font-medium transition-all duration-200',
-              page === currentPage
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-gray-400'
-            ]"
-          >
-            {{ page }}
-          </button>
+                <button
+                  @click="scrollRight"
+                  class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white hover:bg-gray-50 p-2 rounded-full shadow-md border border-gray-200 transition-all duration-200"
+                >
+                  <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Products Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <ProductCard
+                v-for="product in products"
+                  :key="product.id"
+                  :product="product"
+                  @add-to-cart="onAddToCart"
+                  @product-detail="handleProductDetail"
+                  @handle-image-error="handleImageError"
+              />
+            </div>
+
+            <!-- Pagination -->
+            <div v-if="totalPages > 1" class="flex justify-center items-center mt-8 space-x-2">
+              <button
+                @click="goToPage(currentPage - 1)"
+                :disabled="currentPage === 1"
+                :class="[
+                  'px-4 py-2 rounded-lg font-medium transition-all duration-200',
+                  currentPage === 1
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-gray-400 shadow-sm'
+                ]"
+              >
+                Previous
+              </button>
+
+              <div class="flex space-x-1">
+                <button
+                  v-for="page in visiblePages"
+                  :key="page"
+                  @click="goToPage(page)"
+                  :class="[
+                    'px-3 py-2 rounded-lg font-medium transition-all duration-200',
+                    page === currentPage
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-gray-400 shadow-sm'
+                  ]"
+                >
+                  {{ page }}
+                </button>
+              </div>
+
+              <button
+                @click="goToPage(currentPage + 1)"
+                :disabled="currentPage === totalPages"
+                :class="[
+                  'px-4 py-2 rounded-lg font-medium transition-all duration-200',
+                  currentPage === totalPages
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-gray-400 shadow-sm'
+                ]"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+
+          <ProductModal
+            v-if="showModal"
+            :key="selectedProduct.id"
+            :product="selectedProduct"
+            @close="closeModal"
+            @click.self="closeModal"
+          />
         </div>
-
-        <button
-          @click="goToPage(currentPage + 1)"
-          :disabled="currentPage === totalPages"
-          :class="[
-            'px-4 py-2 rounded-lg font-medium transition-all duration-200',
-            currentPage === totalPages
-              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-gray-400'
-          ]"
-        >
-          Next
-        </button>
       </div>
     </div>
-
-    <ProductModal
-      v-if="showModal"
-      :key="selectedProduct.id"
-      :product="selectedProduct"
-      @close="closeModal"
-      @click.self="closeModal"
-    />
-
-  </div>
   </div>
 
 </template>
