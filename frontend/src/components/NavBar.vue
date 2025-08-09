@@ -8,7 +8,7 @@
         <button
           v-if="showBackButton"
           class="text-white font-semibold mr-4 hover:underline focus:outline-none"
-          @click="router.push('/home')"
+          @click="router.push('/')"
         >
           ← Back to Home
         </button>
@@ -57,7 +57,7 @@
                     :src="getProfileImage(currentUser)"
                     alt="Profile"
                   />
-                  
+
                   <div
                     v-else
                     class="size-12 rounded-full border-2 border-white bg-indigo-300 flex items-center justify-center text-xl font-bold text-indigo-800"
@@ -143,9 +143,7 @@ const userNavigation = [
 
 function getProfileImage(user) {
   if (user?.image) {
-    return user.image.startsWith('http')
-      ? user.image
-      : `http://127.0.0.1:8000${user.image}`
+    return user.image.startsWith('http') ? user.image : `http://127.0.0.1:8000${user.image}`
   }
 }
 
