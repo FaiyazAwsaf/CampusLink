@@ -142,6 +142,10 @@ const handleLogout = async () => {
   }
 }
 
+const getProfilePage = () => {
+  router.push('/profile')
+}
+
 const userNavigation = [
   { name: 'Your Profile', href: '#' },
   { name: 'Sign out', href: '#', action: handleLogout },
