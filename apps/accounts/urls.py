@@ -6,5 +6,6 @@ urlpatterns = [
     path("login/", views.login_user, name="login"),
     path("logout/", views.logout_user, name="logout"),
     path("current-user/", views.get_current_user, name="current_user"),
+    path("update-profile/", views.update_profile, name="update_profile"),
     path("csrf/", views.get_csrf_token, name="get_csrf_token"),
 ]
