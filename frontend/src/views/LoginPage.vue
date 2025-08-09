@@ -129,6 +129,11 @@ const handleLogin = async () => {
       // Store user data in localStorage or state management
       localStorage.setItem('user', JSON.stringify(response.data.user))
 
+      // Refresh CSRF cookie after login (Django rotates CSRF at login)
+      try {
+        await axios.get('/api/accounts/csrf/')
+      } catch (_) {}
+
       // Redirect to home page
       router.push('/home')
     } else {
