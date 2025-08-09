@@ -22,9 +22,9 @@ CampusLink is a modern campus service management platform built with Django REST
 
 ## Tech Stack
 
-- **Backend:** Django, Django REST Framework, PostgreSQL
 - **Frontend:** Vue 3 (Composition API), Axios, Tailwind CSS
-- **Others:** Docker (optional), JWT Authentication, RESTful APIs
+- **Backend:** Django REST Framework
+- **Database:**  PostgreSQL
 
 ## Getting Started
 
