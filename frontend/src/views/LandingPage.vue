@@ -1,35 +1,7 @@
 <template>
+  <NavBar />
+
   <div class="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-50">
-    <!-- Header -->
-    <header class="sticky top-0 z-30 backdrop-blur bg-white/70 border-b border-white/40">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-2xl">
-            <img
-              src="https://w1.pngwing.com/pngs/614/143/png-transparent-cloud-symbol-logo-internet-cloud-computing-computer-network-campus-service-provider-recruitment.png"
-              alt=""
-            />
-          </div>
-          <span class="font-bold text-lg text-slate-800 tracking-tight">CampusLink</span>
-        </div>
-
-        <div class="flex items-center space-x-3">
-          <button
-            @click="goToLogin"
-            class="px-4 py-2 rounded-xl font-medium text-indigo-700 bg-white border border-indigo-200 hover:bg-indigo-50 transition"
-          >
-            Login
-          </button>
-          <button
-            @click="goToSignup"
-            class="px-4 py-2 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 shadow transition"
-          >
-            Create account
-          </button>
-        </div>
-      </div>
-    </header>
-
     <!-- Hero -->
     <section class="relative overflow-hidden">
       <div aria-hidden="true" class="absolute inset-0">
@@ -82,7 +54,7 @@
         <h2 class="text-2xl md:text-3xl font-bold text-slate-900">Jump in quickly</h2>
         <p class="text-slate-600 mt-1">Choose a module to get started.</p>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 w-full max-w-5xl">
+        <div class="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
           <!-- CDS -->
           <div
             class="starting:opacity-0 transition-all duration-500 bg-white rounded-2xl shadow-lg hover:shadow-2xl hover:ring-4 hover:ring-blue-400/40 p-6 flex flex-col items-center m-4"
@@ -147,20 +119,22 @@
         <h2 class="text-2xl md:text-3xl font-bold text-slate-900">Why CampusLink?</h2>
         <p class="text-slate-600 mt-1">Built for students, optimized for campus life.</p>
 
-        <div class="mt-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div class="p-6 rounded-2xl bg-white border border-slate-100 hover:shadow-md transition">
+        <div class="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div
+            class="p-6 rounded-2xl bg-cyan-100 border border-gray-300 hover:shadow-md transition"
+          >
             <h3 class="font-semibold text-slate-900">Single Sign-On</h3>
             <p class="text-slate-600 mt-2">One account for all campus modules.</p>
           </div>
-          <div class="p-6 rounded-2xl bg-white border border-slate-100 hover:shadow-md transition">
+          <div
+            class="p-6 rounded-2xl bg-cyan-100 border border-gray-300 hover:shadow-md transition"
+          >
             <h3 class="font-semibold text-slate-900">Fast & Lightweight</h3>
             <p class="text-slate-600 mt-2">Snappy UI with real-time updates.</p>
           </div>
-          <div class="p-6 rounded-2xl bg-white border border-slate-100 hover:shadow-md transition">
-            <h3 class="font-semibold text-slate-900">Flexible Payments</h3>
-            <p class="text-slate-600 mt-2">Cash or bKash where applicable.</p>
-          </div>
-          <div class="p-6 rounded-2xl bg-white border border-slate-100 hover:shadow-md transition">
+          <div
+            class="p-6 rounded-2xl bg-cyan-100 border border-gray-300 hover:shadow-md transition"
+          >
             <h3 class="font-semibold text-slate-900">Admin Friendly</h3>
             <p class="text-slate-600 mt-2">Category & price management in admin.</p>
           </div>
@@ -231,6 +205,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
+import NavBar from '@/components/NavBar.vue'
 
 const router = useRouter()
 const year = computed(() => new Date().getFullYear())

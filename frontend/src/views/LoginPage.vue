@@ -1,4 +1,5 @@
 <template>
+  <NavBar />
   <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full space-y-8">
       <div>
@@ -104,6 +105,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
+import NavBar from '@/components/NavBar.vue'
 
 const router = useRouter()
 
@@ -134,8 +136,7 @@ const handleLogin = async () => {
         await axios.get('/api/accounts/csrf/')
       } catch (_) {}
 
-      // Redirect to home page
-      router.push('/home')
+      router.push('/')
     } else {
       error.value = response.data.error || 'Login failed. Please try again.'
     }
