@@ -15,6 +15,16 @@ from .decorators import login_required_json, admin_required, staff_required
 from .permissions import PermissionManager, AuthorizationChecker
 from .validators import ValidationUtils
 
+
+def _abs_url(request, path_or_none):
+    """Build absolute URL for media paths."""
+    if not path_or_none:
+        return None
+    try:
+        return request.build_absolute_uri(path_or_none)
+    except Exception:
+        return path_or_none
+
 @csrf_exempt
 @require_http_methods(["POST"])
 def register_user(request):
@@ -71,7 +81,7 @@ def register_user(request):
                 'is_admin': user.is_admin,
                 'is_verified': user.is_verified,
                 'permissions': user.get_permissions_list(),
-                'image': user.image.url if user.image else None
+                'image': _abs_url(request, user.image.url if user.image else None)
             }
         })
 
@@ -141,7 +151,7 @@ def login_user(request):
                 'is_admin': user.is_admin,
                 'is_verified': user.is_verified,
                 'permissions': user.get_permissions_list(),
-                'image': user.image.url if user.image else None
+                'image': _abs_url(request, user.image.url if user.image else None)
             }
         })
     
@@ -192,7 +202,7 @@ def get_current_user(request):
                 'is_admin': user.is_admin,
                 'is_verified': user.is_verified,
                 'permissions': user.get_permissions_list(),
-                'image': user.image.url if user.image else None
+                'image': _abs_url(request, user.image.url if user.image else None)
             }
         })
     else:
@@ -428,7 +438,7 @@ def update_profile(request):
                 'email': target_user.email,
                 'name': target_user.name,
                 'phone': target_user.phone,
-                'image': target_user.image.url if target_user.image else None
+                'image': _abs_url(request, target_user.image.url if target_user.image else None)
             }
         })
     
