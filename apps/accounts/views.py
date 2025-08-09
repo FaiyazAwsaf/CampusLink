@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.contrib.auth import authenticate, login, logout
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
@@ -443,3 +443,12 @@ def update_profile(request):
             'success': False,
             'error': str(e)
         }, status=500)
+
+
+@ensure_csrf_cookie
+@require_http_methods(["GET"])
+def get_csrf_token(request):
+    """
+    Issue a CSRF cookie for frontend apps using session authentication.
+    """
+    return JsonResponse({'success': True, 'message': 'CSRF cookie set'})

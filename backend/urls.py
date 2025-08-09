@@ -25,6 +25,7 @@ urlpatterns = [
     path("api/cds/", include("apps.cds.urls")),
     path("api/entrepreneurs_hub/", include("apps.entrepreneurs_hub.urls")),
     path("api/accounts/", include("apps.accounts.urls")),
+    path("api/laundry/", include("apps.laundry.urls")),
 ]
 
 if settings.DEBUG:
