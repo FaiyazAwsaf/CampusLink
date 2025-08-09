@@ -147,8 +147,8 @@ const getProfilePage = () => {
 }
 
 const userNavigation = [
-  { name: 'Your Profile', href: '#' },
-  { name: 'Sign out', href: '#', action: handleLogout },
+  { name: 'Your Profile', action: getProfilePage },
+  { name: 'Sign out', action: handleLogout },
 ]
 
 function getProfileImage(user) {
