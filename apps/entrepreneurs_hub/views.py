@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView
 from rest_framework.generics import RetrieveAPIView
-from rest_framework.pagination import CursorPagination
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -18,13 +18,14 @@ from functools import wraps
 import json
 
 # Create your views here.
-class ProductCursorPagination(CursorPagination):
-    page_size = 10
-    ordering = 'created_at'
+class ProductPagePagination(PageNumberPagination):
+    page_size = 12
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
 class ProductListAPIView(ListAPIView):
     serializer_class = ProductSerializer
-    pagination_class = ProductCursorPagination
+    pagination_class = ProductPagePagination
 
     def get_queryset(self):
         queryset = Product.objects.all()
@@ -34,6 +35,7 @@ class ProductListAPIView(ListAPIView):
         min_price = self.request.query_params.get('min_price')
         max_price = self.request.query_params.get('max_price')
         availability = self.request.query_params.get('availability')
+        ordering = self.request.query_params.get('ordering')
 
         if category:
             queryset = queryset.filter(category__iexact=category)
@@ -61,6 +63,11 @@ class ProductListAPIView(ListAPIView):
             elif availability.lower() == 'false':
                 queryset = queryset.filter(availability=False)
 
+        if ordering in ['price', '-price']:
+            queryset = queryset.order_by(ordering)
+        else:
+            queryset = queryset.order_by('created_at')  # Default ordering
+
         return queryset
     
 class ProductDetailsAPIView(RetrieveAPIView):
@@ -86,6 +93,19 @@ class StorefrontsAPIView(ListAPIView):
     def get_queryset(self):
         queryset = Storefront.objects.all()
         return queryset
+
+class SearchViewAPI(APIView):
+    def get(self, request):
+        query = request.GET.get('query', '').strip()
+
+        if not query:
+            return Response([])
+
+        products = Product.objects.filter(name__icontains=query)
+        product_data = ProductSerializer(products, many=True).data
+        
+        return Response(product_data)
+
     
 class RecentlyAddedProducts(APIView):
     def get(self, request):

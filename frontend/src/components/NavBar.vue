@@ -1,21 +1,29 @@
 <template>
   <nav
-    class="sticky top-0 z-50 bg-gradient-to-r from-blue-800 to-indigo-900 shadow flex items-center px-6 py-1"
+    class="sticky top-0 z-50 bg-gradient-to-r from-blue-200 to-indigo-500 shadow flex items-center px-6 py-1"
   >
     <div class="container mx-auto px-4">
       <div class="flex items-center justify-between py-4">
         <!-- Back Button -->
         <button
           v-if="showBackButton"
-          class="text-white font-semibold mr-4 hover:underline focus:outline-none"
-          @click="router.push('/home')"
+          class="text-gray-900 font-semibold mr-4 hover:underline focus:outline-none"
+          @click="router.push('/')"
         >
           ← Back to Home
         </button>
 
         <!-- Title -->
         <div class="hidden sm:flex sm:items-center">
-          <h1 class="text-2xl font-bold text-white">{{ pageTitle }}</h1>
+          <div class="flex items-center space-x-3">
+            <img
+              v-if="showLogo"
+              class="w-10 h-10 rounded-2xl"
+              src="https://w1.pngwing.com/pngs/614/143/png-transparent-cloud-symbol-logo-internet-cloud-computing-computer-network-campus-service-provider-recruitment.png"
+              alt=""
+            />
+            <span class="font-bold text-lg text-slate-800 tracking-tight">{{ pageTitle }}</span>
+          </div>
         </div>
 
         <!-- Profile and Cart -->
@@ -98,8 +106,7 @@
               </a>
             </button>
 
-            <!-- Login/Register Buttons (when not logged in) -->
-            <div v-if="!isLoggedIn" class="flex space-x-2">
+            <div v-if="!isLoggedIn && showAccountButtons" class="flex space-x-2">
               <router-link
                 to="/login"
                 class="bg-blue-100 text-black text-sm font-semibold px-4 py-2 rounded-lg transition-colors duration-200 hover:bg-blue-500 hover:text-white active:bg-blue-700 active:text-white"
@@ -108,9 +115,9 @@
               </router-link>
               <router-link
                 to="/register"
-                class="bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors duration-200 hover:bg-indigo-700 active:bg-indigo-800"
+                class="bg-indigo-800 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors duration-200 hover:bg-indigo-700 active:bg-indigo-800"
               >
-                Register
+                Create Account
               </router-link>
             </div>
 
@@ -124,7 +131,7 @@
                     :src="getProfileImage(currentUser)"
                     alt="Profile"
                   />
-                  
+
                   <div
                     v-else
                     class="size-12 rounded-full border-2 border-white bg-indigo-300 flex items-center justify-center text-xl font-bold text-indigo-800"
@@ -231,6 +238,10 @@ const handleLogout = async () => {
   }
 }
 
+const getProfilePage = () => {
+  router.push('/profile')
+}
+
 const userNavigation = [
   { name: 'Your Profile', href: '/profile', isRoute: true },
   { name: 'Settings', href: '#' },
@@ -239,15 +250,15 @@ const userNavigation = [
 
 function getProfileImage(user) {
   if (user?.image) {
-    return user.image.startsWith('http')
-      ? user.image
-      : `http://127.0.0.1:8000${user.image}`
+    return user.image.startsWith('http') ? user.image : `http://127.0.0.1:8000${user.image}`
   }
 }
 
 // --- Dynamic Title ---
 const pageTitles = {
-  '/home': 'CampusLink',
+  '/': 'CampusLink',
+  '/login': 'Welcome to Campuslink',
+  '/register': 'Welcome to Campuslink',
   '/cds': 'Central Departmental Store',
   '/laundry': 'Laundry',
   '/entrepreneur-hub': 'Entrepreneur Hub',
@@ -255,11 +266,10 @@ const pageTitles = {
 const pageTitle = computed(() => pageTitles[route.path] || 'CampusLink')
 
 // Back button visibility based on route
-const showBackButton = computed(
-  () =>
-    route.path !== '/home' &&
-    route.path !== '/login' &&
-    route.path !== '/register' &&
-    route.path !== '/',
+const showBackButton = computed(() => route.path !== '/')
+
+const showLogo = computed(
+  () => route.path === '/' && route.path !== '/login' && route.path !== '/register',
 )
+const showAccountButtons = computed(() => route.path !== '/login' && route.path !== '/register')
 </script>

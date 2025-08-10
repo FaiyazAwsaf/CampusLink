@@ -1,6 +1,8 @@
 <template>
   <NavBar />
-  <div class="max-w-4xl mx-auto mt-10 p-6 bg-white rounded-xl shadow bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-200">
+  <div
+    class="max-w-4xl mx-auto mt-10 p-6 bg-white rounded-xl shadow bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-200"
+  >
     <h2 class="text-2xl font-bold mb-4 text-center text-indigo-800">Laundry Service</h2>
 
     <!-- Add Item Form -->
@@ -183,30 +185,15 @@
 
 <script setup>
 import NavBar from '@/components/NavBar.vue'
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import axios from 'axios'
+import { useRouter } from 'vue-router'
 
-// Sample categories with pricing (in a real app, this would come from an API)
-const categories = ref([
-  { id: 1, name: 'Shirt', wash_price: 30, ironing_price: 20 },
-  { id: 2, name: 'Pant', wash_price: 35, ironing_price: 25 },
-  { id: 3, name: 'Bedsheet', wash_price: 50, ironing_price: 30 },
-  { id: 4, name: 'Towel', wash_price: 20, ironing_price: 10 },
-  { id: 5, name: 'Suit', wash_price: 100, ironing_price: 50 },
-])
+const router = useRouter()
 
-// Current item being added
-const currentItem = ref({
-  category: '',
-  quantity: 1,
-  wash: false,
-  ironing: false,
-  subtotal: 0,
-})
-
-// Order items
+const categories = ref([])
+const currentItem = ref({})
 const orderItems = ref([])
-
-// Invoice state
 const invoiceGenerated = ref(false)
 const invoice = ref(null)
 
@@ -224,9 +211,26 @@ const totalOrderAmount = computed(() => {
 })
 
 // Methods
-function getCategoryName(categoryId) {
-  const category = categories.value.find((c) => c.id === categoryId)
-  return category ? category.name : ''
+async function fetchCategories() {
+  try {
+    const response = await axios.get('/api/laundry/categories/')
+    categories.value = response.data
+  } catch (error) {
+    console.error('Error fetching categories:', error)
+  }
+}
+const categoryNameById = computed(() => {
+  const map = Object.create(null)
+  for (const c of categories?.value || []) {
+    if (c && c.id != null) map[c.id] = c.name || ''
+  }
+  return map
+})
+
+function getCategoryName(categoryValue) {
+  if (categoryValue === undefined || categoryValue === null || categoryValue === '') return ''
+  if (typeof categoryValue === 'string') return categoryValue
+  return categoryNameById.value[categoryValue] || ''
 }
 
 function calculateItemSubtotal(item) {
@@ -268,36 +272,53 @@ function generateInvoice() {
     return
   }
 
-  // Calculate total items
-  const totalItems = orderItems.value.reduce((sum, item) => sum + item.quantity, 0)
+  try {
+    const orderData = {
+      items: orderItems.value.map((item) => ({
+        category: item.category,
+        quantity: item.quantity,
+        wash: item.wash,
+        ironing: item.ironing,
+        subtotal: item.subtotal,
+      })),
+      total_amount: totalOrderAmount.value,
+    }
 
-  // Calculate estimated delivery date
-  const baseDeliveryDays = 3
-  const additionalDays = Math.floor((totalItems - 1) / 10)
-  const deliveryDays = baseDeliveryDays + additionalDays
+    axios
+      .post('/api/laundry/orders/create/', orderData)
+      .then(async (response) => {
+        const created = response.data || {}
+        // Fetch full order details (includes items)
+        try {
+          const detailsResp = await axios.get(
+            `/api/laundry/orders/${encodeURIComponent(created.invoice_number)}/`,
+          )
+          const details = detailsResp.data || {}
 
-  const deliveryDate = new Date()
-  deliveryDate.setDate(deliveryDate.getDate() + deliveryDays)
+          invoice.value = {
+            invoice_number: created.invoice_number,
+            items: details.items || [],
+            total_amount: created.total_amount,
+            total_items: created.total_items,
+            status: created.status,
+            estimated_delivery_date: created.estimated_delivery_date,
+            created_at: created.created_at,
+          }
 
-  // Generate invoice number
-  const invoiceNumber = 'LDY-' + Math.random().toString(36).substring(2, 10).toUpperCase()
-
-  // Create invoice object
-  invoice.value = {
-    invoice_number: invoiceNumber,
-    items: [...orderItems.value],
-    total_amount: totalOrderAmount.value,
-    total_items: totalItems,
-    status: 'pending',
-    estimated_delivery_date: deliveryDate,
-    created_at: new Date(),
+          invoiceGenerated.value = true
+          orderItems.value = []
+        } catch (err) {
+          console.error('Error fetching order details:', err)
+          alert('Order created, but failed to load details. Please refresh and try again.')
+        }
+      })
+      .catch((error) => {
+        console.error('Error generating invoice:', error)
+        alert('Failed to generate invoice. Please try again.')
+      })
+  } catch (error) {
+    console.error('Error generating invoice:', error)
   }
-
-  invoiceGenerated.value = true
-
-  // In a real application, you would send this data to your backend API
-  // to create the order in the database
-  console.log('Order submitted:', invoice.value)
 }
 
 function formatDate(date) {
@@ -309,4 +330,15 @@ function formatDate(date) {
     day: 'numeric',
   })
 }
+onMounted(() => {
+  // Verify auth; if not logged in, send to login page
+  axios
+    .get('/api/accounts/current-user/')
+    .then(() => {
+      fetchCategories()
+    })
+    .catch(() => {
+      router.push({ name: 'login', query: { next: '/laundry' } })
+    })
+})
 </script>

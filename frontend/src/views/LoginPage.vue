@@ -1,4 +1,5 @@
 <template>
+  <NavBar />
   <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full space-y-8">
       <div>
@@ -103,6 +104,8 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
+import NavBar from '@/components/NavBar.vue'
 import jwtAuthService from '@/utils/jwtAuthService.js'
 
 const router = useRouter()

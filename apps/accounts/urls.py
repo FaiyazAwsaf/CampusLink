@@ -29,4 +29,5 @@ urlpatterns = [
     path("user-profile/<int:user_id>/", views.get_user_profile, name="get_user_profile_by_id"),
     path("toggle-status/", views.toggle_user_status, name="toggle_user_status"),
     path("update-profile/", views.update_profile, name="update_profile"),
+    path("csrf/", views.get_csrf_token, name="get_csrf_token"),
 ]

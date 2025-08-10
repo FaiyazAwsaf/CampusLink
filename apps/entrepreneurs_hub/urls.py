@@ -18,4 +18,7 @@ urlpatterns = [
     path('entrepreneur/products/<int:product_id>/update/', update_product, name='update_product'),
     path('entrepreneur/products/<int:product_id>/delete/', delete_product, name='delete_product'),
     path('entrepreneur/analytics/', get_entrepreneur_analytics, name='entrepreneur_analytics'),
+
+    #Search
+    path('search/', SearchViewAPI.as_view(), name='search-query')
 ]

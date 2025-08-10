@@ -119,6 +119,14 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",
 
 ]
+# Allow cookies/credentials over CORS (useful if proxy not used)
+CORS_ALLOW_CREDENTIALS = True
+
+# Trust frontend dev origins for CSRF checks
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
 
 # JWT Configuration
 from rest_framework_simplejwt.settings import api_settings
@@ -158,7 +166,6 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_OBTAIN_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenObtainSlidingSerializer',
     'SLIDING_TOKEN_REFRESH_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer',
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -207,3 +214,8 @@ AUTH_USER_MODEL = 'accounts.User'
 # Media files (User uploaded files)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Dev cookie settings
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False

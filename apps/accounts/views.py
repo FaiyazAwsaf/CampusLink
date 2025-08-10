@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.contrib.auth import authenticate, login, logout
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
@@ -22,6 +22,16 @@ from .decorators import (
 )
 from .permissions import PermissionManager, AuthorizationChecker
 from .validators import ValidationUtils
+
+
+def _abs_url(request, path_or_none):
+    """Build absolute URL for media paths."""
+    if not path_or_none:
+        return None
+    try:
+        return request.build_absolute_uri(path_or_none)
+    except Exception:
+        return path_or_none
 
 @csrf_exempt
 @require_http_methods(["POST"])
@@ -86,7 +96,7 @@ def register_user(request):
                 'is_admin': user.is_admin,
                 'is_verified': user.is_verified,
                 'permissions': user.get_permissions_list(),
-                'image': user.image.url if user.image else None
+                'image': _abs_url(request, user.image.url if user.image else None)
             }
         })
 
@@ -156,7 +166,7 @@ def login_user(request):
                 'is_admin': user.is_admin,
                 'is_verified': user.is_verified,
                 'permissions': user.get_permissions_list(),
-                'image': user.image.url if user.image else None
+                'image': _abs_url(request, user.image.url if user.image else None)
             }
         })
     
@@ -207,7 +217,7 @@ def get_current_user(request):
                 'is_admin': user.is_admin,
                 'is_verified': user.is_verified,
                 'permissions': user.get_permissions_list(),
-                'image': user.image.url if user.image else None
+                'image': _abs_url(request, user.image.url if user.image else None)
             }
         })
     else:
@@ -519,7 +529,6 @@ def update_profile(request):
             'error': str(e)
         }, status=500)
 
-
 @login_required_json
 @require_http_methods(["GET"])
 def get_user_profile(request, user_id=None):
@@ -566,3 +575,11 @@ def get_user_profile(request, user_id=None):
             'success': False,
             'error': str(e)
         }, status=500)
+    
+@ensure_csrf_cookie
+@require_http_methods(["GET"])
+def get_csrf_token(request):
+    """
+    Issue a CSRF cookie for frontend apps using session authentication.
+    """
+    return JsonResponse({'success': True, 'message': 'CSRF cookie set'})

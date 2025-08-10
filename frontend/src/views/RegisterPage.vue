@@ -1,4 +1,5 @@
 <template>
+  <NavBar />
   <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full space-y-8">
       <div>
@@ -23,7 +24,7 @@
               @blur="validateField('name')"
               :class="[
                 'appearance-none relative block w-full px-3 py-2 border placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm',
-                errors.name ? 'border-red-500' : 'border-gray-300'
+                errors.name ? 'border-red-500' : 'border-gray-300',
               ]"
               placeholder="Full Name"
             />
@@ -47,7 +48,7 @@
               @blur="validateField('email')"
               :class="[
                 'appearance-none relative block w-full px-3 py-2 border placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm',
-                errors.email ? 'border-red-500' : 'border-gray-300'
+                errors.email ? 'border-red-500' : 'border-gray-300',
               ]"
               placeholder="Email address"
             />
@@ -69,7 +70,7 @@
               @blur="validateField('password')"
               :class="[
                 'appearance-none relative block w-full px-3 py-2 border placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm',
-                errors.password ? 'border-red-500' : 'border-gray-300'
+                errors.password ? 'border-red-500' : 'border-gray-300',
               ]"
               placeholder="Password"
             />
@@ -79,7 +80,8 @@
               </ul>
             </div>
             <div class="mt-1 text-xs text-gray-500">
-              Password must be at least 8 characters with uppercase, lowercase, number, and special character.
+              Password must be at least 8 characters with uppercase, lowercase, number, and special
+              character.
             </div>
           </div>
           <div>
@@ -96,7 +98,7 @@
               @blur="validateField('confirmPassword')"
               :class="[
                 'appearance-none relative block w-full px-3 py-2 border placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm',
-                errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                errors.confirmPassword ? 'border-red-500' : 'border-gray-300',
               ]"
               placeholder="Confirm Password"
             />
@@ -116,7 +118,7 @@
               @blur="validateField('phone')"
               :class="[
                 'appearance-none relative block w-full px-3 py-2 border placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm',
-                errors.phone ? 'border-red-500' : 'border-gray-300'
+                errors.phone ? 'border-red-500' : 'border-gray-300',
               ]"
               placeholder="Phone Number (Optional)"
             />
@@ -125,9 +127,7 @@
                 <li v-for="error in errors.phone" :key="error">{{ error }}</li>
               </ul>
             </div>
-            <div class="mt-1 text-xs text-gray-500">
-              Format: +8801XXXXXXXXX or 01XXXXXXXXX
-            </div>
+            <div class="mt-1 text-xs text-gray-500">Format: +8801XXXXXXXXX or 01XXXXXXXXX</div>
           </div>
           <div>
             <label for="profile-image" class="block text-sm font-medium text-gray-700"
@@ -141,7 +141,7 @@
               @change="handleImageChange"
               :class="[
                 'appearance-none relative block w-full px-3 py-2 border text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm',
-                errors.image ? 'border-red-500' : 'border-gray-300'
+                errors.image ? 'border-red-500' : 'border-gray-300',
               ]"
             />
             <div v-if="errors.image" class="mt-1 text-sm text-red-600">
@@ -149,9 +149,7 @@
                 <li v-for="error in errors.image" :key="error">{{ error }}</li>
               </ul>
             </div>
-            <div class="mt-1 text-xs text-gray-500">
-              Optional. JPG, PNG, GIF up to 5MB
-            </div>
+            <div class="mt-1 text-xs text-gray-500">Optional. JPG, PNG, GIF up to 5MB</div>
             <!-- Image Preview -->
             <div v-if="imagePreview" class="mt-2">
               <img
@@ -219,6 +217,8 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
+import NavBar from '@/components/NavBar.vue'
 import jwtAuthService from '@/utils/jwtAuthService.js'
 
 const router = useRouter()
@@ -238,184 +238,195 @@ const isLoading = ref(false)
 // Form validation utilities
 const validateEmail = (email) => {
   const validationErrors = []
-  
+
   if (!email) {
     validationErrors.push('Email is required')
     return validationErrors
   }
-  
+
   email = email.trim().toLowerCase()
-  
+
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
   if (!emailRegex.test(email)) {
     validationErrors.push('Please enter a valid email address')
   }
-  
+
   return validationErrors
 }
 
 const validatePassword = (password) => {
   const validationErrors = []
-  
+
   if (!password) {
     validationErrors.push('Password is required')
     return validationErrors
   }
-  
+
   if (password.length < 8) {
     validationErrors.push('Password must be at least 8 characters long')
   }
-  
+
   if (!/[A-Z]/.test(password)) {
     validationErrors.push('Password must contain at least one uppercase letter')
   }
-  
+
   if (!/[a-z]/.test(password)) {
     validationErrors.push('Password must contain at least one lowercase letter')
   }
-  
+
   if (!/\d/.test(password)) {
     validationErrors.push('Password must contain at least one number')
   }
-  
+
   if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
     validationErrors.push('Password must contain at least one special character')
   }
-  
-  const weakPasswords = ['password', '12345678', 'qwerty', 'abc123', 'password123', '123456789', 'admin', 'user']
+
+  const weakPasswords = [
+    'password',
+    '12345678',
+    'qwerty',
+    'abc123',
+    'password123',
+    '123456789',
+    'admin',
+    'user',
+  ]
   if (weakPasswords.includes(password.toLowerCase())) {
     validationErrors.push('Password is too common. Please choose a stronger password')
   }
-  
+
   return validationErrors
 }
 
 const validateName = (name) => {
   const validationErrors = []
-  
+
   if (!name) {
     validationErrors.push('Name is required')
     return validationErrors
   }
-  
+
   name = name.trim()
-  
+
   if (name.length < 2) {
     validationErrors.push('Name must be at least 2 characters long')
   }
-  
+
   if (name.length > 255) {
     validationErrors.push('Name must be less than 255 characters long')
   }
-  
+
   if (!/^[a-zA-Z\s.]+$/.test(name)) {
     validationErrors.push('Name can only contain letters, spaces, and dots')
   }
-  
+
   if (name.includes('  ')) {
     validationErrors.push('Name cannot contain consecutive spaces')
   }
-  
+
   if (name.startsWith('.') || name.endsWith('.')) {
     validationErrors.push('Name cannot start or end with a dot')
   }
-  
+
   return validationErrors
 }
 
 const validatePhone = (phone) => {
   const validationErrors = []
-  
+
   if (!phone) {
     return validationErrors // Phone is optional
   }
-  
+
   const phoneClean = phone.replace(/[\s-]/g, '')
   const phoneRegex = /^(\+88)?01[0-9]{9}$/
-  
+
   if (!phoneRegex.test(phoneClean)) {
     validationErrors.push('Phone number must be in the format: +8801XXXXXXXXX or 01XXXXXXXXX')
   }
-  
+
   return validationErrors
 }
 
 const validateImage = (file) => {
   const validationErrors = []
-  
+
   if (!file) {
     return validationErrors // Image is optional
   }
-  
+
   const maxSize = 5 * 1024 * 1024 // 5MB
   if (file.size > maxSize) {
     validationErrors.push('Image file size cannot exceed 5MB')
   }
-  
+
   const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif']
   if (!allowedTypes.includes(file.type)) {
     validationErrors.push('Only JPG, JPEG, PNG, and GIF image files are allowed')
   }
-  
+
   return validationErrors
 }
 
 // Validate entire form
 const validateForm = () => {
   const formErrors = {}
-  
+
   // Validate email
   const emailErrors = validateEmail(email.value)
   if (emailErrors.length > 0) {
     formErrors.email = emailErrors
   }
-  
+
   // Validate password
   const passwordErrors = validatePassword(password.value)
   if (passwordErrors.length > 0) {
     formErrors.password = passwordErrors
   }
-  
+
   // Validate confirm password
   if (password.value !== confirmPassword.value) {
     formErrors.confirmPassword = ['Passwords do not match']
   }
-  
+
   // Validate name
   const nameErrors = validateName(name.value)
   if (nameErrors.length > 0) {
     formErrors.name = nameErrors
   }
-  
+
   // Validate phone
   const phoneErrors = validatePhone(phone.value)
   if (phoneErrors.length > 0) {
     formErrors.phone = phoneErrors
   }
-  
+
   // Validate image
   const imageErrors = validateImage(image.value)
   if (imageErrors.length > 0) {
     formErrors.image = imageErrors
   }
-  
+
   return formErrors
 }
 
 // Form validation computed property
 const isFormValid = computed(() => {
   const formErrors = validateForm()
-  return Object.keys(formErrors).length === 0 && 
-         name.value.trim() !== '' && 
-         email.value.trim() !== '' && 
-         password.value.trim() !== '' && 
-         confirmPassword.value.trim() !== ''
+  return (
+    Object.keys(formErrors).length === 0 &&
+    name.value.trim() !== '' &&
+    email.value.trim() !== '' &&
+    password.value.trim() !== '' &&
+    confirmPassword.value.trim() !== ''
+  )
 })
 
 // Real-time validation
 const validateField = (field) => {
   const currentErrors = { ...errors.value }
-  
+
   switch (field) {
     case 'email':
       const emailErrors = validateEmail(email.value)
@@ -457,7 +468,7 @@ const validateField = (field) => {
       }
       break
   }
-  
+
   errors.value = currentErrors
 }
 
@@ -465,7 +476,7 @@ const validateField = (field) => {
 const formatFieldName = (fieldName) => {
   return fieldName
     .replace(/([A-Z])/g, ' $1')
-    .replace(/^./, str => str.toUpperCase())
+    .replace(/^./, (str) => str.toUpperCase())
     .replace('Email', 'Email Address')
     .replace('ConfirmPassword', 'Confirm Password')
     .replace('Phone', 'Phone Number')
@@ -484,12 +495,12 @@ const handleImageChange = (event) => {
       errors.value = currentErrors
       return
     }
-    
+
     // Clear image errors if validation passes
     const currentErrors = { ...errors.value }
     delete currentErrors.image
     errors.value = currentErrors
-    
+
     image.value = file
     // Create preview URL
     imagePreview.value = URL.createObjectURL(file)
@@ -532,7 +543,7 @@ const handleRegister = async () => {
     if (result.success) {
       // JWT tokens and user data are automatically stored
       // Redirect to home page
-      router.push('/home')
+      router.push('/')
     } else {
       // Handle validation errors from backend
       if (result.errors) {
@@ -543,7 +554,15 @@ const handleRegister = async () => {
     }
   } catch (err) {
     console.error('Registration error:', err)
-    error.value = 'Registration failed. Please try again.'
+
+    // Handle backend validation errors
+    if (err.response?.data?.errors) {
+      errors.value = err.response.data.errors
+    } else if (err.response?.data?.error) {
+      error.value = err.response.data.error
+    } else {
+      error.value = 'Registration failed. Please try again.'
+    }
   } finally {
     isLoading.value = false
   }
