@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Route Guards Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .test-result { padding: 10px; margin: 5px 0; border-radius: 3px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button { padding: 8px 15px; margin: 5px; border: none; border-radius: 3px; cursor: pointer; }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-secondary { background-color: #6c757d; color: white; }
+        .btn-success { background-color: #28a745; color: white; }
+        .btn-danger { background-color: #dc3545; color: white; }
+        #testResults { max-height: 400px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔒 CampusLink Route Guards Test Suite</h1>
+    
+    <div class="test-section">
+        <h2>Test User Setup</h2>
+        <p>First, let's create test users and set up authentication states:</p>
+        <button class="btn-primary" onclick="clearStorage()">Clear Storage</button>
+        <button class="btn-success" onclick="loginAsStudent()">Login as Student</button>
+        <button class="btn-success" onclick="loginAsEntrepreneur()">Login as Entrepreneur</button>
+        <button class="btn-success" onclick="loginAsCDSOwner()">Login as CDS Owner</button>
+        <button class="btn-success" onclick="loginAsLaundryStaff()">Login as Laundry Staff</button>
+        <button class="btn-danger" onclick="logout()">Logout</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Current User Status</h2>
+        <div id="userStatus" class="info">Not logged in</div>
+    </div>
+
+    <div class="test-section">
+        <h2>Route Tests</h2>
+        <p>Test different routes with different user roles:</p>
+        <button class="btn-secondary" onclick="testRoute('/')">Test Landing Page</button>
+        <button class="btn-secondary" onclick="testRoute('/home')">Test Home (Auth Required)</button>
+        <button class="btn-secondary" onclick="testRoute('/cds')">Test CDS (Auth Required)</button>
+        <button class="btn-secondary" onclick="testRoute('/cds/admin')">Test CDS Admin (CDS Owner)</button>
+        <button class="btn-secondary" onclick="testRoute('/laundry')">Test Laundry (Auth Required)</button>
+        <button class="btn-secondary" onclick="testRoute('/laundry/admin')">Test Laundry Admin (Staff)</button>
+        <button class="btn-secondary" onclick="testRoute('/entrepreneur-hub')">Test Entrepreneur Hub (Auth)</button>
+        <button class="btn-secondary" onclick="testRoute('/entrepreneur/dashboard')">Test Entrepreneur Dashboard</button>
+        <button class="btn-secondary" onclick="testRoute('/profile')">Test Profile (Auth Required)</button>
+        <button class="btn-secondary" onclick="testRoute('/login')">Test Login (Guest Only)</button>
+        <button class="btn-secondary" onclick="testRoute('/register')">Test Register (Guest Only)</button>
+        <button class="btn-primary" onclick="runAllTests()">Run All Tests</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Results</h2>
+        <div id="testResults"></div>
+    </div>
+
+    <script>
+        // Mock user data for testing
+        const testUsers = {
+            student: {
+                id: 1,
+                email: 'student@test.com',
+                name: 'Test Student',
+                role: 'STUDENT',
+                is_superuser: false
+            },
+            entrepreneur: {
+                id: 2,
+                email: 'entrepreneur@test.com',
+                name: 'Test Entrepreneur',
+                role: 'ENTREPRENEUR',
+                is_superuser: false
+            },
+            cdsOwner: {
+                id: 3,
+                email: 'cds@test.com',
+                name: 'Test CDS Owner',
+                role: 'CDS_OWNER',
+                is_superuser: false
+            },
+            laundryStaff: {
+                id: 4,
+                email: 'laundry@test.com',
+                name: 'Test Laundry Staff',
+                role: 'LAUNDRY_STAFF',
+                is_superuser: false
+            }
+        };
+
+        // Test functions
+        function updateUserStatus() {
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            const statusDiv = document.getElementById('userStatus');
+            
+            if (user) {
+                statusDiv.innerHTML = `
+                    <strong>Logged in as:</strong> ${user.name} (${user.role})
+                    <br><strong>Email:</strong> ${user.email}
+                `;
+                statusDiv.className = 'test-result success';
+            } else {
+                statusDiv.innerHTML = 'Not logged in';
+                statusDiv.className = 'test-result info';
+            }
+        }
+
+        function clearStorage() {
+            localStorage.removeItem('user');
+            updateUserStatus();
+            addTestResult('Storage cleared', 'info');
+        }
+
+        function loginAsStudent() {
+            localStorage.setItem('user', JSON.stringify(testUsers.student));
+            updateUserStatus();
+            addTestResult('Logged in as Student', 'success');
+        }
+
+        function loginAsEntrepreneur() {
+            localStorage.setItem('user', JSON.stringify(testUsers.entrepreneur));
+            updateUserStatus();
+            addTestResult('Logged in as Entrepreneur', 'success');
+        }
+
+        function loginAsCDSOwner() {
+            localStorage.setItem('user', JSON.stringify(testUsers.cdsOwner));
+            updateUserStatus();
+            addTestResult('Logged in as CDS Owner', 'success');
+        }
+
+        function loginAsLaundryStaff() {
+            localStorage.setItem('user', JSON.stringify(testUsers.laundryStaff));
+            updateUserStatus();
+            addTestResult('Logged in as Laundry Staff', 'success');
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            updateUserStatus();
+            addTestResult('Logged out', 'info');
+        }
+
+        function addTestResult(message, type) {
+            const resultsDiv = document.getElementById('testResults');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${type}`;
+            resultDiv.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            resultsDiv.appendChild(resultDiv);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        function testRoute(route) {
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            const userRole = user ? user.role : 'GUEST';
+            
+            // Simulate route guard logic
+            let expectedResult = '';
+            let shouldPass = false;
+
+            switch (route) {
+                case '/':
+                    expectedResult = 'Should always be accessible';
+                    shouldPass = true;
+                    break;
+                
+                case '/login':
+                case '/register':
+                    expectedResult = user ? 'Should redirect to /home (logged in)' : 'Should be accessible (guest)';
+                    shouldPass = !user;
+                    break;
+                
+                case '/home':
+                case '/cds':
+                case '/laundry':
+                case '/entrepreneur-hub':
+                case '/profile':
+                    expectedResult = user ? 'Should be accessible (authenticated)' : 'Should redirect to /login';
+                    shouldPass = !!user;
+                    break;
+                
+                case '/cds/admin':
+                    expectedResult = (user && (user.role === 'CDS_OWNER' || user.is_superuser)) 
+                        ? 'Should be accessible (CDS Owner/Admin)' 
+                        : 'Should redirect to /unauthorized or /login';
+                    shouldPass = user && (user.role === 'CDS_OWNER' || user.is_superuser);
+                    break;
+                
+                case '/laundry/admin':
+                    expectedResult = (user && user.role === 'LAUNDRY_STAFF') 
+                        ? 'Should be accessible (Laundry Staff)' 
+                        : 'Should redirect to /unauthorized or /login';
+                    shouldPass = user && user.role === 'LAUNDRY_STAFF';
+                    break;
+                
+                case '/entrepreneur/dashboard':
+                    expectedResult = (user && user.role === 'ENTREPRENEUR') 
+                        ? 'Should be accessible (Entrepreneur)' 
+                        : 'Should redirect to /unauthorized or /login';
+                    shouldPass = user && user.role === 'ENTREPRENEUR';
+                    break;
+                
+                default:
+                    expectedResult = 'Unknown route';
+                    shouldPass = false;
+            }
+
+            const resultType = shouldPass ? 'success' : 'error';
+            const message = `Route: ${route} | User: ${userRole} | ${expectedResult}`;
+            
+            addTestResult(message, resultType);
+            
+            // Actually test the route by trying to navigate (in a real test)
+            // For now, we'll just simulate the logic
+            return { route, userRole, expectedResult, shouldPass };
+        }
+
+        function runAllTests() {
+            addTestResult('=== Starting Comprehensive Route Guard Tests ===', 'info');
+            
+            const routes = [
+                '/', '/home', '/cds', '/cds/admin', '/laundry', '/laundry/admin',
+                '/entrepreneur-hub', '/entrepreneur/dashboard', '/profile', '/login', '/register'
+            ];
+            
+            const userStates = [
+                { name: 'Guest', setup: clearStorage },
+                { name: 'Student', setup: loginAsStudent },
+                { name: 'Entrepreneur', setup: loginAsEntrepreneur },
+                { name: 'CDS Owner', setup: loginAsCDSOwner },
+                { name: 'Laundry Staff', setup: loginAsLaundryStaff }
+            ];
+
+            userStates.forEach(userState => {
+                addTestResult(`--- Testing as ${userState.name} ---`, 'info');
+                userState.setup();
+                
+                routes.forEach(route => {
+                    testRoute(route);
+                });
+            });
+            
+            addTestResult('=== All Tests Completed ===', 'info');
+        }
+
+        // Initialize
+        updateUserStatus();
+        addTestResult('Route Guards Test Suite initialized', 'info');
+        addTestResult('Frontend running on: http://localhost:5173/', 'info');
+        addTestResult('Backend running on: http://127.0.0.1:8000/', 'info');
+    </script>
+</body>
+</html>

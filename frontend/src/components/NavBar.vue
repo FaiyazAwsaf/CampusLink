@@ -29,6 +29,73 @@
         <!-- Profile and Cart -->
         <div class="hidden md:block">
           <div class="ml-4 flex items-center md:ml-6">
+            <!-- Role-based Navigation (when logged in) -->
+            <div v-if="isLoggedIn" class="flex items-center space-x-4 mr-4">
+              <!-- Home -->
+              <router-link
+                to="/home"
+                class="text-white hover:text-blue-200 text-sm font-medium"
+              >
+                Home
+              </router-link>
+              
+              <!-- Services -->
+              <router-link
+                to="/cds"
+                class="text-white hover:text-blue-200 text-sm font-medium"
+              >
+                CDS
+              </router-link>
+              
+              <router-link
+                to="/laundry"
+                class="text-white hover:text-blue-200 text-sm font-medium"
+              >
+                Laundry
+              </router-link>
+              
+              <router-link
+                to="/entrepreneur-hub"
+                class="text-white hover:text-blue-200 text-sm font-medium"
+              >
+                Entrepreneur Hub
+              </router-link>
+              
+              <!-- Admin Links (Role-based) -->
+              <router-link
+                v-if="currentUser?.role === 'CDS_OWNER' || currentUser?.is_superuser"
+                to="/cds/admin"
+                class="text-yellow-300 hover:text-yellow-100 text-sm font-medium"
+              >
+                CDS Admin
+              </router-link>
+              
+              <router-link
+                v-if="currentUser?.role === 'LAUNDRY_STAFF'"
+                to="/laundry/admin"
+                class="text-purple-300 hover:text-purple-100 text-sm font-medium"
+              >
+                Laundry Admin
+              </router-link>
+              
+              <router-link
+                v-if="currentUser?.role === 'ENTREPRENEUR'"
+                to="/entrepreneur/dashboard"
+                class="text-green-300 hover:text-green-100 text-sm font-medium"
+              >
+                My Dashboard
+              </router-link>
+              
+              <!-- Test Route (Development only) -->
+              <router-link
+                to="/test-guards"
+                class="text-red-300 hover:text-red-100 text-xs font-medium"
+                title="Route Guards Test"
+              >
+                Test
+              </router-link>
+            </div>
+
             <!-- Cart Button -->
             <button v-if="isLoggedIn">
               <a
@@ -87,15 +154,27 @@
                   <p class="px-4 py-2 text-m text-gray-900">Hello {{ currentUser.name }}!</p>
 
                   <MenuItem v-for="item in userNavigation" :key="item.name" v-slot="{ active }">
+                    <router-link
+                      v-if="item.isRoute"
+                      :to="item.href"
+                      :class="[
+                        active ? 'bg-gray-100 outline-hidden' : '',
+                        'block px-4 py-2 text-sm text-gray-700',
+                      ]"
+                    >
+                      {{ item.name }}
+                    </router-link>
                     <a
+                      v-else
                       :href="item.href"
                       @click.prevent="item.action && item.action()"
                       :class="[
                         active ? 'bg-gray-100 outline-hidden' : '',
                         'block px-4 py-2 text-sm text-gray-700',
                       ]"
-                      >{{ item.name }}</a
                     >
+                      {{ item.name }}
+                    </a>
                   </MenuItem>
                 </MenuItems>
               </transition>
@@ -109,9 +188,9 @@
 
 <script setup>
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
+import jwtAuthService from '@/utils/jwtAuthService.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -120,20 +199,37 @@ const router = useRouter()
 const isLoggedIn = ref(false)
 const currentUser = ref({})
 
+// Check authentication status
+const checkAuthStatus = () => {
+  if (jwtAuthService.isAuthenticated()) {
+    const user = jwtAuthService.getCurrentUser()
+    if (user) {
+      currentUser.value = user
+      isLoggedIn.value = true
+    } else {
+      isLoggedIn.value = false
+      currentUser.value = {}
+    }
+  } else {
+    isLoggedIn.value = false
+    currentUser.value = {}
+  }
+}
+
 // Check if user is logged in on component mount
 onMounted(() => {
-  const storedUser = localStorage.getItem('user')
-  if (storedUser) {
-    currentUser.value = JSON.parse(storedUser)
-    isLoggedIn.value = true
-  }
+  checkAuthStatus()
+})
+
+// Watch for authentication changes (e.g., login/logout from other components)
+watch(() => jwtAuthService.isAuthenticated(), () => {
+  checkAuthStatus()
 })
 
 // Handle logout
 const handleLogout = async () => {
   try {
-    await axios.post('/api/accounts/logout/')
-    localStorage.removeItem('user')
+    await jwtAuthService.logout()
     isLoggedIn.value = false
     currentUser.value = {}
     router.push('/')
@@ -147,8 +243,9 @@ const getProfilePage = () => {
 }
 
 const userNavigation = [
-  { name: 'Your Profile', action: getProfilePage },
-  { name: 'Sign out', action: handleLogout },
+  { name: 'Your Profile', href: '/profile', isRoute: true },
+  { name: 'Settings', href: '#' },
+  { name: 'Sign out', href: '#', action: handleLogout },
 ]
 
 function getProfileImage(user) {

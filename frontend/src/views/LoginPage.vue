@@ -106,6 +106,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import NavBar from '@/components/NavBar.vue'
+import jwtAuthService from '@/utils/jwtAuthService.js'
 
 const router = useRouter()
 
@@ -122,27 +123,18 @@ const handleLogin = async () => {
   isLoading.value = true
 
   try {
-    const response = await axios.post('/api/accounts/login/', {
-      email: email.value,
-      password: password.value,
-    })
+    const result = await jwtAuthService.login(email.value, password.value)
 
-    if (response.data.success) {
-      // Store user data in localStorage or state management
-      localStorage.setItem('user', JSON.stringify(response.data.user))
-
-      // Refresh CSRF cookie after login (Django rotates CSRF at login)
-      try {
-        await axios.get('/api/accounts/csrf/')
-      } catch (_) {}
-
-      router.push('/')
+    if (result.success) {
+      // JWT tokens and user data are automatically stored
+      // Redirect to home page
+      router.push('/home')
     } else {
-      error.value = response.data.error || 'Login failed. Please try again.'
+      error.value = result.error || 'Login failed. Please try again.'
     }
   } catch (err) {
     console.error('Login error:', err)
-    error.value = err.response?.data?.error || 'Login failed. Please try again.'
+    error.value = 'Login failed. Please try again.'
   } finally {
     isLoading.value = false
   }

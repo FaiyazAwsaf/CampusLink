@@ -232,3 +232,37 @@ class ValidationUtils:
             raise ValidationError(errors)
         
         return validated_data
+    
+    @staticmethod
+    def validate_profile_update_data(data, user):
+        """Validate profile update data"""
+        validated_data = {}
+        errors = {}
+        
+        # Validate name if provided
+        if 'name' in data:
+            try:
+                validated_data['name'] = ValidationUtils.validate_name(data['name'])
+            except ValidationError as e:
+                errors['name'] = str(e)
+        
+        # Validate phone if provided
+        if 'phone' in data:
+            try:
+                validated_data['phone'] = ValidationUtils.validate_phone(data['phone'])
+            except ValidationError as e:
+                errors['phone'] = str(e)
+        
+        # Validate image if provided
+        if 'image' in data:
+            try:
+                image = ValidationUtils.validate_image(data['image'])
+                if image:
+                    validated_data['image'] = image
+            except ValidationError as e:
+                errors['image'] = str(e)
+        
+        if errors:
+            raise ValidationError(errors)
+        
+        return validated_data

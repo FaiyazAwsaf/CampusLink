@@ -6,6 +6,7 @@ from .models import CDS_Item
 from django.core.paginator import Paginator
 from django.db.models import Q
 from .models import CDS_Item
+from apps.accounts.decorators import cds_owner_required, login_required_json
 import json
 
 @require_http_methods(["GET"])
@@ -131,6 +132,7 @@ def get_cds_item_detail(request, item_id):
         }, status=500)
         
 @csrf_exempt
+@login_required_json
 @require_http_methods(["POST"])
 def add_to_cart(request):
     """

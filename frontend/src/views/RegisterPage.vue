@@ -219,6 +219,7 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import NavBar from '@/components/NavBar.vue'
+import jwtAuthService from '@/utils/jwtAuthService.js'
 
 const router = useRouter()
 
@@ -522,37 +523,33 @@ const handleRegister = async () => {
   isLoading.value = true
 
   try {
-    // Create form data for file upload
-    const formData = new FormData()
-    formData.append('name', name.value.trim())
-    formData.append('email', email.value.trim().toLowerCase())
-    formData.append('password', password.value)
+    // Prepare user data
+    const userData = {
+      name: name.value.trim(),
+      email: email.value.trim().toLowerCase(),
+      password: password.value
+    }
+
     if (phone.value.trim()) {
-      formData.append('phone', phone.value.trim())
+      userData.phone = phone.value.trim()
     }
 
     if (image.value) {
-      formData.append('image', image.value)
+      userData.image = image.value
     }
 
-    const response = await axios.post('/api/accounts/register/', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
+    const result = await jwtAuthService.register(userData)
 
-    if (response.data.success) {
-      // Store user data in localStorage
-      localStorage.setItem('user', JSON.stringify(response.data.user))
-
+    if (result.success) {
+      // JWT tokens and user data are automatically stored
       // Redirect to home page
       router.push('/')
     } else {
       // Handle validation errors from backend
-      if (response.data.errors) {
-        errors.value = response.data.errors
+      if (result.errors) {
+        errors.value = result.errors
       } else {
-        error.value = response.data.error || 'Registration failed. Please try again.'
+        error.value = 'Registration failed. Please try again.'
       }
     }
   } catch (err) {
