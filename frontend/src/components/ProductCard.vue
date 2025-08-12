@@ -11,7 +11,7 @@
                 :src="product.image"
                 :alt="product.name"
                 class="w-full h-full object-cover"
-                @error="$emit('handle-image-error', product)"
+                @error="$emit('handle-image-error', $event)"
             />
         <div
             v-else
