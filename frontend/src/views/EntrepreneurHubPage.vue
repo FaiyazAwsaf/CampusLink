@@ -4,22 +4,65 @@
     <div class="container mx-auto px-4 py-8">
 
       <!-- Search Bar at Top -->
-      <div class="mb-8">
+      <div class="mb-8 transform transition-all duration-500 ease-out relative z-[10000]" :class="{ 'scale-105': searchFocused }">
         <div class="max-w-2xl mx-auto">
-          <label for="search" class="block font-medium mb-3 text-center text-gray-700">Search Products</label>
+          <label for="search" class="block font-medium mb-3 text-center text-gray-700 transition-colors duration-300">Search Products</label>
           <div class="relative">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-              </svg>
-            </div>
             <input
               v-model="queryProducts"
-              @input="fetchSearchQuery"
+              @keyup.enter="performSearch"
+              @input="handleAutocompleteInput"
+              @focus="handleSearchFocus"
+              @blur="handleSearchBlur"
               type="text"
-              placeholder="Enter product name or related keywords..."
-              class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg text-lg placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+              placeholder="Enter product name or related keywords and press Enter..."
+              class="block w-full pl-4 pr-12 py-4 border border-gray-300 rounded-xl text-lg placeholder-gray-500 focus:outline-none focus:ring-3 focus:ring-blue-500/30 focus:border-blue-500 bg-white shadow-lg hover:shadow-xl transition-all duration-300 ease-out transform hover:-translate-y-0.5"
             />
+            <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+              <Transition name="spin" mode="out-in">
+                <svg v-if="!searchLoading" class="h-6 w-6 text-gray-400 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                <div v-else class="animate-spin rounded-full h-6 w-6 border-2 border-blue-500 border-t-transparent"></div>
+              </Transition>
+            </div>
+            
+            <!-- Autocomplete Suggestions -->
+            <Transition name="slide-fade">
+              <div v-if="showSuggestions && suggestions.length > 0" class="absolute z-[9999] w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl max-h-64 overflow-y-auto backdrop-blur-sm">
+                <div
+                  v-for="(suggestion, index) in suggestions"
+                  :key="index"
+                  @mousedown="selectSuggestion(suggestion)"
+                  class="px-4 py-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors duration-200"
+                >
+                  <div class="flex items-center">
+                    <svg class="h-4 w-4 text-gray-400 mr-3 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <span class="text-gray-700 font-medium">{{ suggestion }}</span>
+                  </div>
+                </div>
+              </div>
+            </Transition>
+            
+            <!-- Spell Suggestions -->
+            <Transition name="bounce-in">
+              <div v-if="spellSuggestions.length > 0 && queryProducts.length > 2" class="mt-3">
+                <p class="text-sm text-gray-600 mb-2 font-medium">Did you mean:</p>
+                <div class="flex flex-wrap gap-2">
+                  <button
+                    v-for="(suggestion, index) in spellSuggestions"
+                    :key="suggestion"
+                    @click="selectSpellSuggestion(suggestion)"
+                    class="px-4 py-2 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700 rounded-full text-sm hover:from-blue-200 hover:to-indigo-200 transition-all duration-300 ease-out transform hover:scale-105 hover:shadow-md"
+                    :style="{ animationDelay: `${index * 100}ms` }"
+                  >
+                    {{ suggestion }}
+                  </button>
+                </div>
+              </div>
+            </Transition>
           </div>
         </div>
       </div>
@@ -88,7 +131,9 @@
           <div>
             <div v-if="loading" class="flex justify-center items-center py-12">
               <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-              <span class="ml-3 text-lg text-gray-600">Loading products...</span>
+              <span class="ml-3 text-lg text-gray-600">
+                {{ queryProducts.trim() ? 'Searching...' : 'Loading products...' }}
+              </span>
             </div>
           </div>
 
@@ -103,11 +148,15 @@
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 stroke-width="2"
-                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
               ></path>
             </svg>
-            <h3 class="text-lg font-semibold text-gray-600 mb-2">No Products Available</h3>
-            <p class="text-gray-500">Check back later for new products!</p>
+            <h3 class="text-lg font-semibold text-gray-600 mb-2">
+              {{ queryProducts.trim() ? 'No products found' : 'No Products Available' }}
+            </h3>
+            <p class="text-gray-500">
+              {{ queryProducts.trim() ? 'Try different keywords or check spelling' : 'Check back later for new products!' }}
+            </p>
           </div>
 
           <div v-else class="space-y-8">
@@ -131,7 +180,7 @@
                   <div class="flex space-x-4 pb-2">
                     <div v-for="storefront in storefronts" 
                       :key="storefront.store_id" 
-                      class="flex-shrink-0 w-32 bg-gray-50 rounded-lg text-center hover:shadow-md transition-shadow duration-200">
+                      class="flex-shrink-0 w-32 bg-gray-50 rounded-lg text-center hover:shadow-md transition-shadow duration-200 relative">
                       <img
                         :src="storefront.image"
                         class="w-full h-24 object-cover rounded-t-lg"
@@ -260,7 +309,12 @@ const availabilityOptions = [
 ]
 const storefronts = ref([])
 const carousel = ref([])
-const queryProducts = ref([])
+const queryProducts = ref('')
+const suggestions = ref([])
+const spellSuggestions = ref([])
+const showSuggestions = ref(false)
+const searchLoading = ref(false)
+const searchFocused = ref(false)
 
 const visiblePages = computed(() => {
   const pages = []
@@ -355,7 +409,7 @@ const fetchSearchQuery = async () =>{
   const query = queryProducts.value.trim()
 
   try{
-    const searchRes = await fetch(`/api/entrepreneurs_hub/search/?query=${encodeURIComponent(query)}`)
+    const searchRes = await fetch(`/api/entrepreneurs_hub/search/advanced/?query=${encodeURIComponent(query)}`)
     const searchResults = await searchRes.json()
     
     products.value = searchResults
@@ -412,6 +466,91 @@ const handleImageError = (event) =>{
     event.target.src = '/Default.jpg'
 }
 
+const fetchAutocomplete = async (query) => {
+  if (query.length < 2) {
+    suggestions.value = []
+    return
+  }
+
+  try {
+    const response = await fetch(`/api/entrepreneurs_hub/search/autocomplete/?query=${encodeURIComponent(query)}`)
+    suggestions.value = await response.json()
+  } catch (err) {
+    console.log("Autocomplete error:", err)
+    suggestions.value = []
+  }
+}
+
+const fetchSpellSuggestions = async (query) => {
+  if (query.length < 3) {
+    spellSuggestions.value = []
+    return
+  }
+
+  try {
+    const response = await fetch(`/api/entrepreneurs_hub/search/suggestions/?query=${encodeURIComponent(query)}`)
+    spellSuggestions.value = await response.json()
+  } catch (err) {
+    console.log("Spell suggestions error:", err)
+    spellSuggestions.value = []
+  }
+}
+
+const handleAutocompleteInput = debounce(async () => {
+  await Promise.all([
+    fetchAutocomplete(queryProducts.value),
+    fetchSpellSuggestions(queryProducts.value)
+  ])
+}, 300)
+
+const performSearch = async () => {
+  if (!queryProducts.value.trim()) {
+    loadProducts()
+    return
+  }
+  
+  searchLoading.value = true
+  await fetchSearchQuery()
+  searchLoading.value = false
+}
+
+const selectSuggestion = (suggestion) => {
+  queryProducts.value = suggestion
+  showSuggestions.value = false
+  performSearch()
+}
+
+const selectSpellSuggestion = (suggestion) => {
+  queryProducts.value = suggestion
+  spellSuggestions.value = []
+  performSearch()
+}
+
+const hideSuggestions = () => {
+  setTimeout(() => {
+    showSuggestions.value = false
+  }, 200)
+}
+
+const clearSearch = () => {
+  queryProducts.value = ''
+  suggestions.value = []
+  spellSuggestions.value = []
+  loadProducts()
+}
+
+const handleSearchFocus = () => {
+  searchFocused.value = true
+  showSuggestions.value = true
+}
+
+const handleSearchBlur = () => {
+  searchFocused.value = false
+  setTimeout(() => {
+    showSuggestions.value = false
+  }, 200)
+}
+
 onMounted(() => {
   loadProducts()
   fetchFilters()
@@ -426,5 +565,135 @@ onMounted(() => {
   --slider-connect-bg : #4b5563;
   --slider-handle-bg : #4b5563;
   --slider-tooltip-bg : #000000;
+}
+
+.slide-fade-enter-active {
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.slide-fade-leave-active {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.slide-fade-enter-from {
+  transform: translateY(-10px);
+  opacity: 0;
+}
+
+.slide-fade-leave-to {
+  transform: translateY(-5px);
+  opacity: 0;
+}
+
+/* Bounce In Animation */
+.bounce-in-enter-active {
+  animation: bounce-in 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.bounce-in-leave-active {
+  transition: all 0.3s ease-in;
+}
+
+.bounce-in-enter-from,
+.bounce-in-leave-to {
+  transform: scale(0.8);
+  opacity: 0;
+}
+
+@keyframes bounce-in {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+  70% {
+    transform: scale(0.9);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Spin Transition */
+.spin-enter-active,
+.spin-leave-active {
+  transition: all 0.3s ease-in-out;
+}
+
+.spin-enter-from {
+  transform: rotate(-180deg) scale(0.8);
+  opacity: 0;
+}
+
+.spin-leave-to {
+  transform: rotate(180deg) scale(0.8);
+  opacity: 0;
+}
+
+/* Enhanced hover effects */
+.hover-lift {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Smooth focus ring */
+.focus-ring {
+  transition: all 0.2s ease-in-out;
+}
+
+.focus-ring:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+
+/* Gradient text animation */
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.gradient-text {
+  background: linear-gradient(-45deg, #3b82f6, #8b5cf6, #06b6d4, #10b981);
+  background-size: 400% 400%;
+  animation: gradient-shift 3s ease infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Stagger animation for spell suggestions */
+.bounce-in-enter-active:nth-child(1) { animation-delay: 0ms; }
+.bounce-in-enter-active:nth-child(2) { animation-delay: 100ms; }
+.bounce-in-enter-active:nth-child(3) { animation-delay: 200ms; }
+.bounce-in-enter-active:nth-child(4) { animation-delay: 300ms; }
+.bounce-in-enter-active:nth-child(5) { animation-delay: 400ms; }
+
+/* Smooth scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #cbd5e1, #94a3b8);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #94a3b8, #64748b);
 }
 </style>

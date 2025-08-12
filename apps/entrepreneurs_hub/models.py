@@ -1,4 +1,6 @@
 from django.db import models
+from django.contrib.postgres.search import SearchVectorField
+from django.contrib.postgres.indexes import GinIndex
 
 class Storefront(models.Model):
     store_id = models.AutoField(primary_key=True)
@@ -26,6 +28,9 @@ class Product(models.Model):
     availability = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     views = models.IntegerField(default=0)
+    
+    search_vector = SearchVectorField(null=True, blank=True)
+    popularity_score = models.FloatField(default=0.0)
 
     def __str__(self):
         return self.name
@@ -34,3 +39,10 @@ class Product(models.Model):
         verbose_name = "Product"
         verbose_name_plural = "Products"
         ordering = ['name']
+        indexes = [
+            GinIndex(fields=['search_vector']),
+            models.Index(fields=['category']),
+            models.Index(fields=['price']),
+            models.Index(fields=['availability']),
+            models.Index(fields=['popularity_score']),
+        ]
