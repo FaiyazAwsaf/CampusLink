@@ -233,19 +233,48 @@ const setRating = (rating) => {
   userRating.value = rating
 }
 
+const getCsrfToken = async () => {
+  try {
+    const response = await fetch('/api/accounts/csrf/', {
+      credentials: 'include'
+    })
+    if (response.ok) {
+      return document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1]
+    }
+  } catch (err) {
+    console.error('Error getting CSRF token:', err)
+  }
+  return null
+}
+
 const submitRating = async () => {
   if (!userRating.value) return
+
+  const storedUser = localStorage.getItem('user')
+  if (!storedUser) {
+    alert('Please log in to rate this product')
+    return
+  }
 
   submittingRating.value = true
 
   try {
     const productId = route.params.id
+    
+    const csrfToken = await getCsrfToken()
+
+    const headers = {
+      'Content-Type': 'application/json',
+    }
+
+    if (csrfToken) {
+      headers['X-CSRFToken'] = csrfToken
+    }
+
     const response = await fetch(`/api/entrepreneurs_hub/products/${productId}/rate/`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}` // Assuming you store auth token
-      },
+      headers: headers,
+      credentials: 'include', 
       body: JSON.stringify({
         rating: userRating.value,
         review: userReview.value
@@ -254,7 +283,7 @@ const submitRating = async () => {
 
     const data = await response.json()
 
-    if (data.success) {
+    if (response.ok && data.success) {
       product.value.average_rating = data.average_rating
       product.value.rating_count = data.rating_count
       
@@ -263,7 +292,8 @@ const submitRating = async () => {
       
       alert(data.message)
     } else {
-      alert(data.error || 'Failed to submit rating')
+      console.error('Rating submission failed:', data)
+      alert(data.error || `Failed to submit rating: ${response.status} ${response.statusText}`)
     }
   } catch (err) {
     console.error('Error submitting rating:', err)

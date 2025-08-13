@@ -58,7 +58,7 @@ class ProductListAPIView(ListAPIView):
         if ordering in ['price', '-price']:
             queryset = queryset.order_by(ordering)
         else:
-            queryset = queryset.order_by('created_at')  # Default ordering
+            queryset = queryset.order_by('created_at') 
 
         return queryset
     
