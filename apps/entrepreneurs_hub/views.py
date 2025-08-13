@@ -64,7 +64,7 @@ class ProductListAPIView(ListAPIView):
 class ProductDetailsAPIView(RetrieveAPIView):
     serializer_class = ProductSerializer
     queryset = Product.objects.all()
-    lookup_field = 'pk'
+    lookup_field = 'product_id'
 
 class StorefrontAPIView(APIView):
     def get(self, request):

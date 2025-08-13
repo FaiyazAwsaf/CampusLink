@@ -101,6 +101,6 @@ const props = defineProps({
 })
 
 const navigateToProduct = () => {
-    router.push(`/entrepreneur-hub/product/${props.product.id}`)
+    router.push(`/entrepreneur-hub/product/${props.product.product_id}`)
 }
 </script>
