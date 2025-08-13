@@ -33,6 +33,8 @@ def get_cds_items(request):
             items_qs = items_qs.order_by('price')
         elif sort_by == 'price_desc':
             items_qs = items_qs.order_by('-price')
+        else:
+            items_qs = items_qs.order_by('-item_id')
 
         if min_price:
             items_qs = items_qs.filter(price__gte=float(min_price))
@@ -73,6 +75,7 @@ def get_cds_items(request):
             "total_pages": paginator.num_pages,
             "current_page": page_obj.number,
             "page_size": page_size,
+            "sort_by": sort_by,
         })
 
     except Exception as e:
