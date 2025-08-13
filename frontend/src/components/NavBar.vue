@@ -8,9 +8,9 @@
         <button
           v-if="showBackButton"
           class="text-gray-900 font-semibold mr-4 hover:underline focus:outline-none"
-          @click="router.push('/')"
+          @click="handleBackClick"
         >
-          ← Back to Home
+          {{ backButtonText }}
         </button>
 
         <!-- Title -->
@@ -166,10 +166,30 @@ const pageTitles = {
   '/laundry': 'Laundry',
   '/entrepreneur-hub': 'Entrepreneur Hub',
 }
-const pageTitle = computed(() => pageTitles[route.path] || 'CampusLink')
 
-// Back button visibility based on route
+const pageTitle = computed(() => {
+  if (route.path.startsWith('/entrepreneur-hub/product/')) {
+    return 'Product Details'
+  }
+  return pageTitles[route.path] || 'CampusLink'
+})
+
 const showBackButton = computed(() => route.path !== '/')
+
+const backButtonText = computed(() => {
+  if (route.path.startsWith('/entrepreneur-hub/product/')) {
+    return '← Back to Products'
+  }
+  return '← Back to Home'
+})
+
+const handleBackClick = () => {
+  if (route.path.startsWith('/entrepreneur-hub/product/')) {
+    router.push('/entrepreneur-hub')
+  } else {
+    router.push('/')
+  }
+}
 
 const showLogo = computed(
   () => route.path === '/' && route.path !== '/login' && route.path !== '/register',

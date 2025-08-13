@@ -27,6 +27,12 @@ const router = createRouter({
     },
 
     {
+      path: '/entrepreneur-hub/product/:id',
+      name: 'product-details',
+      component: () => import('../views/ProductDetails.vue'),
+    },
+
+    {
       path: '/login',
       name: 'login',
       component: () => import('../views/LoginPage.vue'),
