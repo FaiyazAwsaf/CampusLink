@@ -182,6 +182,21 @@
                     <span v-if="submittingRating">Submitting...</span>
                     <span v-else>Submit Rating</span>
                   </button>
+
+                  <div v-if="ratingMessage" class="mt-3 p-3 rounded-lg transition-all duration-300" :class="{
+                    'bg-green-50 border border-green-200 text-green-800': ratingMessageType === 'success',
+                    'bg-red-50 border border-red-200 text-red-800': ratingMessageType === 'error'
+                  }">
+                    <div class="flex items-center">
+                      <svg v-if="ratingMessageType === 'success'" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                      </svg>
+                      <svg v-else class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                      </svg>
+                      <span class="text-sm font-medium">{{ ratingMessage }}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -206,6 +221,8 @@ const error = ref(null)
 const userRating = ref(0)
 const userReview = ref('')
 const submittingRating = ref(false)
+const ratingMessage = ref('')
+const ratingMessageType = ref('') 
 
 const fetchProduct = async () => {
   loading.value = true
@@ -247,16 +264,27 @@ const getCsrfToken = async () => {
   return null
 }
 
+const showMessage = (message, type) => {
+  ratingMessage.value = message
+  ratingMessageType.value = type
+  
+  setTimeout(() => {
+    ratingMessage.value = ''
+    ratingMessageType.value = ''
+  }, 5000)
+}
+
 const submitRating = async () => {
   if (!userRating.value) return
 
   const storedUser = localStorage.getItem('user')
   if (!storedUser) {
-    alert('Please log in to rate this product')
+    showMessage('Please log in to rate this product', 'error')
     return
   }
 
   submittingRating.value = true
+  ratingMessage.value = ''
 
   try {
     const productId = route.params.id
@@ -290,14 +318,14 @@ const submitRating = async () => {
       userRating.value = 0
       userReview.value = ''
       
-      alert(data.message)
+      showMessage(data.message, 'success')
     } else {
       console.error('Rating submission failed:', data)
-      alert(data.error || `Failed to submit rating: ${response.status} ${response.statusText}`)
+      showMessage(data.error || `Failed to submit rating: ${response.status} ${response.statusText}`, 'error')
     }
   } catch (err) {
     console.error('Error submitting rating:', err)
-    alert('Failed to submit rating. Please try again.')
+    showMessage('Failed to submit rating. Please try again.', 'error')
   } finally {
     submittingRating.value = false
   }
