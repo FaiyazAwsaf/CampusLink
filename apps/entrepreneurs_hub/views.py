@@ -1,12 +1,13 @@
 from django.shortcuts import render
-from .models import Product, Storefront
-from .serializers import ProductSerializer, StorefrontSerializer
+from .models import Product, Storefront, Rating
+from .serializers import ProductSerializer, StorefrontSerializer, RatingSerializer
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 
 # Create your views here.
 class ProductPagePagination(PageNumberPagination):
@@ -103,3 +104,68 @@ class RecentlyAddedProducts(APIView):
         recent_products = Product.objects.order_by('-created_at')[:10]
         serializer = ProductSerializer(recent_products, many=True)
         return Response(serializer.data)
+
+
+class ProductRatingsAPIView(APIView):
+    def get(self, request, product_id):
+        try:
+            product = Product.objects.get(product_id=product_id)
+            ratings = Rating.objects.filter(product=product).order_by('-created_at')
+            serializer = RatingSerializer(ratings, many=True)
+            return Response({
+                'success': True,
+                'ratings': serializer.data,
+                'average_rating': product.get_average_rating(),
+                'rating_count': product.get_rating_count()
+            })
+        except Product.DoesNotExist:
+            return Response({
+                'success': False,
+                'error': 'Product not found'
+            }, status=404)
+
+
+class SubmitRatingAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, product_id):
+        try:
+            product = Product.objects.get(product_id=product_id)
+            
+            rating_value = request.data.get('rating')
+            review_text = request.data.get('review', '')
+
+            if not rating_value or not (1 <= int(rating_value) <= 5):
+                return Response({
+                    'success': False,
+                    'error': 'Rating must be between 1 and 5'
+                }, status=400)
+
+            rating, created = Rating.objects.update_or_create(
+                product=product,
+                user=request.user,
+                defaults={
+                    'rating': rating_value,
+                    'review': review_text
+                }
+            )
+
+            serializer = RatingSerializer(rating)
+            return Response({
+                'success': True,
+                'rating': serializer.data,
+                'message': 'Rating updated successfully' if not created else 'Rating submitted successfully',
+                'average_rating': product.get_average_rating(),
+                'rating_count': product.get_rating_count()
+            })
+
+        except Product.DoesNotExist:
+            return Response({
+                'success': False,
+                'error': 'Product not found'
+            }, status=404)
+        except Exception as e:
+            return Response({
+                'success': False,
+                'error': str(e)
+            }, status=500)

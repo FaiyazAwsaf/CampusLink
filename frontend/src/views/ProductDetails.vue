@@ -69,6 +69,27 @@
                 </div>
               </div>
 
+              <div class="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center">
+                    <div class="flex items-center mr-3">
+                      <span
+                        v-for="star in 5"
+                        :key="star"
+                        class="text-2xl"
+                        :class="star <= Math.round(product.average_rating) ? 'text-yellow-400' : 'text-gray-300'"
+                      >
+                        ★
+                      </span>
+                    </div>
+                    <div>
+                      <span class="text-lg font-semibold text-gray-900">{{ product.average_rating || 0 }}</span>
+                      <span class="text-sm text-gray-600 ml-1">({{ product.rating_count || 0 }} {{ product.rating_count === 1 ? 'review' : 'reviews' }})</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div class="grid grid-cols-1 gap-4">
                 <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
                   <div class="flex items-center">
@@ -109,7 +130,7 @@
               </div>
             </div>
 
-            <div class="pt-6 border-t border-gray-200">
+            <div class="pt-6 border-t border-gray-200 space-y-4">
               <button
                 :disabled="!product.availability"
                 :class="[
@@ -123,6 +144,46 @@
                 <span v-if="product.availability">Add to Cart</span>
                 <span v-else>Out of Stock</span>
               </button>
+
+              <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 mb-3">Rate this product</h3>
+                <div class="space-y-3">
+                  <div class="flex items-center space-x-2">
+                    <span class="text-sm font-medium text-gray-700">Your rating:</span>
+                    <div class="flex items-center">
+                      <button
+                        v-for="star in 5"
+                        :key="star"
+                        @click="setRating(star)"
+                        class="text-2xl transition-colors duration-200"
+                        :class="star <= userRating ? 'text-yellow-400 hover:text-yellow-500' : 'text-gray-300 hover:text-yellow-300'"
+                      >
+                        ★
+                      </button>
+                    </div>
+                    <span v-if="userRating" class="text-sm text-gray-600 ml-2">{{ userRating }} star{{ userRating !== 1 ? 's' : '' }}</span>
+                  </div>
+                  
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Review (optional)</label>
+                    <textarea
+                      v-model="userReview"
+                      rows="3"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Share your thoughts about this product..."
+                    ></textarea>
+                  </div>
+
+                  <button
+                    @click="submitRating"
+                    :disabled="!userRating || submittingRating"
+                    class="w-full py-2 px-4 bg-yellow-500 text-white rounded-lg font-semibold hover:bg-yellow-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors duration-200"
+                  >
+                    <span v-if="submittingRating">Submitting...</span>
+                    <span v-else>Submit Rating</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -142,6 +203,9 @@ const router = useRouter()
 const product = ref(null)
 const loading = ref(true)
 const error = ref(null)
+const userRating = ref(0)
+const userReview = ref('')
+const submittingRating = ref(false)
 
 const fetchProduct = async () => {
   loading.value = true
@@ -164,6 +228,50 @@ const fetchProduct = async () => {
   }
 }
 
+
+const setRating = (rating) => {
+  userRating.value = rating
+}
+
+const submitRating = async () => {
+  if (!userRating.value) return
+
+  submittingRating.value = true
+
+  try {
+    const productId = route.params.id
+    const response = await fetch(`/api/entrepreneurs_hub/products/${productId}/rate/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}` // Assuming you store auth token
+      },
+      body: JSON.stringify({
+        rating: userRating.value,
+        review: userReview.value
+      })
+    })
+
+    const data = await response.json()
+
+    if (data.success) {
+      product.value.average_rating = data.average_rating
+      product.value.rating_count = data.rating_count
+      
+      userRating.value = 0
+      userReview.value = ''
+      
+      alert(data.message)
+    } else {
+      alert(data.error || 'Failed to submit rating')
+    }
+  } catch (err) {
+    console.error('Error submitting rating:', err)
+    alert('Failed to submit rating. Please try again.')
+  } finally {
+    submittingRating.value = false
+  }
+}
 
 const addToCart = () => {
   console.log('Adding to cart:', product.value)
