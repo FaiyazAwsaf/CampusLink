@@ -4,7 +4,7 @@
     <div class="container mx-auto px-4 py-8">
 
       <!-- Search Bar at Top -->
-      <div class="mb-8 transform transition-all duration-500 ease-out relative z-[10000]" :class="{ 'scale-105': searchFocused }">
+      <div class="mb-8 transform transition-all duration-500 ease-out relative" :class="{ 'scale-105': searchFocused }">
         <div class="max-w-2xl mx-auto">
           <label for="search" class="block font-medium mb-3 text-center text-gray-700 transition-colors duration-300">Search Products</label>
           <div class="relative">
@@ -71,7 +71,7 @@
       <div class="lg:flex lg:gap-6">
         <!-- Sidebar with Filters -->
         <div class="lg:w-64 lg:flex-shrink-0 mb-6 lg:mb-0">
-          <div class="bg-white rounded-lg shadow-md p-4 lg:sticky lg:top-4">
+          <div class="bg-white rounded-lg shadow-md p-4">
             <h3 class="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Filters</h3>
             
             <div class="space-y-4">
