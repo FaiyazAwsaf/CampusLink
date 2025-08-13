@@ -211,7 +211,6 @@
                   :key="product.id"
                   :product="product"
                   @add-to-cart="onAddToCart"
-                  @product-detail="handleProductDetail"
                   @handle-image-error="handleImageError"
               />
             </div>
@@ -262,13 +261,6 @@
             </div>
           </div>
 
-          <ProductModal
-            v-if="showModal"
-            :key="selectedProduct.id"
-            :product="selectedProduct"
-            @close="closeModal"
-            @click.self="closeModal"
-          />
         </div>
       </div>
     </div>
@@ -280,7 +272,6 @@
 import { ref, computed, onMounted } from 'vue'
 import NavBar from '@/components/NavBar.vue'
 import ProductCard from '@/components/ProductCard.vue'
-import ProductModal from '@/components/ProductModal.vue'
 import PriceL2HFilter from '@/components/PriceL2HFilter.vue'
 import CategoryFilter from '@/components/CategoryFilter.vue'
 import StockFilter from '@/components/StockFilter.vue'
@@ -295,8 +286,6 @@ const selected_category = ref('')
 const selectedStore = ref('')
 const price_range = ref([0,1000])
 const loading = ref(false)
-const selectedProduct = ref(null)
-const showModal = ref(false)
 const categories = ref([])
 const sortOrder = ref('')
 const recentlyAdded = ref([])
@@ -448,15 +437,6 @@ const scrollRight = () => {
   carousel.value.scrollBy({left : 300, behavior : 'smooth'})
 }
 
-function handleProductDetail(product){
-  selectedProduct.value = product
-  showModal.value = true
-}
-
-function closeModal(){
-  showModal.value = false
-  selectedProduct.value = null
-}
 
 function onAddToCart(product){
   console.log("Added ", product, " to cart")
