@@ -2,6 +2,8 @@ from functools import wraps
 from django.http import JsonResponse
 from django.contrib.auth.decorators import user_passes_test
 from django.core.exceptions import PermissionDenied
+from rest_framework.response import Response
+from rest_framework import status
 
 
 def login_required_json(view_func):
@@ -130,6 +132,75 @@ def permission_required(permission_name):
                     'success': False,
                     'error': f'Permission denied: {permission_name} required'
                 }, status=403)
+            
+            return view_func(request, *args, **kwargs)
+        return wrapper
+    return decorator
+
+
+# JWT-compatible decorators for DRF views
+def admin_required_jwt(view_func):
+    """
+    Decorator to require admin privileges for DRF views
+    """
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return Response({
+                'success': False,
+                'error': 'Authentication required'
+            }, status=status.HTTP_401_UNAUTHORIZED)
+        
+        if not request.user.is_admin:
+            return Response({
+                'success': False,
+                'error': 'Admin privileges required'
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
+def staff_required_jwt(view_func):
+    """
+    Decorator to require staff privileges for DRF views
+    """
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return Response({
+                'success': False,
+                'error': 'Authentication required'
+            }, status=status.HTTP_401_UNAUTHORIZED)
+        
+        if not request.user.is_staff:
+            return Response({
+                'success': False,
+                'error': 'Staff privileges required'
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
+def permission_required_jwt(permission_name):
+    """
+    Decorator to check if user has specific permission for DRF views
+    """
+    def decorator(view_func):
+        @wraps(view_func)
+        def wrapper(request, *args, **kwargs):
+            if not request.user.is_authenticated:
+                return Response({
+                    'success': False,
+                    'error': 'Authentication required'
+                }, status=status.HTTP_401_UNAUTHORIZED)
+            
+            if not request.user.has_perm(permission_name):
+                return Response({
+                    'success': False,
+                    'error': f'Permission denied: {permission_name} required'
+                }, status=status.HTTP_403_FORBIDDEN)
             
             return view_func(request, *args, **kwargs)
         return wrapper
