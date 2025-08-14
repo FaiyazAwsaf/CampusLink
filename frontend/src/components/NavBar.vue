@@ -109,33 +109,22 @@
 
 <script setup>
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
-import { computed, ref, onMounted } from 'vue'
+import { computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
+import { useAuthStore } from '@/stores/auth.js'
 
 const route = useRoute()
 const router = useRouter()
+const authStore = useAuthStore()
 
-// Authentication state
-const isLoggedIn = ref(false)
-const currentUser = ref({})
-
-// Check if user is logged in on component mount
-onMounted(() => {
-  const storedUser = localStorage.getItem('user')
-  if (storedUser) {
-    currentUser.value = JSON.parse(storedUser)
-    isLoggedIn.value = true
-  }
-})
+// Reactive authentication state from store
+const isLoggedIn = computed(() => authStore.isAuthenticated)
+const currentUser = computed(() => authStore.user || {})
 
 // Handle logout
 const handleLogout = async () => {
   try {
-    await axios.post('/api/accounts/logout/')
-    localStorage.removeItem('user')
-    isLoggedIn.value = false
-    currentUser.value = {}
+    await authStore.logout()
     router.push('/')
   } catch (error) {
     console.error('Logout error:', error)
@@ -152,6 +141,9 @@ const userNavigation = [
 ]
 
 function getProfileImage(user) {
+  if (user?.image_url) {
+    return user.image_url
+  }
   if (user?.image) {
     return user.image.startsWith('http') ? user.image : `http://127.0.0.1:8000${user.image}`
   }

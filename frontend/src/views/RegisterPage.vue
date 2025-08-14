@@ -216,11 +216,13 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import axios from 'axios'
+import { useRouter, useRoute } from 'vue-router'
+import { useAuthStore } from '@/stores/auth.js'
 import NavBar from '@/components/NavBar.vue'
 
 const router = useRouter()
+const route = useRoute()
+const authStore = useAuthStore()
 
 // Form data
 const name = ref('')
@@ -522,50 +524,39 @@ const handleRegister = async () => {
   isLoading.value = true
 
   try {
-    // Create form data for file upload
-    const formData = new FormData()
-    formData.append('name', name.value.trim())
-    formData.append('email', email.value.trim().toLowerCase())
-    formData.append('password', password.value)
+    // Prepare user data for registration
+    const userData = {
+      name: name.value.trim(),
+      email: email.value.trim().toLowerCase(),
+      password: password.value,
+      password_confirm: confirmPassword.value,
+    }
+
     if (phone.value.trim()) {
-      formData.append('phone', phone.value.trim())
+      userData.phone = phone.value.trim()
     }
 
     if (image.value) {
-      formData.append('image', image.value)
+      userData.image = image.value
     }
 
-    const response = await axios.post('/api/accounts/register/', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
+    const result = await authStore.register(userData)
 
-    if (response.data.success) {
-      // Store user data in localStorage
-      localStorage.setItem('user', JSON.stringify(response.data.user))
-
-      // Redirect to home page
-      router.push('/')
+    if (result.success) {
+      // Redirect to intended page or home
+      const redirectTo = route.query.next || '/'
+      router.push(redirectTo)
     } else {
       // Handle validation errors from backend
-      if (response.data.errors) {
-        errors.value = response.data.errors
+      if (result.errors) {
+        errors.value = result.errors
       } else {
-        error.value = response.data.error || 'Registration failed. Please try again.'
+        error.value = 'Registration failed. Please try again.'
       }
     }
   } catch (err) {
     console.error('Registration error:', err)
-
-    // Handle backend validation errors
-    if (err.response?.data?.errors) {
-      errors.value = err.response.data.errors
-    } else if (err.response?.data?.error) {
-      error.value = err.response.data.error
-    } else {
-      error.value = 'Registration failed. Please try again.'
-    }
+    error.value = 'Registration failed. Please try again.'
   } finally {
     isLoading.value = false
   }
