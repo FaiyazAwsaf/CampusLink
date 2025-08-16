@@ -30,13 +30,17 @@
         <div class="hidden md:block">
           <div class="ml-4 flex items-center md:ml-6">
             <!-- Cart Button -->
-            <button v-if="isLoggedIn">
-              <a
-                href="#"
-                class="bg-blue-100 text-black text-sm font-semibold px-4 py-2 rounded-lg mr-4 transition-colors duration-200 hover:bg-blue-500 hover:text-white active:bg-blue-700 active:text-white"
+            <button
+              v-if="isLoggedIn"
+              @click="goToCart"
+              class="relative bg-blue-100 text-black text-sm font-semibold px-4 py-2 rounded-lg mr-4 transition-colors duration-200 hover:bg-blue-500 hover:text-white active:bg-blue-700 active:text-white"
+            >
+              View Cart
+              <span
+                v-if="cartCount > 0"
+                class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2"
+                >{{ cartCount }}</span
               >
-                View Cart
-              </a>
             </button>
 
             <div v-if="!isLoggedIn && showAccountButtons" class="flex space-x-2">
@@ -112,6 +116,13 @@ import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
+import useCart from '@/utils/useCart.js'
+const { cart } = useCart()
+const cartCount = computed(() => cart.value.length)
+
+function goToCart() {
+  router.push('/cart')
+}
 
 const route = useRoute()
 const router = useRouter()
