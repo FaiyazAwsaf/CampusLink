@@ -13,7 +13,7 @@ export const useAuthStore = defineStore('auth', () => {
     return !!user.value && AuthService.isAuthenticated()
   })
 
-  const isAdmin = computed(() => {
+  const isCDSOwner = computed(() => {
     return user.value?.is_admin || false
   })
 
@@ -171,7 +171,7 @@ export const useAuthStore = defineStore('auth', () => {
     
     // Getters
     isAuthenticated,
-    isAdmin,
+    isCDSOwner,
     isStaff,
     userRole,
     userPermissions,

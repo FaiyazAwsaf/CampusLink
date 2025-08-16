@@ -71,9 +71,9 @@ def test_server_health():
         return False
 
 def cleanup_test_users():
-    """Clean up test users (requires admin access)"""
+    """Clean up test users (requires CDS Owner access)"""
     try:
-        # This would require admin credentials, skip for now
+        # This would require CDS Owner credentials, skip for now
         pass
     except:
         pass

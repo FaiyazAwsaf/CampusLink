@@ -202,7 +202,7 @@ class LogoutSerializer(serializers.Serializer):
 
 class ChangeRoleSerializer(serializers.Serializer):
     """
-    Serializer for changing user roles (admin only)
+    Serializer for changing user roles (CDS Owner only)
     """
     user_id = serializers.IntegerField()
     role = serializers.ChoiceField(choices=User.ROLE_CHOICES)
@@ -228,7 +228,7 @@ class ChangeRoleSerializer(serializers.Serializer):
         user.groups.clear()
         
         role_group_mapping = {
-            'admin': 'Administrators',
+            'cds_owner': 'CDS Owners',
             'staff': 'Staff',
             'entrepreneur': 'Entrepreneurs',
             'student': 'Students'
@@ -242,7 +242,7 @@ class ChangeRoleSerializer(serializers.Serializer):
 
 class ToggleUserStatusSerializer(serializers.Serializer):
     """
-    Serializer for toggling user active status (admin only)
+    Serializer for toggling user active status (CDS Owner only)
     """
     user_id = serializers.IntegerField()
 
@@ -257,7 +257,7 @@ class ToggleUserStatusSerializer(serializers.Serializer):
         user_id = self.validated_data['user_id']
         user = User.objects.get(id=user_id)
         
-        # Don't allow admin to deactivate themselves
+        # Don't allow CDS Owner to deactivate themselves
         if user == current_user:
             raise serializers.ValidationError("Cannot change your own status")
         

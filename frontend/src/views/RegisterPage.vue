@@ -290,7 +290,7 @@ const validatePassword = (password) => {
     'abc123',
     'password123',
     '123456789',
-    'admin',
+    'cds_owner',
     'user',
   ]
   if (weakPasswords.includes(password.toLowerCase())) {

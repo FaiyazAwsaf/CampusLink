@@ -1,7 +1,7 @@
 # CampusLink Authentication Flow Documentation
 
 ## Overview
-CampusLink implements a comprehensive role-based authentication system using Django backend with **JWT (JSON Web Token) authentication** and Vue.js frontend. The system supports four user roles: Admin, Staff, Student, and Entrepreneur.
+CampusLink implements a comprehensive role-based authentication system using Django backend with **JWT (JSON Web Token) authentication** and Vue.js frontend. The system supports four user roles: CDS Owner, Staff, Student, and Entrepreneur.
 
 ## 🔄 **Migration: Session to JWT Authentication**
 As of August 2025, CampusLink has migrated from session-based authentication to JWT tokens for improved scalability, stateless authentication, and better support for mobile applications and API integrations.
@@ -13,14 +13,14 @@ As of August 2025, CampusLink has migrated from session-based authentication to 
 #### **Custom User Model (`apps/accounts/models.py`)**
 - **Base**: Extends `AbstractUser` 
 - **Username Field**: Email (username field removed)
-- **Roles**: Admin, Staff, Student, Entrepreneur
+- **Roles**: CDS Owner, Staff, Student, Entrepreneur
 - **Key Features**:
   - Email-based authentication
   - Phone number validation (Bangladesh format)
   - Profile image upload
   - Role-based permissions
   - Account verification status
-- **Primary Fields**: Email (unique identifier), role, verification status, admin flag
+- **Primary Fields**: Email (unique identifier), role, verification status, cds_owner flag
 
 #### **JWT Authentication Views (`apps/accounts/jwt_views.py`)**
 
@@ -73,14 +73,14 @@ As of August 2025, CampusLink has migrated from session-based authentication to 
 - `can_manage_laundry` - Laundry service management
 
 **User Groups & Permissions:**
-- **Admin Group**: All permissions
+- **CDS Owner Group**: All permissions
 - **Staff Group**: can_view_all_orders, can_process_orders, can_manage_inventory, can_manage_laundry
 - **Entrepreneur Group**: can_create_products
 - **Student Group**: Basic user permissions only
 
 #### **JWT Authorization Decorators (`apps/accounts/decorators.py`)**
 - `@jwt_login_required` - Requires valid JWT token
-- `@admin_required` - Admin role required (JWT-based)
+- `@cds_owner_required` - CDS Owner role required (JWT-based)
 - `@staff_required` - Staff privileges required (JWT-based)
 - `@permission_required(permission)` - Specific permission required (JWT-based)
 - `@user_owns_resource(get_resource_user)` - Resource ownership check (JWT-based)
@@ -261,7 +261,7 @@ Auto-detected → Queue failed → Use refresh → Update storage → Continue o
 - POST /api/accounts/logout/ - [DEPRECATED] Session-based logout
 - GET /api/accounts/csrf/ - [DEPRECATED] Get CSRF token
 
-### **Admin Endpoints** (Admin only)
+### **CDS Owner Endpoints** (CDS Owner only)
 - GET /api/accounts/list-users/ - List all users
 - POST /api/accounts/change-role/ - Change user role
 - POST /api/accounts/toggle-status/ - Toggle user active status
@@ -306,7 +306,7 @@ Auto-detected → Queue failed → Use refresh → Update storage → Continue o
 **URL Pattern Structure:**
 - JWT endpoints: /api/accounts/jwt/* for new authentication
 - Legacy endpoints: /api/accounts/* for backward compatibility (deprecated)
-- Admin endpoints: /api/accounts/* for user management functions
+- CDS Owner endpoints: /api/accounts/* for user management functions
 
 ## 8. Setup and Initialization
 
@@ -333,7 +333,7 @@ Auto-detected → Queue failed → Use refresh → Update storage → Continue o
 2. **All Service Pages**: JWT token-based access control
 3. **Profile Management**: JWT-protected user data management
 4. **Order Systems**: JWT-authenticated user-specific data
-5. **Admin Functions**: JWT-based role and permission checks
+5. **CDS Owner Functions**: JWT-based role and permission checks
 6. **API Security**: All endpoints protected with Bearer token authentication
 
 ### **Cross-App JWT Integration**
@@ -420,7 +420,7 @@ def clean(self):
 - Routes marked with `requiresAuth` meta property require valid JWT tokens
 - Routes marked with `guestOnly` meta property redirect authenticated users
 - Service routes (CDS, Laundry, Entrepreneur Hub) require authentication
-- Profile and admin routes have role-based access requirements
+- Profile and CDS Owner routes have role-based access requirements
 
 **JWT Navigation Guards:**
 - Initialize authentication state from JWT tokens on route changes

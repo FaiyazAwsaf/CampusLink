@@ -11,7 +11,7 @@ import json
 import os
 
 from .models import User
-from .decorators import login_required_json, admin_required, staff_required
+from .decorators import login_required_json, cds_owner_required, admin_required, staff_required
 from .permissions import PermissionManager, AuthorizationChecker
 from .validators import ValidationUtils
 
@@ -250,11 +250,11 @@ def get_user_permissions(request):
     })
 
 
-@admin_required
+@cds_owner_required
 @require_http_methods(["GET"])
 def list_users(request):
     """
-    List all users (admin only)
+    List all users (CDS Owner only)
     """
     users = User.objects.all().values(
         'id', 'email', 'name', 'phone', 'role', 
@@ -267,11 +267,11 @@ def list_users(request):
     })
 
 
-@admin_required
+@cds_owner_required
 @require_http_methods(["POST"])
 def change_user_role(request):
     """
-    Change user role (admin only)
+    Change user role (CDS Owner only)
     """
     try:
         data = json.loads(request.body)
@@ -300,8 +300,8 @@ def change_user_role(request):
         # Update user groups
         user.groups.clear()  # Remove from all groups
         
-        if new_role == 'admin':
-            PermissionManager.assign_user_to_group(user, 'Administrators')
+        if new_role == 'cds_owner':
+            PermissionManager.assign_user_to_group(user, 'CDS Owners')
         elif new_role == 'staff':
             PermissionManager.assign_user_to_group(user, 'Staff')
         elif new_role == 'entrepreneur':
@@ -340,11 +340,11 @@ def change_user_role(request):
         }, status=500)
 
 
-@admin_required
+@cds_owner_required
 @require_http_methods(["POST"])
 def toggle_user_status(request):
     """
-    Toggle user active/inactive status (admin only)
+    Toggle user active/inactive status (CDS Owner only)
     """
     try:
         data = json.loads(request.body)
@@ -358,7 +358,7 @@ def toggle_user_status(request):
         
         user = User.objects.get(id=user_id)
         
-        # Don't allow admin to deactivate themselves
+        # Don't allow CDS Owner to deactivate themselves
         if user == request.user:
             return JsonResponse({
                 'success': False,
@@ -402,7 +402,7 @@ def toggle_user_status(request):
 @require_http_methods(["POST"])
 def update_profile(request):
     """
-    Update user profile (own profile only, unless admin)
+    Update user profile (own profile only, unless CDS Owner)
     """
     try:
         target_user_id = request.POST.get('user_id')

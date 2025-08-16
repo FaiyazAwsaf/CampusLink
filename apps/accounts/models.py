@@ -43,7 +43,7 @@ class User(AbstractUser):
     """Custom User model with email as the unique identifier"""
     
     ROLE_CHOICES = [
-        ('admin', 'Admin'),
+        ('cds_owner', 'CDS Owner'),
         ('staff', 'Staff'),
         ('student', 'Student'),
         ('entrepreneur', 'Entrepreneur'),

@@ -16,7 +16,7 @@ urlpatterns = [
     path("jwt/check-permission/", jwt_views.check_permission, name="jwt_check_permission"),
     path("jwt/get-permissions/", jwt_views.get_user_permissions, name="jwt_get_permissions"),
     
-    # Admin endpoints (JWT)
+    # CDS Owner endpoints (JWT)
     path("jwt/list-users/", jwt_views.list_users, name="jwt_list_users"),
     path("jwt/change-role/", jwt_views.change_user_role, name="jwt_change_role"),
     path("jwt/toggle-status/", jwt_views.toggle_user_status, name="jwt_toggle_status"),
@@ -29,7 +29,7 @@ urlpatterns = [
     path("update-profile/", views.update_profile, name="update_profile"),
     path("csrf/", views.get_csrf_token, name="get_csrf_token"),
     
-    # Admin endpoints (session-based)
+    # CDS Owner endpoints (session-based)
     path("list-users/", views.list_users, name="list_users"),
     path("change-role/", views.change_user_role, name="change_role"),
     path("toggle-status/", views.toggle_user_status, name="toggle_status"),

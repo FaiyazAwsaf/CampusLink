@@ -149,7 +149,7 @@ def test_permissions():
     print("\n🔐 Testing JWT Permission Endpoints")
     print("=" * 50)
     
-    # First login as admin or create admin user
+    # First login as CDS Owner or create CDS Owner user
     print("\n1. Testing with regular user permissions...")
     
     # Register a regular user

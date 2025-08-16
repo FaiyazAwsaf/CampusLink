@@ -5,13 +5,13 @@ from .models import User
 
 class UserRoles:
     """Constants for user roles"""
-    ADMIN = 'admin'
+    CDS_OWNER = 'cds_owner'
     STAFF = 'staff'
     STUDENT = 'student'
     ENTREPRENEUR = 'entrepreneur'
     
     ROLE_CHOICES = [
-        (ADMIN, 'Admin'),
+        (CDS_OWNER, 'CDS Owner'),
         (STAFF, 'Staff'),
         (STUDENT, 'Student'),
         (ENTREPRENEUR, 'Entrepreneur'),
@@ -56,7 +56,7 @@ class PermissionManager:
         """Create user groups with appropriate permissions"""
         try:
             # Create groups
-            admin_group, _ = Group.objects.get_or_create(name='Administrators')
+            cds_owner_group, _ = Group.objects.get_or_create(name='CDS Owners')
             staff_group, _ = Group.objects.get_or_create(name='Staff')
             student_group, _ = Group.objects.get_or_create(name='Students')
             entrepreneur_group, _ = Group.objects.get_or_create(name='Entrepreneurs')
@@ -64,9 +64,9 @@ class PermissionManager:
             # Get permissions
             content_type = ContentType.objects.get_for_model(User)
             
-            # Admin permissions (all)
-            admin_permissions = Permission.objects.filter(content_type=content_type)
-            admin_group.permissions.set(admin_permissions)
+            # CDS Owner permissions (all)
+            cds_owner_permissions = Permission.objects.filter(content_type=content_type)
+            cds_owner_group.permissions.set(cds_owner_permissions)
             
             # Staff permissions
             staff_permissions = Permission.objects.filter(

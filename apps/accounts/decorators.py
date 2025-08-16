@@ -19,9 +19,9 @@ def login_required_json(view_func):
     return wrapper
 
 
-def admin_required(view_func):
+def cds_owner_required(view_func):
     """
-    Decorator to require admin privileges
+    Decorator to require CDS Owner privileges
     """
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
@@ -34,11 +34,15 @@ def admin_required(view_func):
         if not request.user.is_admin:
             return JsonResponse({
                 'success': False,
-                'error': 'Admin privileges required'
+                'error': 'CDS Owner privileges required'
             }, status=403)
         
         return view_func(request, *args, **kwargs)
     return wrapper
+
+
+# Keep admin_required for backward compatibility
+admin_required = cds_owner_required
 
 
 def staff_required(view_func):
