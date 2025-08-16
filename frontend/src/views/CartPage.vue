@@ -18,6 +18,7 @@
               <div>
                 <span class="font-semibold">{{ item.name }}</span>
                 <span class="text-gray-500 ml-2">Tk. {{ item.price }}</span>
+                <span v-if="item.quantity" class="text-gray-400 ml-2">x{{ item.quantity }}</span>
               </div>
               <button
                 @click="removeFromCart(item.item_id, 'cds')"
@@ -25,6 +26,9 @@
               >
                 Remove
               </button>
+            </div>
+            <div class="flex justify-end mt-2">
+              <span class="font-bold text-lg">Total: Tk. {{ cdsTotal }}</span>
             </div>
             <div class="mt-4 flex justify-end">
               <button
@@ -103,6 +107,10 @@
               bKash
             </button>
           </div>
+          <div class="mb-4 flex justify-end">
+            <span class="font-bold text-lg">Total: Tk. {{ cdsTotal }}</span>
+          </div>
+
           <div v-if="paymentMethod === 'bkash'" class="mb-4">
             <p class="mb-2">Scan the QR code or use the number below to pay:</p>
             <img src="" alt="bKash QR" class="w-40 h-40 mx-auto mb-2" />
@@ -150,7 +158,9 @@
 <script setup>
 import NavBar from '@/components/NavBar.vue'
 import useCart from '@/utils/useCart.js'
+import axios from 'axios'
 import { ref } from 'vue'
+import { computed } from 'vue'
 
 const { cart, cdsItems, entrepreneurItems, removeFromCart, clearCart } = useCart()
 
@@ -158,11 +168,40 @@ const showCdsOrder = ref(false)
 const showEntOrder = ref(false)
 const paymentMethod = ref('cash')
 
-function confirmOrder(type) {
-  alert('Order placed! (Demo only)')
-  clearCart()
-  showCdsOrder.value = false
-  showEntOrder.value = false
+const cdsTotal = computed(() => {
+  return cdsItems.value.reduce((sum, item) => sum + item.price * (item.quantity || 1), 0)
+})
+const confirmedTotal = ref(null)
+
+async function confirmOrder(type) {
+  try {
+    if (type === 'cds') {
+      const orderDetails = {
+        items: cdsItems.value.map((item) => ({
+          item_id: item.item_id,
+          quantity: item.quantity || 1,
+        })),
+        payment_method: paymentMethod.value,
+        delivery_status: 'preparing',
+      }
+      const response = await axios.post('/api/cds/submit_order/', orderDetails)
+      if (response.data.success) {
+        confirmedTotal.value = Number(response.data.total_amount).toFixed(2)
+        alert('Order placed successfully! Total: Tk. ' + confirmedTotal.value)
+        clearCart()
+        showCdsOrder.value = false
+      } else {
+        alert('Order failed: ' + (response.data.error || 'Unknown error'))
+      }
+    } else if (type === 'entrepreneur') {
+      // Handle Entrepreneur Hub order confirmation logic here
+      alert('Entrepreneur Hub Order Confirmed (not implemented)')
+      showEntOrder.value = false
+    }
+  } catch (error) {
+    alert('Error confirming order: ' + (error.response?.data?.error || error.message))
+    console.error('Error confirming order:', error)
+  }
 }
 </script>
 

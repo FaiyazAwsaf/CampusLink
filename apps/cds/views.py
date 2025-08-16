@@ -1,11 +1,13 @@
-from django.shortcuts import render
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from .models import CDSOrder, CDSOrderItem, CDS_Item
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
-from .models import CDS_Item
 from django.core.paginator import Paginator
 from django.db.models import Q
-from .models import CDS_Item
 import json
 
 @require_http_methods(["GET"])
@@ -110,10 +112,7 @@ def get_cds_item_detail(request, item_id):
             'price': float(item.price),
             'image': item.image,
             'availability': item.availability,
-            'stock_quantity': item.stock_quantity,
             'category': item.category,
-            'created_at': item.created_at.isoformat() if item.created_at else None,
-            'updated_at': item.updated_at.isoformat() if item.updated_at else None,
         }
         
         return JsonResponse({
@@ -153,11 +152,11 @@ def add_to_cart(request):
                 'error': 'Item not found'
             }, status=404)
         
-        # Check availability and stock
-        if not item.availability or item.stock_quantity < quantity:
+        # Check availability
+        if not item.availability:
             return JsonResponse({
                 'success': False,
-                'error': 'Item not available or insufficient stock'
+                'error': 'Item not available'
             }, status=400)
         
         # Tmplement actual cart functionality
@@ -184,3 +183,28 @@ def add_to_cart(request):
             'success': False,
             'error': str(e)
         }, status=500)
+    
+# API endpoint to submit CDS order
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def submit_cds_order(request):
+    user = request.user
+    items = request.data.get('items', [])
+    payment_method = request.data.get('payment_method', 'cash')
+    if not items:
+        return Response({'error': 'No items provided.'}, status=status.HTTP_400_BAD_REQUEST)
+    total_amount = 0
+    order_items = []
+    for item in items:
+        try:
+            product = CDS_Item.objects.get(pk=item.get('item_id'))
+        except CDS_Item.DoesNotExist:
+            continue
+        quantity = item.get('quantity', 1)
+        total_amount += float(product.price) * quantity
+        order_items.append((product, quantity))
+    delivery_status = request.data.get('delivery_status', 'preparing')
+    order = CDSOrder.objects.create(user=user, payment_method=payment_method, total_amount=total_amount, delivery_status=delivery_status)
+    for product, quantity in order_items:
+        CDSOrderItem.objects.create(order=order, product=product, quantity=quantity)
+    return Response({'success': True, 'order_id': order.id, 'total_amount': total_amount}, status=status.HTTP_201_CREATED)

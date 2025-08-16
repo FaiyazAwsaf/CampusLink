@@ -1,4 +1,3 @@
-// src/utils/useCart.js
 import { ref, computed, watch } from 'vue'
 
 const CART_KEY = 'campuslink_cart'
