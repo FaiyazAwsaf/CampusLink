@@ -208,3 +208,28 @@ def submit_cds_order(request):
     for product, quantity in order_items:
         CDSOrderItem.objects.create(order=order, product=product, quantity=quantity)
     return Response({'success': True, 'order_id': order.id, 'total_amount': total_amount}, status=status.HTTP_201_CREATED)
+# API endpoint to get user's CDS orders
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_cds_orders(request):
+    user = request.user
+    orders = CDSOrder.objects.filter(user=user).order_by('-created_at')
+    data = []
+    for order in orders:
+        data.append({
+            'order_id': order.id,
+            'total_amount': float(order.total_amount),
+            'created_at': order.created_at,
+            'payment_method': order.payment_method,
+            'delivery_status': order.delivery_status,
+            'items': [
+                {
+                    'item_id': item.product.item_id,
+                    'name': item.product.name,
+                    'quantity': item.quantity,
+                    'price': float(item.product.price),
+                }
+                for item in order.items.all()
+            ]
+        })
+    return Response({'orders': data})
