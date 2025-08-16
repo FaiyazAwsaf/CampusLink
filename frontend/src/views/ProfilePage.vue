@@ -140,8 +140,39 @@
           CDS Orders
           <span class="ml-2 text-sm text-gray-500">(click to toggle)</span>
         </summary>
-        <div class="p-3 text-gray-600">
-          No CDS order API found yet. We can wire this to your CDS orders endpoint when available.
+        <div class="p-3">
+          <div v-if="cds.loading" class="text-gray-500">Loading…</div>
+          <div v-else-if="cds.error" class="text-red-600">{{ cds.error }}</div>
+          <div v-else-if="!cds.orders.length" class="text-gray-600">No CDS orders yet.</div>
+          <div v-else class="grid gap-3">
+            <div
+              v-for="order in cds.orders"
+              :key="order.order_id"
+              class="rounded border p-3 hover:bg-gray-50"
+            >
+              <div class="flex justify-between items-center">
+                <div>
+                  <div class="font-semibold">Order #{{ order.order_id }}</div>
+                  <div class="text-sm text-gray-600">
+                    {{ formatDate(order.created_at) }} • {{ order.items.length }} items • Tk.
+                    {{ order.total_amount }}
+                  </div>
+                  <div class="text-xs mt-1">
+                    Payment: {{ order.payment_method }} | Status:
+                    <span :class="statusClass(order.delivery_status)">{{
+                      order.delivery_status
+                    }}</span>
+                  </div>
+                </div>
+              </div>
+              <ul class="mt-2 ml-2 text-sm text-gray-700">
+                <li v-for="item in order.items" :key="item.item_id">
+                  {{ item.name }} <span v-if="item.quantity">x{{ item.quantity }}</span> — Tk.
+                  {{ item.price }}
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
       </details>
 
@@ -179,6 +210,20 @@ const editing = ref(false)
 
 // Laundry orders state
 const laundry = ref({ orders: [], loading: false, error: '' })
+// CDS orders state
+const cds = ref({ orders: [], loading: false, error: '' })
+async function loadCdsOrders() {
+  cds.value.loading = true
+  cds.value.error = ''
+  try {
+    const res = await axios.get('/api/cds/user_orders/')
+    cds.value.orders = Array.isArray(res.data.orders) ? res.data.orders : []
+  } catch (e) {
+    cds.value.error = e?.response?.data?.detail || 'Failed to load CDS orders'
+  } finally {
+    cds.value.loading = false
+  }
+}
 
 function statusClass(status) {
   const base = 'px-2 py-1 rounded text-xs capitalize'
@@ -282,6 +327,7 @@ onMounted(async () => {
     return
   }
   loadLaundryOrders()
+  loadCdsOrders()
 })
 </script>
 
