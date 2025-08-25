@@ -117,6 +117,7 @@ import { computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 import useCart from '@/utils/useCart.js'
+import { useAuthStore } from '@/stores/auth.js'
 const { cart } = useCart()
 const cartCount = computed(() => cart.value.length)
 
