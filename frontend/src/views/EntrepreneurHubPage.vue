@@ -4,7 +4,7 @@
     <div class="container mx-auto px-4 py-8">
 
       <!-- Search Bar at Top -->
-      <div class="mb-8 transform transition-all duration-500 ease-out relative z-[10000]" :class="{ 'scale-105': searchFocused }">
+      <div class="mb-8 transform transition-all duration-500 ease-out relative" :class="{ 'scale-105': searchFocused }">
         <div class="max-w-2xl mx-auto">
           <label for="search" class="block font-medium mb-3 text-center text-gray-700 transition-colors duration-300">Search Products</label>
           <div class="relative">
@@ -71,7 +71,7 @@
       <div class="lg:flex lg:gap-6">
         <!-- Sidebar with Filters -->
         <div class="lg:w-64 lg:flex-shrink-0 mb-6 lg:mb-0">
-          <div class="bg-white rounded-lg shadow-md p-4 lg:sticky lg:top-4">
+          <div class="bg-white rounded-lg shadow-md p-4">
             <h3 class="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Filters</h3>
             
             <div class="space-y-4">
@@ -211,7 +211,6 @@
                   :key="product.id"
                   :product="product"
                   @add-to-cart="onAddToCart"
-                  @product-detail="handleProductDetail"
                   @handle-image-error="handleImageError"
               />
             </div>
@@ -262,13 +261,6 @@
             </div>
           </div>
 
-          <ProductModal
-            v-if="showModal"
-            :key="selectedProduct.id"
-            :product="selectedProduct"
-            @close="closeModal"
-            @click.self="closeModal"
-          />
         </div>
       </div>
     </div>
@@ -280,7 +272,6 @@
 import { ref, computed, onMounted } from 'vue'
 import NavBar from '@/components/NavBar.vue'
 import ProductCard from '@/components/ProductCard.vue'
-import ProductModal from '@/components/ProductModal.vue'
 import PriceL2HFilter from '@/components/PriceL2HFilter.vue'
 import CategoryFilter from '@/components/CategoryFilter.vue'
 import StockFilter from '@/components/StockFilter.vue'
@@ -295,8 +286,6 @@ const selected_category = ref('')
 const selectedStore = ref('')
 const price_range = ref([0,1000])
 const loading = ref(false)
-const selectedProduct = ref(null)
-const showModal = ref(false)
 const categories = ref([])
 const sortOrder = ref('')
 const recentlyAdded = ref([])
@@ -448,15 +437,6 @@ const scrollRight = () => {
   carousel.value.scrollBy({left : 300, behavior : 'smooth'})
 }
 
-function handleProductDetail(product){
-  selectedProduct.value = product
-  showModal.value = true
-}
-
-function closeModal(){
-  showModal.value = false
-  selectedProduct.value = null
-}
 
 function onAddToCart(product){
   console.log("Added ", product, " to cart")

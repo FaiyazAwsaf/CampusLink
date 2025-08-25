@@ -32,6 +32,12 @@ const router = createRouter({
     },
 
     {
+      path: '/entrepreneur-hub/product/:id',
+      name: 'product-details',
+      component: () => import('../views/ProductDetails.vue'),
+    },
+
+    {
       path: '/login',
       name: 'login',
       component: () => import('../views/LoginPage.vue'),
@@ -49,8 +55,12 @@ const router = createRouter({
       path: '/profile',
       name: 'profile',
       component: () => import('../views/ProfilePage.vue'),
-      meta: { requiresAuth: true }
-    }
+    },
+    {
+      path: '/cart',
+      name: 'cart',
+      component: () => import('../views/CartPage.vue'),
+    },
   ],
 })
 

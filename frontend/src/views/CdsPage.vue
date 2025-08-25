@@ -62,6 +62,16 @@
         </div>
 
         <div class="flex items-center space-x-2 mb-6">
+          <select
+            v-model="availabilityFilter"
+            class="w-full max-w-xs bg-white border border-gray-300 rounded-lg px-4 py-2"
+          >
+            <option value="" disabled hidden selected>Select Availability</option>
+            <option value="">All</option>
+            <option value="true">In Stock</option>
+            <option value="false">Out of Stock</option>
+          </select>
+
           <input
             v-model="searchQuery"
             type="text"
@@ -75,15 +85,6 @@
           >
             Search
           </button>
-          <select
-            v-model="availabilityFilter"
-            class="w-full max-w-xs bg-white border border-gray-300 rounded-lg px-4 py-2"
-          >
-            <option value="" disabled hidden selected>Select Availability</option>
-            <option value="">All</option>
-            <option value="true">In Stock</option>
-            <option value="false">Out of Stock</option>
-          </select>
         </div>
 
         <!-- Products Grid -->
@@ -252,11 +253,12 @@
 <script setup>
 import NavBar from '@/components/NavBar.vue'
 import { ref, onMounted, computed, watch } from 'vue'
+import useCart from '@/utils/useCart.js'
 
 const items = ref([])
 const loading = ref(true)
 const error = ref(null)
-const sortOrder = ref('Default')
+const sortOrder = ref('')
 const currentPage = ref(1)
 const totalPages = ref(1)
 const totalItems = ref(0)
@@ -335,9 +337,10 @@ const handleImageError = (event) => {
   event.target.style.display = 'none'
 }
 
+const { addToCart: addToCartGlobal } = useCart()
 const addToCart = (item) => {
-  console.log('Adding to cart:', item)
-  alert(`Added "${item.name}" to cart! (Cart functionality coming soon)`)
+  addToCartGlobal(item, 'cds')
+  alert(`Added "${item.name}" to cart!`)
 }
 
 onMounted(() => {

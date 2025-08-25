@@ -1,6 +1,6 @@
 <template>
 <div
-    @click="$emit('product-detail', product)"
+    @click="navigateToProduct"
     class = "cursor-pointer"
 >
     <div class="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col h-full">
@@ -77,7 +77,7 @@
                     ? 'bg-gray-700 hover:bg-gray-800 text-white hover:shadow-md'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed',
                 ]"
-                @click="$emit('add-to-cart', product)"
+                @click.stop="$emit('add-to-cart', product)"
                 >
                 <span v-if="product.availability">Add to Cart</span>
                 <span v-else>Out of Stock</span>
@@ -89,12 +89,18 @@
 </template>
 
 <script setup>
+import { useRouter } from 'vue-router'
 
-defineProps({
+const router = useRouter()
+
+const props = defineProps({
     product:{
         type:Object,
         required:true,
     },
 })
 
+const navigateToProduct = () => {
+    router.push(`/entrepreneur-hub/product/${props.product.product_id}`)
+}
 </script>
