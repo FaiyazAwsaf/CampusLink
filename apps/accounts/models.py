@@ -44,7 +44,7 @@ class User(AbstractUser):
     
     ROLE_CHOICES = [
         ('cds_owner', 'CDS Owner'),
-        ('staff', 'Staff'),
+        ('laundry_staff', 'Laundry Staff'),
         ('student', 'Student'),
         ('entrepreneur', 'Entrepreneur'),
     ]

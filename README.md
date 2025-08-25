@@ -4,7 +4,7 @@ CampusLink is a modern campus service management platform built with Django REST
 
 ## Features
 
-- **Role-based auth**: Login as **User**, **CDS Owner**, **Laundry Admin**, or **Entrepreneur Admin**.
+- **Role-based auth**: Login as **User**, **CDS Owner**, **Laundry Staff**, or **Entrepreneur**.
 - **User Dashboard**: Modular cards for CDS, Laundry, and Entrepreneur Hub.
 - **CDS Storefront**:
   - Browse items with prices

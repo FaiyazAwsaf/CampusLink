@@ -38,7 +38,8 @@ def register_user(request):
             'name': request.POST.get('name', ''),
             'password': request.POST.get('password', ''),
             'phone': request.POST.get('phone', ''),
-            'image': request.FILES.get('image')
+            'image': request.FILES.get('image'),
+            'is_entrepreneur': request.POST.get('is_entrepreneur', 'false').lower() == 'true'
         }
         
         # Validate all registration data
@@ -50,12 +51,17 @@ def register_user(request):
                 'errors': e.message_dict if hasattr(e, 'message_dict') else {'general': str(e)}
             }, status=400)
         
+        # Determine role based on entrepreneur flag
+        is_entrepreneur = validated_data.get('is_entrepreneur', False)
+        role = 'entrepreneur' if is_entrepreneur else 'student'
+        
         # Create user with validated data
         user = User.objects.create_user(
             email=validated_data['email'],
             name=validated_data['name'],
             password=validated_data['password'],
             phone=validated_data.get('phone'),
+            role=role,
         )
 
         # Save image if provided
@@ -63,8 +69,11 @@ def register_user(request):
             user.image = validated_data['image']
             user.save()
 
-        # Assign user to appropriate group based on role (default is student)
-        PermissionManager.assign_user_to_group(user, 'Students')
+        # Assign user to appropriate group based on role
+        if is_entrepreneur:
+            PermissionManager.assign_user_to_group(user, 'Entrepreneurs')
+        else:
+            PermissionManager.assign_user_to_group(user, 'Students')
 
         # Log the user in
         login(request, user)
@@ -302,8 +311,8 @@ def change_user_role(request):
         
         if new_role == 'cds_owner':
             PermissionManager.assign_user_to_group(user, 'CDS Owners')
-        elif new_role == 'staff':
-            PermissionManager.assign_user_to_group(user, 'Staff')
+        elif new_role == 'laundry_staff':
+            PermissionManager.assign_user_to_group(user, 'Laundry Staff')
         elif new_role == 'entrepreneur':
             PermissionManager.assign_user_to_group(user, 'Entrepreneurs')
         else:

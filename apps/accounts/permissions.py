@@ -6,13 +6,13 @@ from .models import User
 class UserRoles:
     """Constants for user roles"""
     CDS_OWNER = 'cds_owner'
-    STAFF = 'staff'
+    LAUNDRY_STAFF = 'laundry_staff'
     STUDENT = 'student'
     ENTREPRENEUR = 'entrepreneur'
     
     ROLE_CHOICES = [
         (CDS_OWNER, 'CDS Owner'),
-        (STAFF, 'Staff'),
+        (LAUNDRY_STAFF, 'Laundry Staff'),
         (STUDENT, 'Student'),
         (ENTREPRENEUR, 'Entrepreneur'),
     ]
@@ -57,7 +57,7 @@ class PermissionManager:
         try:
             # Create groups
             cds_owner_group, _ = Group.objects.get_or_create(name='CDS Owners')
-            staff_group, _ = Group.objects.get_or_create(name='Staff')
+            laundry_staff_group, _ = Group.objects.get_or_create(name='Laundry Staff')
             student_group, _ = Group.objects.get_or_create(name='Students')
             entrepreneur_group, _ = Group.objects.get_or_create(name='Entrepreneurs')
             
@@ -68,8 +68,8 @@ class PermissionManager:
             cds_owner_permissions = Permission.objects.filter(content_type=content_type)
             cds_owner_group.permissions.set(cds_owner_permissions)
             
-            # Staff permissions
-            staff_permissions = Permission.objects.filter(
+            # Laundry Staff permissions
+            laundry_staff_permissions = Permission.objects.filter(
                 content_type=content_type,
                 codename__in=[
                     'can_view_all_orders',
@@ -78,7 +78,7 @@ class PermissionManager:
                     'can_manage_laundry'
                 ]
             )
-            staff_group.permissions.set(staff_permissions)
+            laundry_staff_group.permissions.set(laundry_staff_permissions)
             
             # Entrepreneur permissions
             entrepreneur_permissions = Permission.objects.filter(

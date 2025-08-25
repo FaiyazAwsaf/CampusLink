@@ -202,6 +202,9 @@ class ValidationUtils:
         except ValidationError as e:
             errors['image'] = str(e)
         
+        # Handle entrepreneur flag (optional, defaults to False)
+        validated_data['is_entrepreneur'] = bool(data.get('is_entrepreneur', False))
+        
         if errors:
             raise ValidationError(errors)
         

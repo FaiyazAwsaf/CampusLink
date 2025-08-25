@@ -27,10 +27,11 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     name = serializers.CharField(max_length=255, required=True)
     phone = serializers.CharField(max_length=15, required=False, allow_blank=True)
     image = serializers.ImageField(required=False, allow_null=True)
+    is_entrepreneur = serializers.BooleanField(required=False, default=False)
 
     class Meta:
         model = User
-        fields = ['email', 'password', 'password_confirm', 'name', 'phone', 'image']
+        fields = ['email', 'password', 'password_confirm', 'name', 'phone', 'image', 'is_entrepreneur']
 
     def validate(self, attrs):
         """
@@ -63,12 +64,24 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         # Remove password_confirm as it's not needed for user creation
         validated_data.pop('password_confirm', None)
         
+        # Extract entrepreneur flag
+        is_entrepreneur = validated_data.pop('is_entrepreneur', False)
+        
+        # Set role based on entrepreneur flag
+        if is_entrepreneur:
+            validated_data['role'] = 'entrepreneur'
+        else:
+            validated_data['role'] = 'student'
+        
         # Create user
         user = User.objects.create_user(**validated_data)
         
-        # Assign to default group
+        # Assign to appropriate group based on role
         from .permissions import PermissionManager
-        PermissionManager.assign_user_to_group(user, 'Students')
+        if is_entrepreneur:
+            PermissionManager.assign_user_to_group(user, 'Entrepreneurs')
+        else:
+            PermissionManager.assign_user_to_group(user, 'Students')
         
         return user
 
@@ -229,7 +242,7 @@ class ChangeRoleSerializer(serializers.Serializer):
         
         role_group_mapping = {
             'cds_owner': 'CDS Owners',
-            'staff': 'Staff',
+            'laundry_staff': 'Laundry Staff',
             'entrepreneur': 'Entrepreneurs',
             'student': 'Students'
         }

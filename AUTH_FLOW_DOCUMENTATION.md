@@ -1,7 +1,7 @@
 # CampusLink Authentication Flow Documentation
 
 ## Overview
-CampusLink implements a comprehensive role-based authentication system using Django backend with **JWT (JSON Web Token) authentication** and Vue.js frontend. The system supports four user roles: CDS Owner, Staff, Student, and Entrepreneur.
+CampusLink implements a comprehensive role-based authentication system using Django backend with **JWT (JSON Web Token) authentication** and Vue.js frontend. The system supports four user roles: CDS Owner, Laundry Staff, Student, and Entrepreneur.
 
 ## 🔄 **Migration: Session to JWT Authentication**
 As of August 2025, CampusLink has migrated from session-based authentication to JWT tokens for improved scalability, stateless authentication, and better support for mobile applications and API integrations.
@@ -13,7 +13,7 @@ As of August 2025, CampusLink has migrated from session-based authentication to 
 #### **Custom User Model (`apps/accounts/models.py`)**
 - **Base**: Extends `AbstractUser` 
 - **Username Field**: Email (username field removed)
-- **Roles**: CDS Owner, Staff, Student, Entrepreneur
+- **Roles**: CDS Owner, Laundry Staff, Student, Entrepreneur
 - **Key Features**:
   - Email-based authentication
   - Phone number validation (Bangladesh format)
