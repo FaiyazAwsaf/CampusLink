@@ -18,7 +18,7 @@ from .serializers import (
     ToggleUserStatusSerializer,
     TokenRefreshResponseSerializer
 )
-from .decorators import cds_owner_required
+from .decorators import admin_required
 from .permissions import PermissionManager
 
 
@@ -263,10 +263,10 @@ def get_user_permissions(request):
 
 
 @api_view(['GET'])
-@cds_owner_required
+@admin_required
 def list_users(request):
     """
-    List all users (CDS Owner only)
+    List all users (Admin only - for system administration)
     """
     try:
         users = User.objects.all()
@@ -285,10 +285,10 @@ def list_users(request):
 
 
 @api_view(['POST'])
-@cds_owner_required
+@admin_required
 def change_user_role(request):
     """
-    Change user role (CDS Owner only)
+    Change user role (Admin only - for system administration)
     """
     try:
         serializer = ChangeRoleSerializer(data=request.data)
@@ -314,10 +314,10 @@ def change_user_role(request):
 
 
 @api_view(['POST'])
-@cds_owner_required
+@admin_required
 def toggle_user_status(request):
     """
-    Toggle user active/inactive status (CDS Owner only)
+    Toggle user active/inactive status (Admin only - for system administration)
     """
     try:
         serializer = ToggleUserStatusSerializer(data=request.data)

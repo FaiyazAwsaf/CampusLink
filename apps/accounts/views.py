@@ -11,7 +11,7 @@ import json
 import os
 
 from .models import User
-from .decorators import login_required_json, cds_owner_required, admin_required, staff_required
+from .decorators import login_required_json, cds_owner_required, admin_required, laundry_staff_required
 from .permissions import PermissionManager, AuthorizationChecker
 from .validators import ValidationUtils
 
@@ -259,11 +259,11 @@ def get_user_permissions(request):
     })
 
 
-@cds_owner_required
+@admin_required
 @require_http_methods(["GET"])
 def list_users(request):
     """
-    List all users (CDS Owner only)
+    List all users (Admin only - for system administration)
     """
     users = User.objects.all().values(
         'id', 'email', 'name', 'phone', 'role', 
@@ -276,11 +276,11 @@ def list_users(request):
     })
 
 
-@cds_owner_required
+@admin_required
 @require_http_methods(["POST"])
 def change_user_role(request):
     """
-    Change user role (CDS Owner only)
+    Change user role (Admin only - for system administration)
     """
     try:
         data = json.loads(request.body)
@@ -349,11 +349,11 @@ def change_user_role(request):
         }, status=500)
 
 
-@cds_owner_required
+@admin_required
 @require_http_methods(["POST"])
 def toggle_user_status(request):
     """
-    Toggle user active/inactive status (CDS Owner only)
+    Toggle user active/inactive status (Admin only - for system administration)
     """
     try:
         data = json.loads(request.body)
@@ -367,7 +367,7 @@ def toggle_user_status(request):
         
         user = User.objects.get(id=user_id)
         
-        # Don't allow CDS Owner to deactivate themselves
+        # Don't allow admin to deactivate themselves
         if user == request.user:
             return JsonResponse({
                 'success': False,
@@ -411,7 +411,7 @@ def toggle_user_status(request):
 @require_http_methods(["POST"])
 def update_profile(request):
     """
-    Update user profile (own profile only, unless CDS Owner)
+    Update user profile (own profile only, unless Admin)
     """
     try:
         target_user_id = request.POST.get('user_id')

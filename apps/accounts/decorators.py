@@ -31,7 +31,7 @@ def cds_owner_required(view_func):
                 'error': 'Authentication required'
             }, status=401)
         
-        if not request.user.is_admin:
+        if request.user.role != 'cds_owner':
             return JsonResponse({
                 'success': False,
                 'error': 'CDS Owner privileges required'
@@ -41,8 +41,27 @@ def cds_owner_required(view_func):
     return wrapper
 
 
-# Keep admin_required for backward compatibility
-admin_required = cds_owner_required
+# Keep admin_required for actual admin operations (superuser only)
+def admin_required(view_func):
+    """
+    Decorator to require actual admin privileges (superuser only)
+    """
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return JsonResponse({
+                'success': False,
+                'error': 'Authentication required'
+            }, status=401)
+        
+        if not request.user.is_admin:
+            return JsonResponse({
+                'success': False,
+                'error': 'Admin privileges required'
+            }, status=403)
+        
+        return view_func(request, *args, **kwargs)
+    return wrapper
 
 
 def laundry_staff_required(view_func):

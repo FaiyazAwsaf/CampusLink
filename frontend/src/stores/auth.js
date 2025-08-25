@@ -14,11 +14,15 @@ export const useAuthStore = defineStore('auth', () => {
   })
 
   const isCDSOwner = computed(() => {
-    return user.value?.is_admin || false
+    return user.value?.role === 'cds_owner' || false
   })
 
   const isLaundryStaff = computed(() => {
-    return user.value?.role === 'laundry_staff' || user.value?.is_admin || false
+    return user.value?.role === 'laundry_staff' || false
+  })
+
+  const isAdmin = computed(() => {
+    return user.value?.is_admin || false
   })
 
   const userRole = computed(() => {
@@ -173,6 +177,7 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     isCDSOwner,
     isLaundryStaff,
+    isAdmin,
     userRole,
     userPermissions,
     
