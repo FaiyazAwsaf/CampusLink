@@ -168,46 +168,46 @@ class ValidationUtils:
                 data.get('email', '')
             )
         except ValidationError as e:
-            errors['email'] = str(e)
-        
+            errors['email'] = e.messages if hasattr(e, 'messages') else [str(e)]
+
         # Validate password
         try:
             validated_data['password'] = ValidationUtils.validate_password(
                 data.get('password', '')
             )
         except ValidationError as e:
-            errors['password'] = str(e) if isinstance(e, str) else e.messages
-        
+            errors['password'] = e.messages if hasattr(e, 'messages') else [str(e)]
+
         # Validate name
         try:
             validated_data['name'] = ValidationUtils.validate_name(
                 data.get('name', '')
             )
         except ValidationError as e:
-            errors['name'] = str(e)
-        
+            errors['name'] = e.messages if hasattr(e, 'messages') else [str(e)]
+
         # Validate phone (optional)
         try:
             phone = ValidationUtils.validate_phone(data.get('phone', ''))
             if phone:
                 validated_data['phone'] = phone
         except ValidationError as e:
-            errors['phone'] = str(e)
-        
+            errors['phone'] = e.messages if hasattr(e, 'messages') else [str(e)]
+
         # Validate image (optional)
         try:
             image = ValidationUtils.validate_image(data.get('image'))
             if image:
                 validated_data['image'] = image
         except ValidationError as e:
-            errors['image'] = str(e)
-        
+            errors['image'] = e.messages if hasattr(e, 'messages') else [str(e)]
+
         # Handle entrepreneur flag (optional, defaults to False)
         validated_data['is_entrepreneur'] = bool(data.get('is_entrepreneur', False))
-        
+
         if errors:
             raise ValidationError(errors)
-        
+
         return validated_data
     
     @staticmethod

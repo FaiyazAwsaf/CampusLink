@@ -186,6 +186,66 @@ def test_permissions():
     except Exception as e:
         print(f"❌ Permission test error: {e}")
 
+def test_role_based_login():
+    """Test role-based login functionality"""
+    print("\n🔑 Testing Role-Based Login")
+    print("=" * 50)
+
+    # Register a user as CDS Owner
+    register_data = {
+        "email": "rolelogin@example.com",
+        "password": "TestPass123!",
+        "password_confirm": "TestPass123!",
+        "name": "Role Login User",
+        "role": "cds_owner"
+    }
+    try:
+        response = requests.post(f"{BASE_URL}/jwt/register/", json=register_data)
+        if response.status_code == 201:
+            print("✅ Registration as CDS Owner successful")
+        elif "already exists" in response.text:
+            print("ℹ️ User already exists, continuing...")
+        else:
+            print(f"❌ Registration failed: {response.text}")
+            return
+    except Exception as e:
+        print(f"❌ Registration error: {e}")
+        return
+
+    # Try login with correct role
+    login_data = {
+        "email": "rolelogin@example.com",
+        "password": "TestPass123!",
+        "role": "cds_owner"
+    }
+    try:
+        response = requests.post(f"{BASE_URL}/jwt/login/", json=login_data)
+        if response.status_code == 200:
+            print("✅ Login with correct role succeeded")
+        else:
+            print(f"❌ Login with correct role failed: {response.text}")
+    except Exception as e:
+        print(f"❌ Login error: {e}")
+
+    # Try login with incorrect role
+    login_data_wrong = {
+        "email": "rolelogin@example.com",
+        "password": "TestPass123!",
+        "role": "student"
+    }
+    try:
+        response = requests.post(f"{BASE_URL}/jwt/login/", json=login_data_wrong)
+        if response.status_code == 400 and "role" in response.text or "does not have the role" in response.text:
+            print("✅ Login with incorrect role correctly failed")
+        else:
+            print(f"❌ Login with incorrect role did not fail as expected: {response.text}")
+    except Exception as e:
+        print(f"❌ Login error: {e}")
+
+    print("=" * 50)
+    print("🎉 Role-Based Login Test Complete!\n")
+
 if __name__ == "__main__":
     test_jwt_endpoints()
     test_permissions()
+    test_role_based_login()

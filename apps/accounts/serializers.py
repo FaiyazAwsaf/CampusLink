@@ -28,10 +28,11 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     phone = serializers.CharField(max_length=15, required=False, allow_blank=True)
     image = serializers.ImageField(required=False, allow_null=True)
     is_entrepreneur = serializers.BooleanField(required=False, default=False)
+    role = serializers.ChoiceField(choices=User.ROLE_CHOICES, required=False)
 
     class Meta:
         model = User
-        fields = ['email', 'password', 'password_confirm', 'name', 'phone', 'image', 'is_entrepreneur']
+        fields = ['email', 'password', 'password_confirm', 'name', 'phone', 'image', 'is_entrepreneur', 'role']
 
     def validate(self, attrs):
         """
@@ -53,7 +54,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                 'image': attrs.get('image')
             })
         except ValidationError as e:
-            raise serializers.ValidationError(e.message_dict)
+            raise serializers.ValidationError(e.detail if hasattr(e, 'detail') else e.message_dict)
 
         return attrs
 
@@ -63,26 +64,31 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         """
         # Remove password_confirm as it's not needed for user creation
         validated_data.pop('password_confirm', None)
-        
-        # Extract entrepreneur flag
         is_entrepreneur = validated_data.pop('is_entrepreneur', False)
-        
-        # Set role based on entrepreneur flag
-        if is_entrepreneur:
+        selected_role = validated_data.pop('role', None)
+
+        # Determine role
+        if selected_role in dict(User.ROLE_CHOICES):
+            validated_data['role'] = selected_role
+        elif is_entrepreneur:
             validated_data['role'] = 'entrepreneur'
         else:
             validated_data['role'] = 'student'
-        
+
         # Create user
         user = User.objects.create_user(**validated_data)
-        
+
         # Assign to appropriate group based on role
         from .permissions import PermissionManager
-        if is_entrepreneur:
-            PermissionManager.assign_user_to_group(user, 'Entrepreneurs')
-        else:
-            PermissionManager.assign_user_to_group(user, 'Students')
-        
+        role_group_mapping = {
+            'cds_owner': 'CDS Owners',
+            'laundry_staff': 'Laundry Staff',
+            'entrepreneur': 'Entrepreneurs',
+            'student': 'Students'
+        }
+        group_name = role_group_mapping.get(user.role, 'Students')
+        PermissionManager.assign_user_to_group(user, group_name)
+
         return user
 
 
@@ -92,6 +98,7 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
     """
     email = serializers.EmailField(required=True)
     password = serializers.CharField(required=True, write_only=True)
+    role = serializers.ChoiceField(choices=User.ROLE_CHOICES, required=False)
 
     def validate(self, attrs):
         """
@@ -99,6 +106,7 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
         """
         email = attrs.get('email')
         password = attrs.get('password')
+        role = attrs.get('role')
 
         if not email or not password:
             raise serializers.ValidationError({
@@ -122,16 +130,22 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
                 'detail': 'Account is inactive. Please contact support.'
             })
 
+        # If role is provided, check it matches user's role
+        if role and user.role != role:
+            raise serializers.ValidationError({
+                'detail': f'User does not have the role: {role}'
+            })
+
         # Generate tokens
         refresh = RefreshToken.for_user(user)
-        
+
         # Add custom claims to the refresh token
         refresh['email'] = user.email
         refresh['name'] = user.name
         refresh['role'] = user.role
         refresh['is_admin'] = user.is_admin
         refresh['is_verified'] = user.is_verified
-        
+
         return {
             'refresh': str(refresh),
             'access': str(refresh.access_token),
