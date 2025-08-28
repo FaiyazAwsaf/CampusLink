@@ -34,12 +34,12 @@ export const useAuthStore = defineStore('auth', () => {
   })
 
   // Actions
-  const login = async (email, password) => {
+  const login = async (email, password, role) => {
     isLoading.value = true
     error.value = null
 
     try {
-      const result = await AuthService.login(email, password)
+  const result = await AuthService.login(email, password, role)
       
       if (result.success) {
         user.value = result.user

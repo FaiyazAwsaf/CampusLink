@@ -41,6 +41,17 @@
               placeholder="Password"
             />
           </div>
+          <!-- Role Dropdown -->
+          <div>
+            <label for="role" class="block text-sm font-medium text-gray-700">Select Role</label>
+            <select id="role" v-model="role" class="appearance-none relative block w-full px-3 py-2 border text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm border-gray-300">
+              <option disabled value="">Please select a role</option>
+              <option value="student">Student</option>
+              <option value="cds_owner">CDS Owner</option>
+              <option value="laundry_staff">Laundry Staff</option>
+              <option value="entrepreneur">Entrepreneur</option>
+            </select>
+          </div>
         </div>
 
         <div class="flex items-center justify-between">
@@ -114,6 +125,7 @@ const authStore = useAuthStore()
 // Form data
 const email = ref('')
 const password = ref('')
+const role = ref('')
 const rememberMe = ref(false)
 const error = ref('')
 
@@ -127,7 +139,7 @@ const handleLogin = async () => {
   isLoading.value = true
 
   try {
-    const result = await authStore.login(email.value, password.value)
+  const result = await authStore.login(email.value, password.value, role.value)
 
     if (result.success) {
       // Redirect to intended page or home

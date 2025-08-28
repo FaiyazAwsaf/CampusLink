@@ -134,14 +134,14 @@ export class AuthService {
   /**
    * Login user with email and password
    */
-  static async login(email, password) {
+  static async login(email, password, role) {
     try {
       const response = await fetch(`${API_BASE_URL}/api/accounts/jwt/login/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password, role })
       })
 
       const data = await response.json()
