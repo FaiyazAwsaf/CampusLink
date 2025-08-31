@@ -4,7 +4,7 @@
     <div class="container mx-auto px-4 py-8">
 
       <!-- Search Bar at Top -->
-      <div class="mb-8 transform transition-all duration-500 ease-out relative" :class="{ 'scale-105': searchFocused }">
+      <div class="mb-8 transform transition-all duration-500 ease-out relative z-20" :class="{ 'scale-105': searchFocused }">
         <div class="max-w-2xl mx-auto">
           <label for="search" class="block font-medium mb-3 text-center text-gray-700 transition-colors duration-300">Search Products</label>
           <div class="relative">
@@ -29,7 +29,7 @@
             
             <!-- Autocomplete Suggestions -->
             <Transition name="slide-fade">
-              <div v-if="showSuggestions && suggestions.length > 0" class="absolute z-[9999] w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl max-h-64 overflow-y-auto backdrop-blur-sm">
+              <div v-if="showSuggestions && suggestions.length > 0" class="absolute z-20 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl max-h-64 overflow-y-auto backdrop-blur-sm">
                 <div
                   v-for="(suggestion, index) in suggestions"
                   :key="index"
@@ -195,7 +195,7 @@
 
                 <button
                   @click="scrollRight"
-                  class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white hover:bg-gray-50 p-2 rounded-full shadow-md border border-gray-200 transition-all duration-200"
+                  class="absolute right-0 top-1/2 -translate-y-1/2 bg-white hover:bg-gray-50 p-2 rounded-full shadow-md border border-gray-200 transition-all duration-200"
                 >
                   <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
