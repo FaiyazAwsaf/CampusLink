@@ -7,7 +7,7 @@ from .advanced_search import (
 )
 
 from rest_framework.routers import DefaultRouter
-from .views import ProductCRUDViewSet
+from .views import ProductCRUDViewSet, StorefrontViewSet
 
 
 urlpatterns = [
@@ -27,5 +27,6 @@ urlpatterns = [
 
 router = DefaultRouter()
 router.register(r'products/manage', ProductCRUDViewSet, basename='product-crud')
+router.register(r'storefronts', StorefrontViewSet, basename='storefront-crud')
 
 urlpatterns += router.urls

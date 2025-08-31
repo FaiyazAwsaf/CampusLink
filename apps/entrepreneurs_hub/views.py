@@ -1,16 +1,16 @@
 from django.shortcuts import render
 from .models import Product, Storefront, Rating
 from .serializers import ProductSerializer, StorefrontSerializer, RatingSerializer
+from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
 from rest_framework import permissions
+from rest_framework import serializers
 
 # Create your views here.
 class ProductPagePagination(PageNumberPagination):
@@ -183,6 +183,29 @@ class IsEntrepreneurAndOwnsStorefront(permissions.BasePermission):
         # obj is a Product instance
         return obj.store_id.owner == request.user
 
+class IsEntrepreneurOwner(permissions.BasePermission):
+    """Allow only entrepreneurs to manage their own storefronts"""
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.role == 'entrepreneur' and request.user.has_perm('accounts.can_create_products')
+
+    def has_object_permission(self, request, view, obj):
+        # obj is a Storefront instance
+        return obj.owner == request.user
+
+class StorefrontViewSet(viewsets.ModelViewSet):
+    serializer_class = StorefrontSerializer
+    permission_classes = [IsAuthenticated, IsEntrepreneurOwner]
+    ordering = ['store_id']  # Use the correct ordering field from model
+    pagination_class = None  # Disable pagination for storefronts
+    
+    def get_queryset(self):
+        # Only show storefronts owned by the current user
+        return Storefront.objects.filter(owner=self.request.user)
+    
+    def perform_create(self, serializer):
+        # Set the owner to the current user
+        serializer.save(owner=self.request.user)
+
 class ProductCRUDViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
     permission_classes = [IsAuthenticated, IsEntrepreneurAndOwnsStorefront]
@@ -190,26 +213,31 @@ class ProductCRUDViewSet(viewsets.ModelViewSet):
     pagination_class = None  # Disable pagination for entrepreneur's own products
 
     def get_queryset(self):
-        # Only allow entrepreneurs to see their own products
+        # Filter by storefront if provided
+        storefront_id = self.request.query_params.get('storefront')
+        if storefront_id:
+            return Product.objects.filter(
+                store_id__owner=self.request.user,
+                store_id=storefront_id
+            ).order_by('-created_at')
+        # Otherwise show all products from all user's storefronts
         return Product.objects.filter(store_id__owner=self.request.user).order_by('-created_at')
 
-    def get_or_create_storefront(self):
-        """Get or create a storefront for the current user"""
-        storefront, created = Storefront.objects.get_or_create(
-            owner=self.request.user,
-            defaults={
-                'name': f"{self.request.user.name}'s Store",
-                'image': 'https://images.pexels.com/photos/789327/pexels-photo-789327.jpeg'
-            }
-        )
-        return storefront
-
     def perform_create(self, serializer):
-        # Set the store_id to the entrepreneur's storefront
-        storefront = self.get_or_create_storefront()
+        # Get storefront from request data or default to first storefront
+        storefront_id = self.request.data.get('storefront_id')
+        if storefront_id:
+            try:
+                storefront = Storefront.objects.get(id=storefront_id, owner=self.request.user)
+            except Storefront.DoesNotExist:
+                raise serializers.ValidationError("Invalid storefront")
+        else:
+            storefront = Storefront.objects.filter(owner=self.request.user).first()
+            if not storefront:
+                raise serializers.ValidationError("You must have at least one storefront to create products")
+        
         serializer.save(store_id=storefront)
 
     def perform_update(self, serializer):
         # Ensure only updating own products
-        storefront = self.get_or_create_storefront()
-        serializer.save(store_id=storefront)
+        serializer.save()
