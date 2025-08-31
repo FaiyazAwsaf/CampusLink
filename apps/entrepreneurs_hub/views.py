@@ -7,7 +7,7 @@ from rest_framework.generics import ListAPIView
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import viewsets
 from rest_framework import permissions
 from rest_framework import serializers
@@ -21,6 +21,7 @@ class ProductPagePagination(PageNumberPagination):
 class ProductListAPIView(ListAPIView):
     serializer_class = ProductSerializer
     pagination_class = ProductPagePagination
+    permission_classes = [AllowAny]  # Allow anonymous access to browse products
 
     def get_queryset(self):
         queryset = Product.objects.all()
@@ -67,22 +68,27 @@ class ProductListAPIView(ListAPIView):
     
 class ProductDetailsAPIView(RetrieveAPIView):
     serializer_class = ProductSerializer
+    permission_classes = [AllowAny]  # Allow anonymous access to view product details
     queryset = Product.objects.all()
     lookup_field = 'product_id'
 
 class StorefrontAPIView(APIView):
+    permission_classes = [AllowAny]  # Allow anonymous access to view storefronts
+    
     def get(self, request):
         store_names = Storefront.objects.values_list("name", flat=True).distinct()
         return Response(store_names)
     
 class ProductCategoryAPIView(APIView):
+    permission_classes = [AllowAny]  # Allow anonymous access to view categories
+    
     def get(self, request):
         category_names = Product.objects.values_list("category", flat=True).distinct().order_by("category")
         return Response(category_names)
 
 class StorefrontsAPIView(ListAPIView):
-
     serializer_class = StorefrontSerializer
+    permission_classes = [AllowAny]  # Allow anonymous access to view storefronts
     pagination_class = None
 
     def get_queryset(self):
@@ -90,6 +96,8 @@ class StorefrontsAPIView(ListAPIView):
         return queryset
 
 class SearchViewAPI(APIView):
+    permission_classes = [AllowAny]  # Allow anonymous access to search
+    
     def get(self, request):
         query = request.GET.get('query', '').strip()
 
@@ -103,6 +111,8 @@ class SearchViewAPI(APIView):
 
     
 class RecentlyAddedProducts(APIView):
+    permission_classes = [AllowAny]  # Allow anonymous access to view recent products
+    
     def get(self, request):
         recent_products = Product.objects.order_by('-created_at')[:10]
         serializer = ProductSerializer(recent_products, many=True)
@@ -110,6 +120,8 @@ class RecentlyAddedProducts(APIView):
 
 
 class ProductRatingsAPIView(APIView):
+    permission_classes = [AllowAny]  # Allow anonymous access to view ratings
+    
     def get(self, request, product_id):
         try:
             product = Product.objects.get(product_id=product_id)
