@@ -186,17 +186,30 @@ class IsEntrepreneurAndOwnsStorefront(permissions.BasePermission):
 class ProductCRUDViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
     permission_classes = [IsAuthenticated, IsEntrepreneurAndOwnsStorefront]
+    ordering = ['-created_at']  # Set correct ordering field
+    pagination_class = None  # Disable pagination for entrepreneur's own products
 
     def get_queryset(self):
         # Only allow entrepreneurs to see their own products
-        return Product.objects.filter(store_id__owner=self.request.user)
+        return Product.objects.filter(store_id__owner=self.request.user).order_by('-created_at')
+
+    def get_or_create_storefront(self):
+        """Get or create a storefront for the current user"""
+        storefront, created = Storefront.objects.get_or_create(
+            owner=self.request.user,
+            defaults={
+                'name': f"{self.request.user.name}'s Store",
+                'image': 'https://images.pexels.com/photos/789327/pexels-photo-789327.jpeg'
+            }
+        )
+        return storefront
 
     def perform_create(self, serializer):
         # Set the store_id to the entrepreneur's storefront
-        storefront = Storefront.objects.filter(owner=self.request.user).first()
+        storefront = self.get_or_create_storefront()
         serializer.save(store_id=storefront)
 
     def perform_update(self, serializer):
         # Ensure only updating own products
-        storefront = Storefront.objects.filter(owner=self.request.user).first()
+        storefront = self.get_or_create_storefront()
         serializer.save(store_id=storefront)

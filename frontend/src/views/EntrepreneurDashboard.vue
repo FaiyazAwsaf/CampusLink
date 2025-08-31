@@ -110,6 +110,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { TokenManager } from '@/utils/auth.js'
 
 const products = ref([])
 const isLoading = ref(false)
@@ -128,11 +129,22 @@ const editProductId = ref(null)
 
 const API_BASE = '/api/entrepreneurs_hub/products/manage/'
 
+const getAuthHeaders = () => {
+  const token = TokenManager.getAccessToken()
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  }
+}
+
 const fetchProducts = async () => {
   isLoading.value = true
   error.value = ''
   try {
-    const res = await fetch(API_BASE)
+    const res = await fetch(API_BASE, {
+      headers: getAuthHeaders()
+    })
+    if (!res.ok) throw new Error('Failed to fetch products')
     const data = await res.json()
     products.value = data
   } catch (e) {
@@ -147,7 +159,7 @@ const createProduct = async () => {
   try {
     const res = await fetch(API_BASE, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(form.value)
     })
     if (!res.ok) throw new Error('Create failed')
@@ -170,7 +182,7 @@ const updateProduct = async () => {
   try {
     const res = await fetch(`${API_BASE}${editProductId.value}/`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(form.value)
     })
     if (!res.ok) throw new Error('Update failed')
@@ -185,7 +197,8 @@ const deleteProduct = async (id) => {
   error.value = ''
   try {
     const res = await fetch(`${API_BASE}${id}/`, {
-      method: 'DELETE'
+      method: 'DELETE',
+      headers: getAuthHeaders()
     })
     if (!res.ok) throw new Error('Delete failed')
     fetchProducts()
