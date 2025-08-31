@@ -163,6 +163,7 @@ export class AuthService {
    */
   static async register(userData) {
     try {
+      console.log('AuthService.register called with:', userData)
       // Check if we have a file to upload
       const hasFile = userData.image && userData.image instanceof File
       
@@ -185,13 +186,16 @@ export class AuthService {
         headers['Content-Type'] = 'application/json'
       }
 
+      console.log('Making request to:', `${API_BASE_URL}/api/accounts/jwt/register/`)
       const response = await fetch(`${API_BASE_URL}/api/accounts/jwt/register/`, {
         method: 'POST',
         headers: headers,
         body: requestData
       })
 
+      console.log('Response status:', response.status)
       const data = await response.json()
+      console.log('Response data:', data)
 
       if (response.ok && data.success) {
         TokenManager.setTokens(data.tokens.access, data.tokens.refresh)

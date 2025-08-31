@@ -31,7 +31,7 @@
           <div class="ml-4 flex items-center md:ml-6">
             <!-- Cart Button -->
             <button
-              v-if="isLoggedIn"
+              v-if="isLoggedIn && !isEntrepreneur"
               @click="goToCart"
               class="relative bg-blue-100 text-black text-sm font-semibold px-4 py-2 rounded-lg mr-4 transition-colors duration-200 hover:bg-blue-500 hover:text-white active:bg-blue-700 active:text-white"
             >
@@ -132,6 +132,7 @@ const authStore = useAuthStore()
 // Reactive authentication state from store
 const isLoggedIn = computed(() => authStore.isAuthenticated)
 const currentUser = computed(() => authStore.user || {})
+const isEntrepreneur = computed(() => currentUser.value?.role === 'entrepreneur')
 
 // Handle logout
 const handleLogout = async () => {
@@ -147,10 +148,27 @@ const getProfilePage = () => {
   router.push('/profile')
 }
 
-const userNavigation = [
-  { name: 'Your Profile', action: getProfilePage },
-  { name: 'Sign out', action: handleLogout },
-]
+const getDashboard = () => {
+  if (isEntrepreneur.value) {
+    router.push('/entrepreneur/dashboard')
+  } else {
+    router.push('/')
+  }
+}
+
+const userNavigation = computed(() => {
+  const baseNavigation = [
+    { name: 'Your Profile', action: getProfilePage },
+  ]
+  
+  if (isEntrepreneur.value) {
+    baseNavigation.unshift({ name: 'Dashboard', action: getDashboard })
+  }
+  
+  baseNavigation.push({ name: 'Sign out', action: handleLogout })
+  
+  return baseNavigation
+})
 
 function getProfileImage(user) {
   if (user?.image_url) {
@@ -169,6 +187,7 @@ const pageTitles = {
   '/cds': 'Central Departmental Store',
   '/laundry': 'Laundry',
   '/entrepreneur-hub': 'Entrepreneur Hub',
+  '/entrepreneur/dashboard': 'Entrepreneur Dashboard',
 }
 
 const pageTitle = computed(() => {
@@ -178,11 +197,20 @@ const pageTitle = computed(() => {
   return pageTitles[route.path] || 'CampusLink'
 })
 
-const showBackButton = computed(() => route.path !== '/')
+const showBackButton = computed(() => {
+  // Entrepreneurs should not see back button on their dashboard
+  if (isEntrepreneur.value && route.path === '/entrepreneur/dashboard') {
+    return false
+  }
+  return route.path !== '/'
+})
 
 const backButtonText = computed(() => {
   if (route.path.startsWith('/entrepreneur-hub/product/')) {
     return '← Back to Products'
+  }
+  if (isEntrepreneur.value) {
+    return '← Back to Dashboard'
   }
   return '← Back to Home'
 })
@@ -190,6 +218,8 @@ const backButtonText = computed(() => {
 const handleBackClick = () => {
   if (route.path.startsWith('/entrepreneur-hub/product/')) {
     router.push('/entrepreneur-hub')
+  } else if (isEntrepreneur.value) {
+    router.push('/entrepreneur/dashboard')
   } else {
     router.push('/')
   }

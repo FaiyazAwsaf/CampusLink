@@ -561,11 +561,21 @@ const handleRegister = async () => {
     }
 
     const result = await authStore.register(userData)
+    console.log('Registration result:', result)
 
     if (result.success) {
-      // Redirect to intended page or home
-      const redirectTo = route.query.next || '/'
-      router.push(redirectTo)
+      console.log('Registration successful, user:', result.user)
+      // Role-based redirection
+      if (result.user.role === 'entrepreneur') {
+        console.log('Redirecting entrepreneur to dashboard')
+        // Entrepreneurs go directly to their dashboard
+        router.push({ name: 'EntrepreneurDashboard' })
+      } else {
+        console.log('Redirecting non-entrepreneur to:', route.query.next || '/')
+        // Other roles go to intended page or home
+        const redirectTo = route.query.next || '/'
+        router.push(redirectTo)
+      }
     } else {
       // Handle validation errors from backend
       if (result.errors) {

@@ -43,7 +43,7 @@ export const useAuthStore = defineStore('auth', () => {
       
       if (result.success) {
         user.value = result.user
-        return { success: true }
+        return { success: true, user: result.user }
       } else {
         error.value = result.error
         return { success: false, error: result.error }
@@ -61,15 +61,20 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
 
     try {
+      console.log('Auth store register called with:', userData)
       const result = await AuthService.register(userData)
+      console.log('AuthService.register result:', result)
       
       if (result.success) {
         user.value = result.user
-        return { success: true }
+        console.log('User set in store:', user.value)
+        return { success: true, user: result.user }
       } else {
+        console.log('Registration failed with errors:', result.errors)
         return { success: false, errors: result.errors }
       }
     } catch (err) {
+      console.error('Auth store register error:', err)
       error.value = 'Registration failed'
       return { success: false, errors: { general: 'Registration failed' } }
     } finally {

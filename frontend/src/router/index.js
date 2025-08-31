@@ -73,6 +73,8 @@ const router = createRouter({
 // Navigation guards
 router.beforeEach((to, from, next) => {
   const isAuthenticated = AuthService.isAuthenticated()
+  const user = AuthService.getCurrentUserData()
+  const userRole = user?.role
   
   // Routes that require authentication
   if (to.meta.requiresAuth && !isAuthenticated) {
@@ -85,8 +87,38 @@ router.beforeEach((to, from, next) => {
   
   // Routes that require guest (not authenticated)
   if (to.meta.requiresGuest && isAuthenticated) {
-    next({ name: 'landing' })
+    // If user is entrepreneur, redirect to their dashboard
+    if (userRole === 'entrepreneur') {
+      next({ name: 'EntrepreneurDashboard' })
+    } else {
+      next({ name: 'landing' })
+    }
     return
+  }
+  
+  // Role-based access control
+  if (isAuthenticated && userRole) {
+    // Entrepreneur restrictions
+    if (userRole === 'entrepreneur') {
+      // Allow access only to landing page and entrepreneur dashboard
+      const allowedRoutes = ['landing', 'EntrepreneurDashboard', 'profile']
+      
+      if (!allowedRoutes.includes(to.name)) {
+        next({ name: 'EntrepreneurDashboard' })
+        return
+      }
+    }
+    
+    // Role-specific route requirements
+    if (to.meta.role && to.meta.role !== userRole) {
+      // User doesn't have required role for this route
+      if (userRole === 'entrepreneur') {
+        next({ name: 'EntrepreneurDashboard' })
+      } else {
+        next({ name: 'landing' })
+      }
+      return
+    }
   }
   
   next()
