@@ -61,6 +61,12 @@ const router = createRouter({
       name: 'cart',
       component: () => import('../views/CartPage.vue'),
     },
+      {
+        path: '/entrepreneur/dashboard',
+        name: 'EntrepreneurDashboard',
+        component: () => import('../views/EntrepreneurDashboard.vue'),
+        meta: { requiresAuth: true, role: 'entrepreneur' }
+      },
   ],
 })
 

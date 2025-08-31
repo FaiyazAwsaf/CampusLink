@@ -1,13 +1,16 @@
 from django.shortcuts import render
 from .models import Product, Storefront, Rating
 from .serializers import ProductSerializer, StorefrontSerializer, RatingSerializer
-from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import permissions
 
 # Create your views here.
 class ProductPagePagination(PageNumberPagination):
@@ -169,3 +172,31 @@ class SubmitRatingAPIView(APIView):
                 'success': False,
                 'error': str(e)
             }, status=500)
+
+
+class IsEntrepreneurAndOwnsStorefront(permissions.BasePermission):
+    """Allow only entrepreneurs to manage their own products"""
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.role == 'entrepreneur' and request.user.has_perm('accounts.can_create_products')
+
+    def has_object_permission(self, request, view, obj):
+        # obj is a Product instance
+        return obj.store_id.owner == request.user
+
+class ProductCRUDViewSet(viewsets.ModelViewSet):
+    serializer_class = ProductSerializer
+    permission_classes = [IsAuthenticated, IsEntrepreneurAndOwnsStorefront]
+
+    def get_queryset(self):
+        # Only allow entrepreneurs to see their own products
+        return Product.objects.filter(store_id__owner=self.request.user)
+
+    def perform_create(self, serializer):
+        # Set the store_id to the entrepreneur's storefront
+        storefront = Storefront.objects.filter(owner=self.request.user).first()
+        serializer.save(store_id=storefront)
+
+    def perform_update(self, serializer):
+        # Ensure only updating own products
+        storefront = Storefront.objects.filter(owner=self.request.user).first()
+        serializer.save(store_id=storefront)
