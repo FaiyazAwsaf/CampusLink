@@ -1,18 +1,57 @@
 from rest_framework import serializers
-from .models import Product, Storefront, Rating
+from .models import Product, Storefront, Rating, Owner
+
+class OwnerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Owner
+        fields = [
+            'owner_id',
+            'name',
+            'image',
+            'bio',
+            'phone',
+            'email',
+            'facebook_url',
+            'instagram_url',
+            'website_url',
+            'joined_date'
+        ]
 
 class StorefrontSerializer(serializers.ModelSerializer):
-    owner = serializers.CharField(source='owner.username', read_only=True)
+    owner = OwnerSerializer(read_only=True)
+    average_rating = serializers.SerializerMethodField()
+    total_products = serializers.SerializerMethodField()
+    total_reviews = serializers.SerializerMethodField()
     
     class Meta:
         model = Storefront
         fields = [
             'store_id',
+            'owner',
             'name',
             'image',
-            'owner'
+            'description',
+            'established_date',
+            'location',
+            'return_policy',
+            'shipping_info',
+            'store_hours',
+            'total_sales',
+            'created_at',
+            'average_rating',
+            'total_products',
+            'total_reviews'
         ]
         read_only_fields = ['store_id', 'owner']
+
+    def get_average_rating(self, obj):
+        return obj.get_average_rating()
+
+    def get_total_products(self, obj):
+        return obj.get_total_products()
+
+    def get_total_reviews(self, obj):
+        return obj.get_total_reviews()
 
 class RatingSerializer(serializers.ModelSerializer):
     user_name = serializers.CharField(source='user.username', read_only=True)

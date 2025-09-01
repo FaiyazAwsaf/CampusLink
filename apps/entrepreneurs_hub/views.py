@@ -95,6 +95,25 @@ class StorefrontsAPIView(ListAPIView):
         queryset = Storefront.objects.all()
         return queryset
 
+class StorefrontDetailAPIView(RetrieveAPIView):
+    serializer_class = StorefrontSerializer
+    queryset = Storefront.objects.all()
+    lookup_field = 'store_id'
+
+class StorefrontProductsAPIView(ListAPIView):
+    serializer_class = ProductSerializer
+    pagination_class = ProductPagePagination
+
+    def get_queryset(self):
+        store_id = self.kwargs.get('store_id')
+        queryset = Product.objects.filter(store_id=store_id)
+        
+        ordering = self.request.query_params.get('ordering', 'created_at')
+        if ordering in ['price', '-price', 'name', '-name', 'created_at', '-created_at']:
+            queryset = queryset.order_by(ordering)
+        
+        return queryset
+
 class SearchViewAPI(APIView):
     permission_classes = [AllowAny]  # Allow anonymous access to search
     

@@ -38,6 +38,12 @@ const router = createRouter({
     },
 
     {
+      path: '/entrepreneur-hub/store/:storeId',
+      name: 'storefront-profile',
+      component: () => import('../views/StorefrontProfile.vue'),
+    },
+
+    {
       path: '/login',
       name: 'login',
       component: () => import('../views/LoginPage.vue'),
