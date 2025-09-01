@@ -1,6 +1,13 @@
 <template>
   <div class="container mx-auto py-8">
-    <h1 class="text-2xl font-bold mb-6">Entrepreneur Dashboard</h1>
+    <div class="mb-6 flex items-center">
+      <button @click="navigateToLanding" class="mr-4 p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+      </button>
+      <h1 class="text-2xl font-bold">Entrepreneur Dashboard</h1>
+    </div>
     <div v-if="error" class="mb-4 text-red-600">{{ error }}</div>
 
     <!-- Storefront Selection View -->
@@ -228,7 +235,10 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { TokenManager } from '@/utils/auth.js'
+
+const router = useRouter()
 
 // State Management
 const currentView = ref('storefronts') // 'storefronts' or 'products'
@@ -483,6 +493,11 @@ const resetProductForm = () => {
     image: '',
     availability: true,
   }
+}
+
+// Navigation
+const navigateToLanding = () => {
+  router.push('/')
 }
 
 onMounted(fetchStorefronts)

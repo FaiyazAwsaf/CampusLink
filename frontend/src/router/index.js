@@ -55,6 +55,7 @@ const router = createRouter({
       path: '/profile',
       name: 'profile',
       component: () => import('../views/ProfilePage.vue'),
+      meta: { requiresAuth: true }
     },
     {
       path: '/cart',
