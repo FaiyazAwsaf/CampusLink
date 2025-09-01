@@ -159,6 +159,18 @@
               />
             </div>
           </div>
+
+          <!-- Role Dropdown -->
+          <div>
+            <label for="role" class="block text-sm font-medium text-gray-700">Select Role</label>
+            <select id="role" v-model="role" class="appearance-none relative block w-full px-3 py-2 border text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm border-gray-300">
+              <option disabled value="">Please select a role</option>
+              <option value="student">Student</option>
+              <option value="entrepreneur">Entrepreneur</option>
+            </select>
+          </div>
+          
+          <!-- ...existing code... -->
         </div>
 
         <div>
@@ -216,11 +228,13 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import axios from 'axios'
+import { useRouter, useRoute } from 'vue-router'
+import { useAuthStore } from '@/stores/auth.js'
 import NavBar from '@/components/NavBar.vue'
 
 const router = useRouter()
+const route = useRoute()
+const authStore = useAuthStore()
 
 // Form data
 const name = ref('')
@@ -230,9 +244,13 @@ const confirmPassword = ref('')
 const phone = ref('')
 const image = ref(null)
 const imagePreview = ref('')
+const isEntrepreneur = ref(false)
 const error = ref('')
 const errors = ref({})
 const isLoading = ref(false)
+
+// Role selection
+const role = ref('')
 
 // Form validation utilities
 const validateEmail = (email) => {
@@ -288,7 +306,7 @@ const validatePassword = (password) => {
     'abc123',
     'password123',
     '123456789',
-    'admin',
+    'cds_owner',
     'user',
   ]
   if (weakPasswords.includes(password.toLowerCase())) {
@@ -522,50 +540,51 @@ const handleRegister = async () => {
   isLoading.value = true
 
   try {
-    // Create form data for file upload
-    const formData = new FormData()
-    formData.append('name', name.value.trim())
-    formData.append('email', email.value.trim().toLowerCase())
-    formData.append('password', password.value)
+    // Prepare user data for registration
+    const userData = {
+      name: name.value.trim(),
+      email: email.value.trim().toLowerCase(),
+      password: password.value,
+      password_confirm: confirmPassword.value,
+      is_entrepreneur: isEntrepreneur.value,
+    role: role.value,
+    }
+
     if (phone.value.trim()) {
-      formData.append('phone', phone.value.trim())
+      userData.phone = phone.value.trim()
     }
 
     if (image.value) {
-      formData.append('image', image.value)
+      userData.image = image.value
     }
 
-    const response = await axios.post('/api/accounts/register/', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
+    const result = await authStore.register(userData)
+    console.log('Registration result:', result)
 
-    if (response.data.success) {
-      // Store user data in localStorage
-      localStorage.setItem('user', JSON.stringify(response.data.user))
-
-      // Redirect to home page
-      router.push('/')
+    if (result.success) {
+      console.log('Registration successful, user:', result.user)
+      // Role-based redirection
+      if (result.user.role === 'entrepreneur') {
+        console.log('Redirecting entrepreneur to dashboard')
+        // Entrepreneurs go directly to their dashboard
+        router.push({ name: 'EntrepreneurDashboard' })
+      } else {
+        console.log('Redirecting non-entrepreneur to:', route.query.next || '/')
+        // Other roles go to intended page or home
+        const redirectTo = route.query.next || '/'
+        router.push(redirectTo)
+      }
     } else {
       // Handle validation errors from backend
-      if (response.data.errors) {
-        errors.value = response.data.errors
+      if (result.errors) {
+        errors.value = result.errors
       } else {
-        error.value = response.data.error || 'Registration failed. Please try again.'
+        error.value = 'Registration failed. Please try again.'
       }
     }
   } catch (err) {
     console.error('Registration error:', err)
-
-    // Handle backend validation errors
-    if (err.response?.data?.errors) {
-      errors.value = err.response.data.errors
-    } else if (err.response?.data?.error) {
-      error.value = err.response.data.error
-    } else {
-      error.value = 'Registration failed. Please try again.'
-    }
+    error.value = 'Registration failed. Please try again.'
   } finally {
     isLoading.value = false
   }

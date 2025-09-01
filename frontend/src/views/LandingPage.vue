@@ -55,8 +55,9 @@
         <p class="text-slate-600 mt-1">Choose a module to get started.</p>
 
         <div class="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          <!-- CDS -->
+          <!-- CDS - Hidden for entrepreneurs -->
           <div
+            v-if="!isEntrepreneur"
             class="starting:opacity-0 transition-all duration-500 bg-white rounded-2xl shadow-lg hover:shadow-2xl hover:ring-4 hover:ring-blue-400/40 p-6 flex flex-col items-center m-4"
             @click="$router.push('/cds')"
           >
@@ -74,9 +75,9 @@
             </button>
           </div>
 
-          <!-- Laundry -->
-
+          <!-- Laundry - Hidden for entrepreneurs -->
           <div
+            v-if="!isEntrepreneur"
             class="starting:opacity-0 transition-all duration-500 bg-white rounded-2xl shadow-lg hover:shadow-2xl hover:ring-4 hover:ring-green-400/40 p-6 flex flex-col items-center m-4"
             @click="$router.push('/laundry')"
           >
@@ -92,17 +93,35 @@
             </button>
           </div>
 
-          <!-- E-Hub -->
-
+          <!-- Entrepreneur Dashboard - Only for entrepreneurs -->
           <div
+            v-if="isEntrepreneur"
+            class="starting:opacity-0 transition-all duration-500 bg-white rounded-2xl shadow-lg hover:shadow-2xl hover:ring-4 hover:ring-purple-400/40 p-6 flex flex-col items-center m-4"
+            @click="$router.push('/entrepreneur/dashboard')"
+          >
+            <div class="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center mb-4">
+              <span class="text-3xl text-purple-600">📊</span>
+            </div>
+            <h2 class="text-xl font-bold mb-2 text-gray-800">My Dashboard</h2>
+            <p class="text-gray-500 mb-4 text-center">Manage your storefronts and products.</p>
+            <button
+              class="mt-auto px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition"
+            >
+              Go to Dashboard
+            </button>
+          </div>
+
+          <!-- E-Hub - Hidden for entrepreneurs, only shown to other users -->
+          <div
+            v-if="!isEntrepreneur"
             class="starting:opacity-0 transition-all duration-500 bg-white rounded-2xl shadow-lg hover:shadow-2xl hover:ring-4 hover:ring-yellow-400/40 p-6 flex flex-col items-center m-4"
-            @click="$router.push('/entrepreneur-hub')"
+            @click="handleEntrepreneurHubClick"
           >
             <div class="w-16 h-16 rounded-full bg-yellow-100 flex items-center justify-center mb-4">
               <span class="text-3xl text-yellow-600">💡</span>
             </div>
             <h2 class="text-xl font-bold mb-2 text-gray-800">Entrepreneur Hub</h2>
-            <p class="text-gray-500 mb-4 text-center">Discover student businesses on campus.</p>
+            <p class="text-gray-500 mb-4 text-center">Discover student businesses on campus</p>
             <button
               class="mt-auto px-4 py-2 bg-yellow-500 text-white rounded-xl hover:bg-yellow-600 transition"
             >
@@ -205,10 +224,15 @@
 <script setup>
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth.js'
 import NavBar from '@/components/NavBar.vue'
 
 const router = useRouter()
+const authStore = useAuthStore()
 const year = computed(() => new Date().getFullYear())
+
+// Check if user is entrepreneur
+const isEntrepreneur = computed(() => authStore.user?.role === 'entrepreneur')
 
 const goToLogin = () => router.push('/login')
 const goToSignup = () => router.push('/register')
@@ -216,5 +240,10 @@ const goTo = (path) => router.push(path)
 const scrollTo = (id) => {
   const el = document.getElementById(id)
   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+const handleEntrepreneurHubClick = () => {
+  // Entrepreneurs can still view the public entrepreneur hub
+  router.push('/entrepreneur-hub')
 }
 </script>

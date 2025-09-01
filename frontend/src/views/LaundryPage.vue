@@ -188,6 +188,7 @@ import NavBar from '@/components/NavBar.vue'
 import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
+import { AuthService } from '@/utils/auth.js'
 
 const router = useRouter()
 
@@ -330,15 +331,16 @@ function formatDate(date) {
     day: 'numeric',
   })
 }
-onMounted(() => {
+onMounted(async () => {
   // Verify auth; if not logged in, send to login page
-  axios
-    .get('/api/accounts/current-user/')
-    .then(() => {
-      fetchCategories()
-    })
-    .catch(() => {
+  try {
+    if (!AuthService.isAuthenticated()) {
       router.push({ name: 'login', query: { next: '/laundry' } })
-    })
+      return
+    }
+    await fetchCategories()
+  } catch (error) {
+    router.push({ name: 'login', query: { next: '/laundry' } })
+  }
 })
 </script>

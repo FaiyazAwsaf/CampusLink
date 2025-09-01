@@ -19,9 +19,32 @@ def login_required_json(view_func):
     return wrapper
 
 
+def cds_owner_required(view_func):
+    """
+    Decorator to require CDS Owner privileges
+    """
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return JsonResponse({
+                'success': False,
+                'error': 'Authentication required'
+            }, status=401)
+        
+        if request.user.role != 'cds_owner':
+            return JsonResponse({
+                'success': False,
+                'error': 'CDS Owner privileges required'
+            }, status=403)
+        
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
+# Keep admin_required for actual admin operations (superuser only)
 def admin_required(view_func):
     """
-    Decorator to require admin privileges
+    Decorator to require actual admin privileges (superuser only)
     """
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
@@ -41,9 +64,9 @@ def admin_required(view_func):
     return wrapper
 
 
-def staff_required(view_func):
+def laundry_staff_required(view_func):
     """
-    Decorator to require staff privileges
+    Decorator to require Laundry Staff privileges
     """
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
@@ -56,11 +79,15 @@ def staff_required(view_func):
         if not request.user.is_staff:
             return JsonResponse({
                 'success': False,
-                'error': 'Staff privileges required'
+                'error': 'Laundry Staff privileges required'
             }, status=403)
         
         return view_func(request, *args, **kwargs)
     return wrapper
+
+
+# Keep staff_required for backward compatibility
+staff_required = laundry_staff_required
 
 
 def superuser_required(view_func):

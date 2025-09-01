@@ -2,14 +2,17 @@ from rest_framework import serializers
 from .models import Product, Storefront, Rating
 
 class StorefrontSerializer(serializers.ModelSerializer):
+    owner = serializers.CharField(source='owner.username', read_only=True)
+    
     class Meta:
         model = Storefront
-
         fields = [
             'store_id',
             'name',
-            'image'
+            'image',
+            'owner'
         ]
+        read_only_fields = ['store_id', 'owner']
 
 class RatingSerializer(serializers.ModelSerializer):
     user_name = serializers.CharField(source='user.username', read_only=True)
