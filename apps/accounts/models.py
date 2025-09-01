@@ -43,8 +43,8 @@ class User(AbstractUser):
     """Custom User model with email as the unique identifier"""
     
     ROLE_CHOICES = [
-        ('admin', 'Admin'),
-        ('staff', 'Staff'),
+        ('cds_owner', 'CDS Owner'),
+        ('laundry_staff', 'Laundry Staff'),
         ('student', 'Student'),
         ('entrepreneur', 'Entrepreneur'),
     ]
@@ -140,11 +140,13 @@ class User(AbstractUser):
     
     def can_access_user_data(self, target_user):
         """Check if this user can access target user's data"""
-        return self == target_user or self.is_admin or self.is_staff
+        from .permissions import AuthorizationChecker
+        return AuthorizationChecker.can_access_user_data(self, target_user)
     
     def can_modify_user_data(self, target_user):
         """Check if this user can modify target user's data"""
-        return self == target_user or self.is_admin
+        from .permissions import AuthorizationChecker
+        return AuthorizationChecker.can_modify_user_data(self, target_user)
     
     def get_permissions_list(self):
         """Get list of permissions for this user"""

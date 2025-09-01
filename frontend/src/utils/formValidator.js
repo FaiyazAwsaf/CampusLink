@@ -60,7 +60,7 @@ class FormValidator {
         // Common password check
         const weakPasswords = [
             'password', '12345678', 'qwerty', 'abc123', 
-            'password123', '123456789', 'admin', 'user'
+            'password123', '123456789', 'cds_owner', 'user'
         ];
         
         if (weakPasswords.includes(password.toLowerCase())) {

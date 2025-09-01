@@ -7,7 +7,10 @@ from rest_framework.generics import ListAPIView
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework import viewsets
+from rest_framework import permissions
+from rest_framework import serializers
 
 # Create your views here.
 class ProductPagePagination(PageNumberPagination):
@@ -18,6 +21,7 @@ class ProductPagePagination(PageNumberPagination):
 class ProductListAPIView(ListAPIView):
     serializer_class = ProductSerializer
     pagination_class = ProductPagePagination
+    permission_classes = [AllowAny]  # Allow anonymous access to browse products
 
     def get_queryset(self):
         queryset = Product.objects.all()
@@ -64,22 +68,27 @@ class ProductListAPIView(ListAPIView):
     
 class ProductDetailsAPIView(RetrieveAPIView):
     serializer_class = ProductSerializer
+    permission_classes = [AllowAny]  # Allow anonymous access to view product details
     queryset = Product.objects.all()
     lookup_field = 'product_id'
 
 class StorefrontAPIView(APIView):
+    permission_classes = [AllowAny]  # Allow anonymous access to view storefronts
+    
     def get(self, request):
         store_names = Storefront.objects.values_list("name", flat=True).distinct()
         return Response(store_names)
     
 class ProductCategoryAPIView(APIView):
+    permission_classes = [AllowAny]  # Allow anonymous access to view categories
+    
     def get(self, request):
         category_names = Product.objects.values_list("category", flat=True).distinct().order_by("category")
         return Response(category_names)
 
 class StorefrontsAPIView(ListAPIView):
-
     serializer_class = StorefrontSerializer
+    permission_classes = [AllowAny]  # Allow anonymous access to view storefronts
     pagination_class = None
 
     def get_queryset(self):
@@ -106,6 +115,8 @@ class StorefrontProductsAPIView(ListAPIView):
         return queryset
 
 class SearchViewAPI(APIView):
+    permission_classes = [AllowAny]  # Allow anonymous access to search
+    
     def get(self, request):
         query = request.GET.get('query', '').strip()
 
@@ -119,6 +130,8 @@ class SearchViewAPI(APIView):
 
     
 class RecentlyAddedProducts(APIView):
+    permission_classes = [AllowAny]  # Allow anonymous access to view recent products
+    
     def get(self, request):
         recent_products = Product.objects.order_by('-created_at')[:10]
         serializer = ProductSerializer(recent_products, many=True)
@@ -126,6 +139,8 @@ class RecentlyAddedProducts(APIView):
 
 
 class ProductRatingsAPIView(APIView):
+    permission_classes = [AllowAny]  # Allow anonymous access to view ratings
+    
     def get(self, request, product_id):
         try:
             product = Product.objects.get(product_id=product_id)
@@ -188,3 +203,72 @@ class SubmitRatingAPIView(APIView):
                 'success': False,
                 'error': str(e)
             }, status=500)
+
+
+class IsEntrepreneurAndOwnsStorefront(permissions.BasePermission):
+    """Allow only entrepreneurs to manage their own products"""
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.role == 'entrepreneur' and request.user.has_perm('accounts.can_create_products')
+
+    def has_object_permission(self, request, view, obj):
+        # obj is a Product instance
+        return obj.store_id.owner == request.user
+
+class IsEntrepreneurOwner(permissions.BasePermission):
+    """Allow only entrepreneurs to manage their own storefronts"""
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.role == 'entrepreneur' and request.user.has_perm('accounts.can_create_products')
+
+    def has_object_permission(self, request, view, obj):
+        # obj is a Storefront instance
+        return obj.owner == request.user
+
+class StorefrontViewSet(viewsets.ModelViewSet):
+    serializer_class = StorefrontSerializer
+    permission_classes = [IsAuthenticated, IsEntrepreneurOwner]
+    ordering = ['store_id']  # Use the correct ordering field from model
+    pagination_class = None  # Disable pagination for storefronts
+    
+    def get_queryset(self):
+        # Only show storefronts owned by the current user
+        return Storefront.objects.filter(owner=self.request.user)
+    
+    def perform_create(self, serializer):
+        # Set the owner to the current user
+        serializer.save(owner=self.request.user)
+
+class ProductCRUDViewSet(viewsets.ModelViewSet):
+    serializer_class = ProductSerializer
+    permission_classes = [IsAuthenticated, IsEntrepreneurAndOwnsStorefront]
+    ordering = ['-created_at']  # Set correct ordering field
+    pagination_class = None  # Disable pagination for entrepreneur's own products
+
+    def get_queryset(self):
+        # Filter by storefront if provided
+        storefront_id = self.request.query_params.get('storefront')
+        if storefront_id:
+            return Product.objects.filter(
+                store_id__owner=self.request.user,
+                store_id=storefront_id
+            ).order_by('-created_at')
+        # Otherwise show all products from all user's storefronts
+        return Product.objects.filter(store_id__owner=self.request.user).order_by('-created_at')
+
+    def perform_create(self, serializer):
+        # Get storefront from request data or default to first storefront
+        storefront_id = self.request.data.get('storefront_id')
+        if storefront_id:
+            try:
+                storefront = Storefront.objects.get(id=storefront_id, owner=self.request.user)
+            except Storefront.DoesNotExist:
+                raise serializers.ValidationError("Invalid storefront")
+        else:
+            storefront = Storefront.objects.filter(owner=self.request.user).first()
+            if not storefront:
+                raise serializers.ValidationError("You must have at least one storefront to create products")
+        
+        serializer.save(store_id=storefront)
+
+    def perform_update(self, serializer):
+        # Ensure only updating own products
+        serializer.save()

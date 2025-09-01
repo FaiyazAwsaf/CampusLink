@@ -6,6 +6,10 @@ from .advanced_search import (
     SearchSuggestionsView
 )
 
+from rest_framework.routers import DefaultRouter
+from .views import ProductCRUDViewSet, StorefrontViewSet
+
+
 urlpatterns = [
     path('products/', ProductListAPIView.as_view(), name='product-list'),
     path('products/<int:product_id>/', ProductDetailsAPIView.as_view(), name='product-detail'),
@@ -21,4 +25,10 @@ urlpatterns = [
     path('search/advanced/', AdvancedSearchView.as_view(), name='advanced-search'),
     path('search/autocomplete/', AutocompleteView.as_view(), name='autocomplete'),
     path('search/suggestions/', SearchSuggestionsView.as_view(), name='search-suggestions'),
-]
+    ]
+
+router = DefaultRouter()
+router.register(r'products/manage', ProductCRUDViewSet, basename='product-crud')
+router.register(r'storefronts', StorefrontViewSet, basename='storefront-crud')
+
+urlpatterns += router.urls

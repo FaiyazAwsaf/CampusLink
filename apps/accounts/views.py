@@ -11,7 +11,7 @@ import json
 import os
 
 from .models import User
-from .decorators import login_required_json, admin_required, staff_required
+from .decorators import login_required_json, cds_owner_required, admin_required, laundry_staff_required
 from .permissions import PermissionManager, AuthorizationChecker
 from .validators import ValidationUtils
 
@@ -38,7 +38,8 @@ def register_user(request):
             'name': request.POST.get('name', ''),
             'password': request.POST.get('password', ''),
             'phone': request.POST.get('phone', ''),
-            'image': request.FILES.get('image')
+            'image': request.FILES.get('image'),
+            'is_entrepreneur': request.POST.get('is_entrepreneur', 'false').lower() == 'true'
         }
         
         # Validate all registration data
@@ -50,12 +51,17 @@ def register_user(request):
                 'errors': e.message_dict if hasattr(e, 'message_dict') else {'general': str(e)}
             }, status=400)
         
+        # Determine role based on entrepreneur flag
+        is_entrepreneur = validated_data.get('is_entrepreneur', False)
+        role = 'entrepreneur' if is_entrepreneur else 'student'
+        
         # Create user with validated data
         user = User.objects.create_user(
             email=validated_data['email'],
             name=validated_data['name'],
             password=validated_data['password'],
             phone=validated_data.get('phone'),
+            role=role,
         )
 
         # Save image if provided
@@ -63,8 +69,11 @@ def register_user(request):
             user.image = validated_data['image']
             user.save()
 
-        # Assign user to appropriate group based on role (default is student)
-        PermissionManager.assign_user_to_group(user, 'Students')
+        # Assign user to appropriate group based on role
+        if is_entrepreneur:
+            PermissionManager.assign_user_to_group(user, 'Entrepreneurs')
+        else:
+            PermissionManager.assign_user_to_group(user, 'Students')
 
         # Log the user in
         login(request, user)
@@ -254,7 +263,7 @@ def get_user_permissions(request):
 @require_http_methods(["GET"])
 def list_users(request):
     """
-    List all users (admin only)
+    List all users (Admin only - for system administration)
     """
     users = User.objects.all().values(
         'id', 'email', 'name', 'phone', 'role', 
@@ -271,7 +280,7 @@ def list_users(request):
 @require_http_methods(["POST"])
 def change_user_role(request):
     """
-    Change user role (admin only)
+    Change user role (Admin only - for system administration)
     """
     try:
         data = json.loads(request.body)
@@ -300,10 +309,10 @@ def change_user_role(request):
         # Update user groups
         user.groups.clear()  # Remove from all groups
         
-        if new_role == 'admin':
-            PermissionManager.assign_user_to_group(user, 'Administrators')
-        elif new_role == 'staff':
-            PermissionManager.assign_user_to_group(user, 'Staff')
+        if new_role == 'cds_owner':
+            PermissionManager.assign_user_to_group(user, 'CDS Owners')
+        elif new_role == 'laundry_staff':
+            PermissionManager.assign_user_to_group(user, 'Laundry Staff')
         elif new_role == 'entrepreneur':
             PermissionManager.assign_user_to_group(user, 'Entrepreneurs')
         else:
@@ -344,7 +353,7 @@ def change_user_role(request):
 @require_http_methods(["POST"])
 def toggle_user_status(request):
     """
-    Toggle user active/inactive status (admin only)
+    Toggle user active/inactive status (Admin only - for system administration)
     """
     try:
         data = json.loads(request.body)
@@ -402,7 +411,7 @@ def toggle_user_status(request):
 @require_http_methods(["POST"])
 def update_profile(request):
     """
-    Update user profile (own profile only, unless admin)
+    Update user profile (own profile only, unless Admin)
     """
     try:
         target_user_id = request.POST.get('user_id')

@@ -193,8 +193,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
-import NavBar from '@/components/NavBar.vue'
+import { AuthService } from '@/utils/auth.js'
 import { useRouter } from 'vue-router'
+import NavBar from '@/components/NavBar.vue'
 
 const router = useRouter()
 
@@ -248,9 +249,9 @@ function formatDate(date) {
 }
 
 async function loadCurrentUser() {
-  const res = await axios.get('/api/accounts/current-user/')
-  if (!res.data?.success) throw new Error('Not authenticated')
-  user.value = res.data.user
+  const result = await AuthService.getCurrentUser()
+  if (!result.success) throw new Error('Not authenticated')
+  user.value = result.user
   form.value.name = user.value?.name || ''
   form.value.phone = user.value?.phone || ''
   previewUrl.value = user.value?.image || ''
@@ -289,7 +290,7 @@ async function saveProfile() {
     data.append('phone', form.value.phone || '')
     if (imageFile.value) data.append('image', imageFile.value)
 
-    const res = await axios.post('/api/accounts/update-profile/', data)
+    const res = await axios.post('/api/accounts/jwt/update-profile/', data)
     if (res.data?.success) {
       saveSuccess.value = true
       await loadCurrentUser()

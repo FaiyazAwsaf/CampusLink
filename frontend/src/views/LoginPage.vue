@@ -41,6 +41,15 @@
               placeholder="Password"
             />
           </div>
+          <!-- Role Dropdown -->
+          <div>
+            <label for="role" class="block text-sm font-medium text-gray-700">Select Role</label>
+            <select id="role" v-model="role" class="appearance-none relative block w-full px-3 py-2 border text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm border-gray-300">
+              <option disabled value="">Please select a role</option>
+              <option value="student">Student</option>
+              <option value="entrepreneur">Entrepreneur</option>
+            </select>
+          </div>
         </div>
 
         <div class="flex items-center justify-between">
@@ -103,46 +112,49 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import axios from 'axios'
+import { useRouter, useRoute } from 'vue-router'
+import { useAuthStore } from '@/stores/auth.js'
 import NavBar from '@/components/NavBar.vue'
 
 const router = useRouter()
+const route = useRoute()
+const authStore = useAuthStore()
 
 // Form data
 const email = ref('')
 const password = ref('')
+const role = ref('')
 const rememberMe = ref(false)
 const error = ref('')
+
+// Computed properties from store
 const isLoading = ref(false)
 
 // Login handler
 const handleLogin = async () => {
   error.value = ''
+  authStore.clearError()
   isLoading.value = true
 
   try {
-    const response = await axios.post('/api/accounts/login/', {
-      email: email.value,
-      password: password.value,
-    })
+  const result = await authStore.login(email.value, password.value, role.value)
 
-    if (response.data.success) {
-      // Store user data in localStorage or state management
-      localStorage.setItem('user', JSON.stringify(response.data.user))
-
-      // Refresh CSRF cookie after login (Django rotates CSRF at login)
-      try {
-        await axios.get('/api/accounts/csrf/')
-      } catch (_) {}
-
-      router.push('/')
+    if (result.success) {
+      // Role-based redirection
+      if (result.user.role === 'entrepreneur') {
+        // Entrepreneurs go directly to their dashboard
+        router.push({ name: 'EntrepreneurDashboard' })
+      } else {
+        // Other roles go to intended page or home
+        const redirectTo = route.query.next || '/'
+        router.push(redirectTo)
+      }
     } else {
-      error.value = response.data.error || 'Login failed. Please try again.'
+      error.value = result.error || 'Login failed. Please try again.'
     }
   } catch (err) {
     console.error('Login error:', err)
-    error.value = err.response?.data?.error || 'Login failed. Please try again.'
+    error.value = 'Login failed. Please try again.'
   } finally {
     isLoading.value = false
   }

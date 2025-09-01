@@ -5,14 +5,14 @@ from .models import User
 
 class UserRoles:
     """Constants for user roles"""
-    ADMIN = 'admin'
-    STAFF = 'staff'
+    CDS_OWNER = 'cds_owner'
+    LAUNDRY_STAFF = 'laundry_staff'
     STUDENT = 'student'
     ENTREPRENEUR = 'entrepreneur'
     
     ROLE_CHOICES = [
-        (ADMIN, 'Admin'),
-        (STAFF, 'Staff'),
+        (CDS_OWNER, 'CDS Owner'),
+        (LAUNDRY_STAFF, 'Laundry Staff'),
         (STUDENT, 'Student'),
         (ENTREPRENEUR, 'Entrepreneur'),
     ]
@@ -37,6 +37,9 @@ class PermissionManager:
                 ('can_manage_entrepreneurs', 'Can manage entrepreneurs'),
                 ('can_create_products', 'Can create products'),
                 ('can_manage_laundry', 'Can manage laundry services'),
+                ('can_manage_cds', 'Can manage CDS items and operations'),
+                ('can_view_cds_analytics', 'Can view CDS analytics'),
+                ('can_manage_cds_inventory', 'Can manage CDS inventory'),
             ]
             
             for codename, name in permissions:
@@ -56,20 +59,28 @@ class PermissionManager:
         """Create user groups with appropriate permissions"""
         try:
             # Create groups
-            admin_group, _ = Group.objects.get_or_create(name='Administrators')
-            staff_group, _ = Group.objects.get_or_create(name='Staff')
+            cds_owner_group, _ = Group.objects.get_or_create(name='CDS Owners')
+            laundry_staff_group, _ = Group.objects.get_or_create(name='Laundry Staff')
             student_group, _ = Group.objects.get_or_create(name='Students')
             entrepreneur_group, _ = Group.objects.get_or_create(name='Entrepreneurs')
             
             # Get permissions
             content_type = ContentType.objects.get_for_model(User)
             
-            # Admin permissions (all)
-            admin_permissions = Permission.objects.filter(content_type=content_type)
-            admin_group.permissions.set(admin_permissions)
+            # CDS Owner permissions (CDS-specific only)
+            cds_owner_permissions = Permission.objects.filter(
+                content_type=content_type,
+                codename__in=[
+                    'can_manage_cds',
+                    'can_view_cds_analytics', 
+                    'can_manage_cds_inventory',
+                    'view_user',  # Basic user viewing for customer service
+                ]
+            )
+            cds_owner_group.permissions.set(cds_owner_permissions)
             
-            # Staff permissions
-            staff_permissions = Permission.objects.filter(
+            # Laundry Staff permissions
+            laundry_staff_permissions = Permission.objects.filter(
                 content_type=content_type,
                 codename__in=[
                     'can_view_all_orders',
@@ -78,7 +89,7 @@ class PermissionManager:
                     'can_manage_laundry'
                 ]
             )
-            staff_group.permissions.set(staff_permissions)
+            laundry_staff_group.permissions.set(laundry_staff_permissions)
             
             # Entrepreneur permissions
             entrepreneur_permissions = Permission.objects.filter(
@@ -126,6 +137,9 @@ class AuthorizationChecker:
             return True
         if requesting_user.is_admin or requesting_user.is_staff:
             return True
+        # CDS Owners can view user data for customer service
+        if requesting_user.role == 'cds_owner' and requesting_user.has_perm('accounts.view_user'):
+            return True
         return False
     
     @staticmethod
@@ -145,24 +159,33 @@ class AuthorizationChecker:
         return False
     
     @staticmethod
+    def can_manage_cds(user):
+        """Check if user can manage CDS operations"""
+        return user.role == 'cds_owner' and user.has_perm('accounts.can_manage_cds')
+    
+    @staticmethod
     def can_manage_orders(user):
-        """Check if user can manage orders"""
-        return user.is_staff or user.is_admin or user.has_perm('accounts.can_process_orders')
+        """Check if user can manage laundry orders (laundry staff only)"""
+        return (user.role == 'laundry_staff' and user.has_perm('accounts.can_process_orders')) or user.is_admin
     
     @staticmethod
     def can_view_all_orders(user):
         """Check if user can view all orders"""
-        return user.is_admin or user.has_perm('accounts.can_view_all_orders')
+        return user.has_perm('accounts.can_view_all_orders') or user.is_admin
     
     @staticmethod
     def can_manage_inventory(user):
         """Check if user can manage inventory"""
-        return user.is_staff or user.is_admin or user.has_perm('accounts.can_manage_inventory')
+        if user.role == 'cds_owner':
+            return user.has_perm('accounts.can_manage_cds_inventory')
+        elif user.role == 'laundry_staff':
+            return user.has_perm('accounts.can_manage_inventory')
+        return user.is_admin
     
     @staticmethod
     def can_create_products(user):
         """Check if user can create products"""
-        return user.is_admin or user.has_perm('accounts.can_create_products')
+        return user.role == 'entrepreneur' and user.has_perm('accounts.can_create_products')
     
     @staticmethod
     def get_user_permissions(user):

@@ -42,6 +42,7 @@ class StorefrontSerializer(serializers.ModelSerializer):
             'total_products',
             'total_reviews'
         ]
+        read_only_fields = ['store_id', 'owner']
 
     def get_average_rating(self, obj):
         return obj.get_average_rating()

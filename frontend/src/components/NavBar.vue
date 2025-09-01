@@ -44,7 +44,7 @@
         <div class="hidden md:block">
           <div class="ml-4 flex items-center md:ml-6">
             <button
-              v-if="isLoggedIn"
+              v-if="isLoggedIn && !isEntrepreneur"
               @click="goToCart"
               class="relative bg-blue-100 text-black text-sm font-semibold px-4 py-2 rounded-lg mr-4 transition-colors duration-200 hover:bg-blue-500 hover:text-white active:bg-blue-700 active:text-white"
             >
@@ -201,10 +201,11 @@
 
 <script setup>
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
-import { computed, ref, onMounted } from 'vue'
+import { computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 import useCart from '@/utils/useCart.js'
+import { useAuthStore } from '@/stores/auth.js'
 const { cart } = useCart()
 const cartCount = computed(() => cart.value.length)
 
@@ -214,27 +215,19 @@ function goToCart() {
 
 const route = useRoute()
 const router = useRouter()
+const authStore = useAuthStore()
 
+
+const isLoggedIn = computed(() => authStore.isAuthenticated)
+const currentUser = computed(() => authStore.user || {})
+const isEntrepreneur = computed(() => currentUser.value?.role === 'entrepreneur')
 const mobileMenuOpen = ref(false)
-const isLoggedIn = ref(false)
-const currentUser = ref({})
 
-// Check if user is logged in on component mount
-onMounted(() => {
-  const storedUser = localStorage.getItem('user')
-  if (storedUser) {
-    currentUser.value = JSON.parse(storedUser)
-    isLoggedIn.value = true
-  }
-})
 
 // Handle logout
 const handleLogout = async () => {
   try {
-    await axios.post('/api/accounts/logout/')
-    localStorage.removeItem('user')
-    isLoggedIn.value = false
-    currentUser.value = {}
+    await authStore.logout()
     router.push('/')
   } catch (error) {
     console.error('Logout error:', error)
@@ -245,12 +238,32 @@ const getProfilePage = () => {
   router.push('/profile')
 }
 
-const userNavigation = [
-  { name: 'Your Profile', action: getProfilePage },
-  { name: 'Sign out', action: handleLogout },
-]
+const getDashboard = () => {
+  if (isEntrepreneur.value) {
+    router.push('/entrepreneur/dashboard')
+  } else {
+    router.push('/')
+  }
+}
+
+const userNavigation = computed(() => {
+  const baseNavigation = [
+    { name: 'Your Profile', action: getProfilePage },
+  ]
+  
+  if (isEntrepreneur.value) {
+    baseNavigation.unshift({ name: 'Dashboard', action: getDashboard })
+  }
+  
+  baseNavigation.push({ name: 'Sign out', action: handleLogout })
+  
+  return baseNavigation
+})
 
 function getProfileImage(user) {
+  if (user?.image_url) {
+    return user.image_url
+  }
   if (user?.image) {
     return user.image.startsWith('http') ? user.image : `http://127.0.0.1:8000${user.image}`
   }
@@ -264,6 +277,7 @@ const pageTitles = {
   '/cds': 'Central Departmental Store',
   '/laundry': 'Laundry',
   '/entrepreneur-hub': 'Entrepreneur Hub',
+  '/entrepreneur/dashboard': 'Entrepreneur Dashboard',
 }
 
 const pageTitle = computed(() => {
@@ -273,11 +287,20 @@ const pageTitle = computed(() => {
   return pageTitles[route.path] || 'CampusLink'
 })
 
-const showBackButton = computed(() => route.path !== '/')
+const showBackButton = computed(() => {
+  // Entrepreneurs should not see back button on their dashboard
+  if (isEntrepreneur.value && route.path === '/entrepreneur/dashboard') {
+    return false
+  }
+  return route.path !== '/'
+})
 
 const backButtonText = computed(() => {
   if (route.path.startsWith('/entrepreneur-hub/product/')) {
     return '← Back to Products'
+  }
+  if (isEntrepreneur.value) {
+    return '← Back to Dashboard'
   }
   return '← Back to Home'
 })
@@ -285,6 +308,8 @@ const backButtonText = computed(() => {
 const handleBackClick = () => {
   if (route.path.startsWith('/entrepreneur-hub/product/')) {
     router.push('/entrepreneur-hub')
+  } else if (isEntrepreneur.value) {
+    router.push('/entrepreneur/dashboard')
   } else {
     router.push('/')
   }
