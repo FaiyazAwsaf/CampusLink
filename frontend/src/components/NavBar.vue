@@ -1,35 +1,48 @@
 <template>
   <nav
-    class="sticky top-0 z-50 bg-gradient-to-r from-blue-200 to-indigo-500 shadow flex items-center px-6 py-1"
+    class="sticky top-0 z-50 bg-gradient-to-r from-blue-200 to-indigo-500 shadow-lg min-h-[60px]"
+    style="background: linear-gradient(to right, #dbeafe, #6366f1); min-height: 60px;"
   >
     <div class="container mx-auto px-4">
-      <div class="flex items-center justify-between py-4">
-        <!-- Back Button -->
+      <div class="flex items-center justify-between py-3 md:py-4">
         <button
           v-if="showBackButton"
-          class="text-gray-900 font-semibold mr-4 hover:underline focus:outline-none"
+          class="text-gray-900 font-semibold mr-2 md:mr-4 hover:underline focus:outline-none text-sm md:text-base"
           @click="handleBackClick"
         >
-          {{ backButtonText }}
+          <span class="hidden sm:inline">{{ backButtonText }}</span>
+          <span class="sm:hidden">← Back</span>
         </button>
 
-        <!-- Title -->
-        <div class="hidden sm:flex sm:items-center">
-          <div class="flex items-center space-x-3">
+        <div class="flex items-center flex-1 justify-center sm:justify-start">
+          <div class="flex items-center space-x-2 md:space-x-3">
             <img
               v-if="showLogo"
-              class="w-10 h-10 rounded-2xl"
+              class="w-8 h-8 md:w-10 md:h-10 rounded-2xl"
               src="https://w1.pngwing.com/pngs/614/143/png-transparent-cloud-symbol-logo-internet-cloud-computing-computer-network-campus-service-provider-recruitment.png"
               alt=""
             />
-            <span class="font-bold text-lg text-slate-800 tracking-tight">{{ pageTitle }}</span>
+            <span class="font-bold text-base md:text-lg text-slate-800 tracking-tight truncate">
+              <span class="hidden sm:inline">{{ pageTitle }}</span>
+              <span class="sm:hidden">{{ getMobileTitle(pageTitle) }}</span>
+            </span>
           </div>
         </div>
 
-        <!-- Profile and Cart -->
+        <div class="md:hidden">
+          <button
+            @click="toggleMobileMenu"
+            class="text-gray-900 hover:text-gray-700 focus:outline-none focus:text-gray-700 p-2"
+          >
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path v-if="!mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+              <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
         <div class="hidden md:block">
           <div class="ml-4 flex items-center md:ml-6">
-            <!-- Cart Button -->
             <button
               v-if="isLoggedIn"
               @click="goToCart"
@@ -58,20 +71,19 @@
               </router-link>
             </div>
 
-            <!-- Profile dropdown (when logged in) -->
             <Menu v-if="isLoggedIn" as="div" class="relative ml-3">
               <div>
                 <MenuButton class="flex items-center px-4 py-2 rounded-lg">
                   <img
                     v-if="currentUser.image"
-                    class="size-12 rounded-full border-2 border-white transition-colors duration-200 hover:border-black"
+                    class="size-10 md:size-12 rounded-full border-2 border-white transition-colors duration-200 hover:border-black"
                     :src="getProfileImage(currentUser)"
                     alt="Profile"
                   />
 
                   <div
                     v-else
-                    class="size-12 rounded-full border-2 border-white bg-indigo-300 flex items-center justify-center text-xl font-bold text-indigo-800"
+                    class="size-10 md:size-12 rounded-full border-2 border-white bg-indigo-300 flex items-center justify-center text-lg md:text-xl font-bold text-indigo-800"
                   >
                     {{ currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U' }}
                   </div>
@@ -107,6 +119,82 @@
           </div>
         </div>
       </div>
+
+      <transition
+        enter-active-class="transition ease-out duration-200"
+        enter-from-class="opacity-0 transform -translate-y-2"
+        enter-to-class="opacity-100 transform translate-y-0"
+        leave-active-class="transition ease-in duration-150"
+        leave-from-class="opacity-100 transform translate-y-0"
+        leave-to-class="opacity-0 transform -translate-y-2"
+      >
+        <div v-if="mobileMenuOpen" class="md:hidden border-t border-blue-300/30 bg-blue-100/50 backdrop-blur-sm">
+          <div class="px-4 py-3 space-y-3">
+            <button
+              v-if="isLoggedIn"
+              @click="goToCart"
+              class="w-full flex items-center justify-between bg-white text-gray-900 text-sm font-semibold px-4 py-3 rounded-lg transition-colors duration-200 hover:bg-gray-50"
+            >
+              <span>View Cart</span>
+              <span
+                v-if="cartCount > 0"
+                class="bg-red-500 text-white text-xs rounded-full px-2 py-1"
+                >{{ cartCount }}</span
+              >
+            </button>
+
+            <div v-if="!isLoggedIn && showAccountButtons" class="space-y-2">
+              <router-link
+                to="/login"
+                class="block w-full bg-white text-gray-900 text-sm font-semibold px-4 py-3 rounded-lg transition-colors duration-200 hover:bg-gray-50 text-center"
+                @click="closeMobileMenu"
+              >
+                Login
+              </router-link>
+              <router-link
+                to="/register"
+                class="block w-full bg-indigo-800 text-white text-sm font-semibold px-4 py-3 rounded-lg transition-colors duration-200 hover:bg-indigo-700 text-center"
+                @click="closeMobileMenu"
+              >
+                Create Account
+              </router-link>
+            </div>
+
+            <div v-if="isLoggedIn" class="border-t border-blue-300/30 pt-3">
+              <div class="flex items-center space-x-3 mb-3">
+                <img
+                  v-if="currentUser.image"
+                  class="size-10 rounded-full border-2 border-white"
+                  :src="getProfileImage(currentUser)"
+                  alt="Profile"
+                />
+                <div
+                  v-else
+                  class="size-10 rounded-full border-2 border-white bg-indigo-300 flex items-center justify-center text-lg font-bold text-indigo-800"
+                >
+                  {{ currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U' }}
+                </div>
+                <span class="text-gray-900 font-medium">{{ currentUser.name }}</span>
+              </div>
+              
+              <div class="space-y-2">
+                <button
+                  @click="getProfilePage"
+                  class="block w-full text-left bg-white text-gray-900 text-sm font-medium px-4 py-3 rounded-lg transition-colors duration-200 hover:bg-gray-50"
+                >
+                  Your Profile
+                </button>
+                <button
+                  @click="handleLogout"
+                  class="block w-full text-left bg-white text-gray-900 text-sm font-medium px-4 py-3 rounded-lg transition-colors duration-200 hover:bg-gray-50"
+                >
+                  Sign out
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </transition>
     </div>
   </nav>
 </template>
@@ -127,7 +215,7 @@ function goToCart() {
 const route = useRoute()
 const router = useRouter()
 
-// Authentication state
+const mobileMenuOpen = ref(false)
 const isLoggedIn = ref(false)
 const currentUser = ref({})
 
@@ -203,7 +291,25 @@ const handleBackClick = () => {
 }
 
 const showLogo = computed(
-  () => route.path === '/' && route.path !== '/login' && route.path !== '/register',
+  () => route.path === '/' || (route.path !== '/login' && route.path !== '/register'),
 )
 const showAccountButtons = computed(() => route.path !== '/login' && route.path !== '/register')
+
+const toggleMobileMenu = () => {
+  mobileMenuOpen.value = !mobileMenuOpen.value
+}
+
+const closeMobileMenu = () => {
+  mobileMenuOpen.value = false
+}
+
+const getMobileTitle = (title) => {
+  const mobileTitles = {
+    'Entrepreneur Hub': 'E-Hub',
+    'Central Departmental Store': 'CDS',
+    'Product Details': 'Product',
+    'Welcome to Campuslink': 'Welcome'
+  }
+  return mobileTitles[title] || title
+}
 </script>

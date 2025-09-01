@@ -3,10 +3,9 @@
   <div class="min-h-screen bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-200">
     <div class="container mx-auto px-4 py-8">
 
-      <!-- Search Bar at Top -->
-      <div class="mb-8 transform transition-all duration-500 ease-out relative z-20" :class="{ 'scale-105': searchFocused }">
+      <div class="mb-6 md:mb-8 transform transition-all duration-500 ease-out relative z-20" :class="{ 'scale-105': searchFocused }">
         <div class="max-w-2xl mx-auto">
-          <label for="search" class="block font-medium mb-3 text-center text-gray-700 transition-colors duration-300">Search Products</label>
+          <label for="search" class="block font-medium mb-2 md:mb-3 text-center text-gray-700 transition-colors duration-300 text-sm md:text-base">Search Products</label>
           <div class="relative">
             <input
               v-model="queryProducts"
@@ -15,8 +14,8 @@
               @focus="handleSearchFocus"
               @blur="handleSearchBlur"
               type="text"
-              placeholder="Enter product name or related keywords and press Enter..."
-              class="block w-full pl-4 pr-12 py-4 border border-gray-300 rounded-xl text-lg placeholder-gray-500 focus:outline-none focus:ring-3 focus:ring-blue-500/30 focus:border-blue-500 bg-white shadow-lg hover:shadow-xl transition-all duration-300 ease-out transform hover:-translate-y-0.5"
+              placeholder="Search products..."
+              class="block w-full pl-4 pr-12 py-3 md:py-4 border border-gray-300 rounded-xl text-base md:text-lg placeholder-gray-500 focus:outline-none focus:ring-3 focus:ring-blue-500/30 focus:border-blue-500 bg-white shadow-lg hover:shadow-xl transition-all duration-300 ease-out transform hover:-translate-y-0.5"
             />
             <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
               <Transition name="spin" mode="out-in">
@@ -67,12 +66,32 @@
         </div>
       </div>
 
-      <!-- Main Content -->
       <div class="lg:flex lg:gap-6">
-        <!-- Sidebar with Filters -->
+        <div class="lg:hidden mb-4">
+          <button
+            @click="toggleFilters"
+            class="w-full bg-white text-gray-700 px-4 py-3 rounded-lg shadow-md border border-gray-200 flex items-center justify-between hover:bg-gray-50 transition-colors duration-200"
+          >
+            <span class="font-medium">Filters & Sort</span>
+            <svg 
+              class="w-5 h-5 transition-transform duration-200" 
+              :class="{ 'rotate-180': showMobileFilters }"
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+        </div>
+
         <div class="lg:w-64 lg:flex-shrink-0 mb-6 lg:mb-0">
-          <div class="bg-white rounded-lg shadow-md p-4">
-            <h3 class="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Filters</h3>
+          <div 
+            class="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 ease-in-out"
+            :class="{ 'max-h-0 lg:max-h-none': !showMobileFilters, 'max-h-96 lg:max-h-none': showMobileFilters }"
+          >
+            <div class="p-4">
+              <h3 class="text-lg font-semibold mb-4 text-gray-800 border-b pb-2 hidden lg:block">Filters</h3>
             
             <div class="space-y-4">
               <CategoryFilter
@@ -123,6 +142,7 @@
                 :availabilityOptions="availabilityOptions"
               />
             </div>
+            </div>
           </div>
         </div>
 
@@ -161,32 +181,32 @@
 
           <div v-else class="space-y-8">
             <!-- Storefronts Section -->
-            <div class="bg-white rounded-lg shadow-sm p-6">
-              <h2 class="text-xl font-semibold text-gray-800 mb-4">Featured Storefronts</h2>
+            <div class="bg-white rounded-lg shadow-sm p-4 md:p-6">
+              <h2 class="text-lg md:text-xl font-semibold text-gray-800 mb-4">Featured Storefronts</h2>
               <div class="relative">
                 <button
                   @click="scrollLeft"
-                  class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white hover:bg-gray-50 p-2 rounded-full shadow-md border border-gray-200 transition-all duration-200"
+                  class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white hover:bg-gray-50 p-1 md:p-2 rounded-full shadow-md border border-gray-200 transition-all duration-200"
                 >
-                  <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-3 h-3 md:w-4 md:h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                   </svg>
                 </button>
                 
                 <div 
                   ref="carousel"
-                  class="overflow-hidden mx-8"
+                  class="overflow-hidden mx-6 md:mx-8"
                 >
-                  <div class="flex space-x-4 pb-2">
+                  <div class="flex space-x-3 md:space-x-4 pb-2">
                     <div v-for="storefront in storefronts" 
                       :key="storefront.store_id" 
-                      class="flex-shrink-0 w-32 bg-gray-50 rounded-lg text-center hover:shadow-md transition-shadow duration-200 relative">
+                      class="flex-shrink-0 w-24 md:w-32 bg-gray-50 rounded-lg text-center hover:shadow-md transition-shadow duration-200 relative">
                       <img
                         :src="storefront.image"
-                        class="w-full h-24 object-cover rounded-t-lg"
+                        class="w-full h-16 md:h-24 object-cover rounded-t-lg"
                         @error="handleImageError"
                       />
-                      <h3 class="font-medium text-sm text-gray-700 p-2 truncate">
+                      <h3 class="font-medium text-xs md:text-sm text-gray-700 p-1 md:p-2 truncate">
                         {{ storefront.name }}
                       </h3>
                     </div>
@@ -195,9 +215,9 @@
 
                 <button
                   @click="scrollRight"
-                  class="absolute right-0 top-1/2 -translate-y-1/2 bg-white hover:bg-gray-50 p-2 rounded-full shadow-md border border-gray-200 transition-all duration-200"
+                  class="absolute right-0 top-1/2 -translate-y-1/2 bg-white hover:bg-gray-50 p-1 md:p-2 rounded-full shadow-md border border-gray-200 transition-all duration-200"
                 >
-                  <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-3 h-3 md:w-4 md:h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                   </svg>
                 </button>
@@ -216,48 +236,56 @@
             </div>
 
             <!-- Pagination -->
-            <div v-if="totalPages > 1" class="flex justify-center items-center mt-8 space-x-2">
-              <button
-                @click="goToPage(currentPage - 1)"
-                :disabled="currentPage === 1"
-                :class="[
-                  'px-4 py-2 rounded-lg font-medium transition-all duration-200',
-                  currentPage === 1
-                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-gray-400 shadow-sm'
-                ]"
-              >
-                Previous
-              </button>
-
-              <div class="flex space-x-1">
+            <div v-if="totalPages > 1" class="flex flex-col sm:flex-row justify-center items-center mt-8 space-y-3 sm:space-y-0 sm:space-x-2">
+              <div class="flex items-center space-x-2">
                 <button
-                  v-for="page in visiblePages"
-                  :key="page"
-                  @click="goToPage(page)"
+                  @click="goToPage(currentPage - 1)"
+                  :disabled="currentPage === 1"
                   :class="[
-                    'px-3 py-2 rounded-lg font-medium transition-all duration-200',
-                    page === currentPage
-                      ? 'bg-blue-600 text-white shadow-sm'
+                    'px-3 md:px-4 py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base',
+                    currentPage === 1
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                       : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-gray-400 shadow-sm'
                   ]"
                 >
-                  {{ page }}
+                  <span class="hidden sm:inline">Previous</span>
+                  <span class="sm:hidden">←</span>
+                </button>
+
+                <div class="flex space-x-1">
+                  <button
+                    v-for="page in visiblePages"
+                    :key="page"
+                    @click="goToPage(page)"
+                    :class="[
+                      'px-2 md:px-3 py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base',
+                      page === currentPage
+                        ? 'bg-blue-600 text-white shadow-sm'
+                        : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-gray-400 shadow-sm'
+                    ]"
+                  >
+                    {{ page }}
+                  </button>
+                </div>
+
+                <button
+                  @click="goToPage(currentPage + 1)"
+                  :disabled="currentPage === totalPages"
+                  :class="[
+                    'px-3 md:px-4 py-2 rounded-lg font-medium transition-all duration-200 text-sm md:text-base',
+                    currentPage === totalPages
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-gray-400 shadow-sm'
+                  ]"
+                >
+                  <span class="hidden sm:inline">Next</span>
+                  <span class="sm:hidden">→</span>
                 </button>
               </div>
-
-              <button
-                @click="goToPage(currentPage + 1)"
-                :disabled="currentPage === totalPages"
-                :class="[
-                  'px-4 py-2 rounded-lg font-medium transition-all duration-200',
-                  currentPage === totalPages
-                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-gray-400 shadow-sm'
-                ]"
-              >
-                Next
-              </button>
+              
+              <div class="text-sm text-gray-600 sm:ml-4">
+                Page {{ currentPage }} of {{ totalPages }}
+              </div>
             </div>
           </div>
 
@@ -304,6 +332,7 @@ const spellSuggestions = ref([])
 const showSuggestions = ref(false)
 const searchLoading = ref(false)
 const searchFocused = ref(false)
+const showMobileFilters = ref(false)
 
 const visiblePages = computed(() => {
   const pages = []
@@ -529,6 +558,10 @@ const handleSearchBlur = () => {
   setTimeout(() => {
     showSuggestions.value = false
   }, 200)
+}
+
+const toggleFilters = () => {
+  showMobileFilters.value = !showMobileFilters.value
 }
 
 onMounted(() => {
