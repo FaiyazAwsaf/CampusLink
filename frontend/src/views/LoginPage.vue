@@ -47,8 +47,6 @@
             <select id="role" v-model="role" class="appearance-none relative block w-full px-3 py-2 border text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm border-gray-300">
               <option disabled value="">Please select a role</option>
               <option value="student">Student</option>
-              <option value="cds_owner">CDS Owner</option>
-              <option value="laundry_staff">Laundry Staff</option>
               <option value="entrepreneur">Entrepreneur</option>
             </select>
           </div>
