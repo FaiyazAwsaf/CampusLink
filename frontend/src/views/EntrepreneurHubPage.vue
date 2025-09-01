@@ -200,7 +200,8 @@
                   <div class="flex space-x-3 md:space-x-4 pb-2">
                     <div v-for="storefront in storefronts" 
                       :key="storefront.store_id" 
-                      class="flex-shrink-0 w-24 md:w-32 bg-gray-50 rounded-lg text-center hover:shadow-md transition-shadow duration-200 relative">
+                      @click="navigateToStore(storefront.store_id)"
+                      class="flex-shrink-0 w-24 md:w-32 bg-gray-50 rounded-lg text-center hover:shadow-md transition-all duration-200 relative cursor-pointer hover:scale-105 hover:bg-white">
                       <img
                         :src="storefront.image"
                         class="w-full h-16 md:h-24 object-cover rounded-t-lg"
@@ -298,6 +299,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import NavBar from '@/components/NavBar.vue'
 import ProductCard from '@/components/ProductCard.vue'
 import PriceL2HFilter from '@/components/PriceL2HFilter.vue'
@@ -306,6 +308,8 @@ import StockFilter from '@/components/StockFilter.vue'
 import '@vueform/slider/themes/default.css'
 import Slider from '@vueform/slider'
 import debounce from 'lodash.debounce'
+
+const router = useRouter()
 
 const products = ref([])
 const currentPage = ref(1)
@@ -562,6 +566,10 @@ const handleSearchBlur = () => {
 
 const toggleFilters = () => {
   showMobileFilters.value = !showMobileFilters.value
+}
+
+const navigateToStore = (storeId) => {
+  router.push(`/entrepreneur-hub/store/${storeId}`)
 }
 
 onMounted(() => {
