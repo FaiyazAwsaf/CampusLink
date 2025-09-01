@@ -236,7 +236,7 @@
             </div>
 
             <!-- Pagination -->
-            <div v-if="totalPages > 1" class="flex flex-col sm:flex-row justify-center items-center mt-8 space-y-3 sm:space-y-0 sm:space-x-2">
+            <div v-if="totalPages > 1 && !queryProducts.trim()" class="flex flex-col sm:flex-row justify-center items-center mt-8 space-y-3 sm:space-y-0 sm:space-x-2">
               <div class="flex items-center space-x-2">
                 <button
                   @click="goToPage(currentPage - 1)"
