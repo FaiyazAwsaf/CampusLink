@@ -272,7 +272,7 @@ const editStorefrontId = ref(null)
 const editProductId = ref(null)
 
 // API Base URLs
-const STOREFRONT_API_BASE = '/api/entrepreneurs_hub/storefronts/'
+const STOREFRONT_API_BASE = '/api/entrepreneurs_hub/manage/storefronts/'
 const PRODUCT_API_BASE = '/api/entrepreneurs_hub/products/manage/'
 
 const getAuthHeaders = () => {

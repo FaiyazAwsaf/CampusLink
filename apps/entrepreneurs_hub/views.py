@@ -100,10 +100,12 @@ class StorefrontDetailAPIView(RetrieveAPIView):
     serializer_class = StorefrontSerializer
     queryset = Storefront.objects.all()
     lookup_field = 'store_id'
+    permission_classes = [AllowAny]  # Allow public access to view storefront details
 
 class StorefrontProductsAPIView(ListAPIView):
     serializer_class = ProductSerializer
     pagination_class = ProductPagePagination
+    permission_classes = [AllowAny]  # Allow public access to view storefront products
 
     def get_queryset(self):
         store_id = self.kwargs.get('store_id')
