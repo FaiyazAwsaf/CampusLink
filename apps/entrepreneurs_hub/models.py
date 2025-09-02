@@ -7,6 +7,7 @@ from django.utils import timezone
 
 class Owner(models.Model):
     owner_id = models.AutoField(primary_key=True)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='entrepreneur_profile', blank=True, null=True)
     name = models.CharField(max_length=100)
     image = models.URLField(blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
