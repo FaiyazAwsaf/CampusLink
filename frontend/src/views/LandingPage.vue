@@ -31,6 +31,7 @@
 
             <div class="mt-6 flex flex-col sm:flex-row gap-3">
               <button
+                v-if="!authStore.user"
                 @click="goToSignup"
                 class="px-5 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 shadow transition"
               >
@@ -236,7 +237,6 @@ const isEntrepreneur = computed(() => authStore.user?.role === 'entrepreneur')
 
 const goToLogin = () => router.push('/login')
 const goToSignup = () => router.push('/register')
-const goTo = (path) => router.push(path)
 const scrollTo = (id) => {
   const el = document.getElementById(id)
   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
