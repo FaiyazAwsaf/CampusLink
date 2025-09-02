@@ -140,14 +140,19 @@ const handleLogin = async () => {
   const result = await authStore.login(email.value, password.value, role.value)
 
     if (result.success) {
-      // Role-based redirection
-      if (result.user.role === 'entrepreneur') {
-        // Entrepreneurs go directly to their dashboard
-        router.push({ name: 'EntrepreneurDashboard' })
-      } else {
-        // Other roles go to intended page or home
-        const redirectTo = route.query.next || '/'
+      // Check if there's a redirect URL first
+      const redirectTo = route.query.next
+      
+      if (redirectTo) {
+        // If there's a redirect URL, go there regardless of role
         router.push(redirectTo)
+      } else {
+        // Role-based default redirection only when no redirect is specified
+        if (result.user.role === 'entrepreneur') {
+          router.push({ name: 'EntrepreneurDashboard' })
+        } else {
+          router.push('/')
+        }
       }
     } else {
       error.value = result.error || 'Login failed. Please try again.'

@@ -211,9 +211,12 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import NavBar from '@/components/NavBar.vue'
+import useCart from '@/utils/useCart.js'
+import { AuthService } from '@/utils/auth.js'
 
 const route = useRoute()
 const router = useRouter()
+const { addToCart: addToCartGlobal } = useCart()
 
 const product = ref(null)
 const loading = ref(true)
@@ -332,8 +335,20 @@ const submitRating = async () => {
 }
 
 const addToCart = () => {
-  console.log('Adding to cart:', product.value)
-  alert(`Added "${product.value.name}" to cart! (Cart functionality coming soon)`)
+  // Check if user is authenticated
+  if (!AuthService.isAuthenticated()) {
+    // Store current route to redirect back after login
+    const currentRoute = router.currentRoute.value.fullPath
+    router.push({
+      name: 'login',
+      query: { next: currentRoute }
+    })
+    return
+  }
+  
+  // Add to cart if authenticated
+  addToCartGlobal(product.value, 'entrepreneurs_hub')
+  alert(`Added "${product.value.name}" to cart!`)
 }
 
 const handleImageError = (event) => {

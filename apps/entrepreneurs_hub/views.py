@@ -263,7 +263,7 @@ class ProductCRUDViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         # Filter by storefront if provided
-        storefront_id = self.request.query_params.get('storefront')
+        storefront_id = self.request.query_params.get('storefront_id')
         if storefront_id:
             return Product.objects.filter(
                 store_id__owner__user=self.request.user,
@@ -277,7 +277,7 @@ class ProductCRUDViewSet(viewsets.ModelViewSet):
         storefront_id = self.request.data.get('storefront_id')
         if storefront_id:
             try:
-                    storefront = Storefront.objects.get(store_id=storefront_id, owner__user=self.request.user)
+                storefront = Storefront.objects.get(store_id=storefront_id, owner__user=self.request.user)
             except Storefront.DoesNotExist:
                 raise serializers.ValidationError("Invalid storefront")
         else:

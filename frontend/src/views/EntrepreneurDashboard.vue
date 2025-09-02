@@ -96,12 +96,14 @@
         <form @submit.prevent="createProduct">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="mb-2">
-              <label class="block text-sm font-medium mb-1">Name</label>
-              <input v-model="productForm.name" class="border px-3 py-2 w-full rounded" required />
+              <label class="block text-sm font-medium mb-1">Name (max 100 characters)</label>
+              <input v-model="productForm.name" maxlength="100" class="border px-3 py-2 w-full rounded" required />
+              <div class="text-xs text-gray-500 mt-1">{{ productForm.name.length }}/100 characters</div>
             </div>
             <div class="mb-2">
-              <label class="block text-sm font-medium mb-1">Category</label>
-              <input v-model="productForm.category" class="border px-3 py-2 w-full rounded" required />
+              <label class="block text-sm font-medium mb-1">Category (max 50 characters)</label>
+              <input v-model="productForm.category" maxlength="50" class="border px-3 py-2 w-full rounded" required />
+              <div class="text-xs text-gray-500 mt-1">{{ productForm.category.length }}/50 characters</div>
             </div>
             <div class="mb-2">
               <label class="block text-sm font-medium mb-1">Price</label>
@@ -116,8 +118,9 @@
             </div>
           </div>
           <div class="mb-2">
-            <label class="block text-sm font-medium mb-1">Description</label>
-            <textarea v-model="productForm.description" class="border px-3 py-2 w-full rounded" rows="3" required></textarea>
+            <label class="block text-sm font-medium mb-1">Description (max 200 characters)</label>
+            <textarea v-model="productForm.description" maxlength="200" class="border px-3 py-2 w-full rounded" rows="3" required></textarea>
+            <div class="text-xs text-gray-500 mt-1">{{ productForm.description.length }}/200 characters</div>
           </div>
           <div class="mb-2">
             <label class="block text-sm font-medium mb-1">Image URL</label>
@@ -153,7 +156,7 @@
             <tr v-for="product in products" :key="product.product_id" class="border-t">
               <td class="px-4 py-3">{{ product.name }}</td>
               <td class="px-4 py-3">{{ product.category }}</td>
-              <td class="px-4 py-3">${{ product.price }}</td>
+              <td class="px-4 py-3">৳{{ product.price }}</td>
               <td class="px-4 py-3">
                 <span :class="product.availability ? 'text-green-600' : 'text-red-600'">
                   {{ product.availability ? 'Available' : 'Unavailable' }}
@@ -174,12 +177,14 @@
         <form @submit.prevent="updateProduct">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="mb-2">
-              <label class="block text-sm font-medium mb-1">Name</label>
-              <input v-model="productForm.name" class="border px-3 py-2 w-full rounded" required />
+              <label class="block text-sm font-medium mb-1">Name (max 100 characters)</label>
+              <input v-model="productForm.name" maxlength="100" class="border px-3 py-2 w-full rounded" required />
+              <div class="text-xs text-gray-500 mt-1">{{ productForm.name.length }}/100 characters</div>
             </div>
             <div class="mb-2">
-              <label class="block text-sm font-medium mb-1">Category</label>
-              <input v-model="productForm.category" class="border px-3 py-2 w-full rounded" required />
+              <label class="block text-sm font-medium mb-1">Category (max 50 characters)</label>
+              <input v-model="productForm.category" maxlength="50" class="border px-3 py-2 w-full rounded" required />
+              <div class="text-xs text-gray-500 mt-1">{{ productForm.category.length }}/50 characters</div>
             </div>
             <div class="mb-2">
               <label class="block text-sm font-medium mb-1">Price</label>
@@ -194,8 +199,9 @@
             </div>
           </div>
           <div class="mb-2">
-            <label class="block text-sm font-medium mb-1">Description</label>
-            <textarea v-model="productForm.description" class="border px-3 py-2 w-full rounded" rows="3" required></textarea>
+            <label class="block text-sm font-medium mb-1">Description (max 200 characters)</label>
+            <textarea v-model="productForm.description" maxlength="200" class="border px-3 py-2 w-full rounded" rows="3" required></textarea>
+            <div class="text-xs text-gray-500 mt-1">{{ productForm.description.length }}/200 characters</div>
           </div>
           <div class="mb-2">
             <label class="block text-sm font-medium mb-1">Image URL</label>
