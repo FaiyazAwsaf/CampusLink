@@ -263,7 +263,7 @@ class ProductCRUDViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         # Filter by storefront if provided
-        storefront_id = self.request.query_params.get('storefront')
+        storefront_id = self.request.query_params.get('storefront_id')
         if storefront_id:
             return Product.objects.filter(
                 store_id__owner__user=self.request.user,
