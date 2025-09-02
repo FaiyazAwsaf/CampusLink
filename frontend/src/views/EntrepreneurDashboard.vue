@@ -60,7 +60,6 @@
           <img :src="storefront.image" :alt="storefront.name" class="w-full h-48 object-cover">
           <div class="p-4">
             <h3 class="text-lg font-semibold mb-2">{{ storefront.name }}</h3>
-            <p class="text-gray-600 text-sm mb-2">Owner: {{ storefront.owner }}</p>
             <div class="flex justify-between items-center">
               <button @click.stop="selectStorefront(storefront)" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">
                 Manage Products
