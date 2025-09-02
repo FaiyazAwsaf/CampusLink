@@ -167,6 +167,8 @@
               <option disabled value="">Please select a role</option>
               <option value="student">Student</option>
               <option value="entrepreneur">Entrepreneur</option>
+              <option value="cds_owner">CDS Owner</option>
+              <option value="laundry_staff">Laundry Staff</option>
             </select>
           </div>
           
@@ -568,9 +570,15 @@ const handleRegister = async () => {
         console.log('Redirecting entrepreneur to dashboard')
         // Entrepreneurs go directly to their dashboard
         router.push({ name: 'EntrepreneurDashboard' })
+      } else if (result.user.role === 'laundry_staff') {
+        console.log('Redirecting laundry staff to laundry page')
+        router.push({ name: 'laundry' })
+      } else if (result.user.role === 'cds_owner') {
+        console.log('Redirecting CDS owner to CDS page')
+        router.push({ name: 'cds' })
       } else {
-        console.log('Redirecting non-entrepreneur to:', route.query.next || '/')
-        // Other roles go to intended page or home
+        console.log('Redirecting to:', route.query.next || '/')
+        // Other roles (students) go to intended page or home
         const redirectTo = route.query.next || '/'
         router.push(redirectTo)
       }
