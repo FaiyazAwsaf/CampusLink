@@ -308,8 +308,11 @@ import StockFilter from '@/components/StockFilter.vue'
 import '@vueform/slider/themes/default.css'
 import Slider from '@vueform/slider'
 import debounce from 'lodash.debounce'
+import useCart from '@/utils/useCart.js'
+import { AuthService } from '@/utils/auth.js'
 
 const router = useRouter()
+const { addToCart: addToCartGlobal } = useCart()
 
 const products = ref([])
 const currentPage = ref(1)
@@ -472,7 +475,20 @@ const scrollRight = () => {
 
 
 function onAddToCart(product){
-  console.log("Added ", product, " to cart")
+  // Check if user is authenticated
+  if (!AuthService.isAuthenticated()) {
+    // Store current route to redirect back after login
+    const currentRoute = router.currentRoute.value.fullPath
+    router.push({
+      name: 'login',
+      query: { next: currentRoute }
+    })
+    return
+  }
+  
+  // Add to cart if authenticated
+  addToCartGlobal(product, 'entrepreneurs_hub')
+  alert(`Added "${product.name}" to cart!`)
 }
 
 const handleImageError = (event) =>{

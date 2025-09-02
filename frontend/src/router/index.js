@@ -13,8 +13,7 @@ const router = createRouter({
     {
       path: '/cds',
       name: 'cds',
-      component: () => import('../views/CdsPage.vue'),
-      meta: { requiresAuth: true }
+      component: () => import('../views/CdsPage.vue')
     },
 
     {
@@ -27,8 +26,7 @@ const router = createRouter({
     {
       path: '/entrepreneur-hub',
       name: 'entrepreneur-hub',
-      component: () => import('../views/EntrepreneurHubPage.vue'),
-      meta: { requiresAuth: true }
+      component: () => import('../views/EntrepreneurHubPage.vue')
     },
 
     {
@@ -107,8 +105,8 @@ router.beforeEach((to, from, next) => {
   if (isAuthenticated && userRole) {
     // Entrepreneur restrictions
     if (userRole === 'entrepreneur') {
-      // Allow access only to landing page and entrepreneur dashboard
-      const allowedRoutes = ['landing', 'EntrepreneurDashboard', 'profile']
+      // Allow access to browsing pages and entrepreneur dashboard
+      const allowedRoutes = ['landing', 'EntrepreneurDashboard', 'profile', 'cds', 'entrepreneur-hub', 'product-details', 'storefront-profile']
       
       if (!allowedRoutes.includes(to.name)) {
         next({ name: 'EntrepreneurDashboard' })
