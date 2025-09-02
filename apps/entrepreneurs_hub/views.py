@@ -211,7 +211,8 @@ class SubmitRatingAPIView(APIView):
 class IsEntrepreneurAndOwnsStorefront(permissions.BasePermission):
     """Allow only entrepreneurs to manage their own products"""
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role == 'entrepreneur' and request.user.has_perm('accounts.can_create_products')
+        # Allow all authenticated entrepreneurs to access
+        return request.user.is_authenticated and request.user.role == 'entrepreneur'
 
     def has_object_permission(self, request, view, obj):
         # obj is a Product instance
@@ -220,7 +221,8 @@ class IsEntrepreneurAndOwnsStorefront(permissions.BasePermission):
 class IsEntrepreneurOwner(permissions.BasePermission):
     """Allow only entrepreneurs to manage their own storefronts"""
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role == 'entrepreneur' and request.user.has_perm('accounts.can_create_products')
+        # Allow all authenticated entrepreneurs to access
+        return request.user.is_authenticated and request.user.role == 'entrepreneur'
 
     def has_object_permission(self, request, view, obj):
         # obj is a Storefront instance
