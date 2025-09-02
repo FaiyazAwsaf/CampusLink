@@ -13,7 +13,8 @@ const router = createRouter({
     {
       path: '/cds',
       name: 'cds',
-      component: () => import('../views/CdsPage.vue')
+      component: () => import('../views/CdsPage.vue'),
+      meta: { excludeRoles: ['entrepreneur'] }
     },
 
     {
@@ -26,19 +27,22 @@ const router = createRouter({
     {
       path: '/entrepreneur-hub',
       name: 'entrepreneur-hub',
-      component: () => import('../views/EntrepreneurHubPage.vue')
+      component: () => import('../views/EntrepreneurHubPage.vue'),
+      meta: { excludeRoles: ['entrepreneur'] }
     },
 
     {
       path: '/entrepreneur-hub/product/:id',
       name: 'product-details',
       component: () => import('../views/ProductDetails.vue'),
+      meta: { excludeRoles: ['entrepreneur'] }
     },
 
     {
       path: '/entrepreneur-hub/store/:storeId',
       name: 'storefront-profile',
       component: () => import('../views/StorefrontProfile.vue'),
+      meta: { excludeRoles: ['entrepreneur'] }
     },
 
     {
@@ -103,10 +107,20 @@ router.beforeEach((to, from, next) => {
   
   // Role-based access control
   if (isAuthenticated && userRole) {
+    // Check if route excludes certain roles
+    if (to.meta.excludeRoles && to.meta.excludeRoles.includes(userRole)) {
+      if (userRole === 'entrepreneur') {
+        next({ name: 'EntrepreneurDashboard' })
+      } else {
+        next({ name: 'landing' })
+      }
+      return
+    }
+    
     // Entrepreneur restrictions
     if (userRole === 'entrepreneur') {
-      // Allow access to browsing pages and entrepreneur dashboard
-      const allowedRoutes = ['landing', 'EntrepreneurDashboard', 'profile', 'cds', 'entrepreneur-hub', 'product-details', 'storefront-profile']
+      // Entrepreneurs can only access their dashboard, profile, and landing page
+      const allowedRoutes = ['landing', 'EntrepreneurDashboard', 'profile']
       
       if (!allowedRoutes.includes(to.name)) {
         next({ name: 'EntrepreneurDashboard' })

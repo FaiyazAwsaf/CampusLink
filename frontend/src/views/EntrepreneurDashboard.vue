@@ -153,7 +153,7 @@
             <tr v-for="product in products" :key="product.product_id" class="border-t">
               <td class="px-4 py-3">{{ product.name }}</td>
               <td class="px-4 py-3">{{ product.category }}</td>
-              <td class="px-4 py-3">${{ product.price }}</td>
+              <td class="px-4 py-3">৳{{ product.price }}</td>
               <td class="px-4 py-3">
                 <span :class="product.availability ? 'text-green-600' : 'text-red-600'">
                   {{ product.availability ? 'Available' : 'Unavailable' }}

@@ -275,7 +275,7 @@ class ProductCRUDViewSet(viewsets.ModelViewSet):
         storefront_id = self.request.data.get('storefront_id')
         if storefront_id:
             try:
-                storefront = Storefront.objects.get(id=storefront_id, owner__user=self.request.user)
+                storefront = Storefront.objects.get(store_id=storefront_id, owner__user=self.request.user)
             except Storefront.DoesNotExist:
                 raise serializers.ValidationError("Invalid storefront")
         else:
