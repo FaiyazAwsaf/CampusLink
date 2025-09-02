@@ -17,6 +17,7 @@ urlpatterns = [
     path('products/<int:product_id>/rate/', SubmitRatingAPIView.as_view(), name='submit-rating'),
     path('products/storefront_name/', StorefrontAPIView.as_view(), name='storefront-names'),
     path('products/storefronts/', StorefrontsAPIView.as_view(), name='storefront-list'),
+    path('storefronts/<int:store_id>/', StorefrontDetailAPIView.as_view(), name='storefront-detail'),
     path('storefronts/<int:store_id>/products/', StorefrontProductsAPIView.as_view(), name='storefront-products'),
     path('products/categories/', ProductCategoryAPIView.as_view(), name='product-categories'),
     path('products/recent/', RecentlyAddedProducts.as_view(), name='recent-products'),
@@ -28,6 +29,6 @@ urlpatterns = [
 
 router = DefaultRouter()
 router.register(r'products/manage', ProductCRUDViewSet, basename='product-crud')
-router.register(r'storefronts', StorefrontViewSet, basename='storefront-crud')
+router.register(r'manage/storefronts', StorefrontViewSet, basename='storefront-crud')
 
 urlpatterns += router.urls
