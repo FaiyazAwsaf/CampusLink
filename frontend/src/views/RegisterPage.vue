@@ -163,15 +163,17 @@
           <!-- Role Dropdown -->
           <div>
             <label for="role" class="block text-sm font-medium text-gray-700">Select Role</label>
-            <select id="role" v-model="role" class="appearance-none relative block w-full px-3 py-2 border text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm border-gray-300">
+            <select
+              id="role"
+              v-model="role"
+              class="appearance-none relative block w-full px-3 py-2 border text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm border-gray-300"
+            >
               <option disabled value="">Please select a role</option>
               <option value="student">Student</option>
               <option value="entrepreneur">Entrepreneur</option>
-              <option value="cds_owner">CDS Owner</option>
-              <option value="laundry_staff">Laundry Staff</option>
             </select>
           </div>
-          
+
           <!-- ...existing code... -->
         </div>
 
@@ -549,7 +551,7 @@ const handleRegister = async () => {
       password: password.value,
       password_confirm: confirmPassword.value,
       is_entrepreneur: isEntrepreneur.value,
-    role: role.value,
+      role: role.value,
     }
 
     if (phone.value.trim()) {
