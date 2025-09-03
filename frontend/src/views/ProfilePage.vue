@@ -164,6 +164,15 @@
                     }}</span>
                   </div>
                 </div>
+                <div>
+                  <button
+                    v-if="canCancelCdsOrder(order)"
+                    @click="cancelCdsOrder(order.order_id)"
+                    class="bg-red-600 text-white px-3 py-1 rounded text-xs ml-2"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
               <ul class="mt-2 ml-2 text-sm text-gray-700">
                 <li v-for="item in order.items" :key="item.item_id">
@@ -234,6 +243,28 @@
 </template>
 
 <script setup>
+// Helper to check if CDS order can be cancelled (within 3 mins and not already cancelled)
+function canCancelCdsOrder(order) {
+  if (!order || order.delivery_status === 'cancelled') return false
+  const created = new Date(order.created_at)
+  const now = new Date()
+  return (now - created) / 1000 < 180 // 3 minutes
+}
+
+async function cancelCdsOrder(orderId) {
+  if (!confirm('Are you sure you want to cancel this order?')) return
+  try {
+    const res = await axios.post('/api/cds/cancel_order/', { order_id: orderId })
+    if (res.data?.success) {
+      await loadCdsOrders()
+      alert('Order cancelled.')
+    } else {
+      alert(res.data?.error || 'Failed to cancel order.')
+    }
+  } catch (e) {
+    alert(e?.response?.data?.error || 'Failed to cancel order.')
+  }
+}
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { AuthService } from '@/utils/auth.js'
@@ -287,10 +318,12 @@ async function loadEntrepreneurHubOrders() {
 function statusClass(status) {
   const base = 'px-2 py-1 rounded text-xs capitalize'
   switch ((status || '').toLowerCase()) {
+    case 'preparing':
+      return base + ' bg-yellow-100 text-yellow-800'
     case 'pending':
       return base + ' bg-yellow-100 text-yellow-800'
-    case 'processing':
-      return base + ' bg-blue-100 text-blue-800'
+    case 'ready':
+      return base + ' bg-green-100 text-green-800'
     case 'completed':
       return base + ' bg-green-100 text-green-800'
     case 'cancelled':
@@ -381,7 +414,7 @@ function cancelEdit() {
 onMounted(async () => {
   try {
     await loadCurrentUser()
-  } catch (_) {
+  } catch (err) {
     router.push({ name: 'login', query: { next: '/profile' } })
     return
   }

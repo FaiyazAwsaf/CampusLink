@@ -163,13 +163,17 @@
           <!-- Role Dropdown -->
           <div>
             <label for="role" class="block text-sm font-medium text-gray-700">Select Role</label>
-            <select id="role" v-model="role" class="appearance-none relative block w-full px-3 py-2 border text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm border-gray-300">
+            <select
+              id="role"
+              v-model="role"
+              class="appearance-none relative block w-full px-3 py-2 border text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm border-gray-300"
+            >
               <option disabled value="">Please select a role</option>
               <option value="student">Student</option>
               <option value="entrepreneur">Entrepreneur</option>
             </select>
           </div>
-          
+
           <!-- ...existing code... -->
         </div>
 
@@ -547,7 +551,7 @@ const handleRegister = async () => {
       password: password.value,
       password_confirm: confirmPassword.value,
       is_entrepreneur: isEntrepreneur.value,
-    role: role.value,
+      role: role.value,
     }
 
     if (phone.value.trim()) {
@@ -568,9 +572,15 @@ const handleRegister = async () => {
         console.log('Redirecting entrepreneur to dashboard')
         // Entrepreneurs go directly to their dashboard
         router.push({ name: 'EntrepreneurDashboard' })
+      } else if (result.user.role === 'laundry_staff') {
+        console.log('Redirecting laundry staff to dashboard')
+        router.push({ name: 'LaundryStaffDashboard' })
+      } else if (result.user.role === 'cds_owner') {
+        console.log('Redirecting CDS owner to CDS page')
+        router.push({ name: 'cds' })
       } else {
-        console.log('Redirecting non-entrepreneur to:', route.query.next || '/')
-        // Other roles go to intended page or home
+        console.log('Redirecting to:', route.query.next || '/')
+        // Other roles (students) go to intended page or home
         const redirectTo = route.query.next || '/'
         router.push(redirectTo)
       }

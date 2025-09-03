@@ -31,6 +31,7 @@
 
             <div class="mt-6 flex flex-col sm:flex-row gap-3">
               <button
+                v-if="!authStore.user"
                 @click="goToSignup"
                 class="px-5 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 shadow transition"
               >
@@ -55,9 +56,9 @@
         <p class="text-slate-600 mt-1">Choose a module to get started.</p>
 
         <div class="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          <!-- CDS - Hidden for entrepreneurs -->
+          <!-- CDS - Hidden for entrepreneurs, laundry staff, and CDS owners -->
           <div
-            v-if="!isEntrepreneur"
+            v-if="!isEntrepreneur && !isLaundryStaff && !isCDSOwner"
             class="starting:opacity-0 transition-all duration-500 bg-white rounded-2xl shadow-lg hover:shadow-2xl hover:ring-4 hover:ring-blue-400/40 p-6 flex flex-col items-center m-4"
             @click="$router.push('/cds')"
           >
@@ -75,9 +76,9 @@
             </button>
           </div>
 
-          <!-- Laundry - Hidden for entrepreneurs -->
+          <!-- Laundry - Hidden for entrepreneurs, laundry staff, and CDS owners -->
           <div
-            v-if="!isEntrepreneur"
+            v-if="!isEntrepreneur && !isLaundryStaff && !isCDSOwner"
             class="starting:opacity-0 transition-all duration-500 bg-white rounded-2xl shadow-lg hover:shadow-2xl hover:ring-4 hover:ring-green-400/40 p-6 flex flex-col items-center m-4"
             @click="$router.push('/laundry')"
           >
@@ -111,9 +112,45 @@
             </button>
           </div>
 
-          <!-- E-Hub - Hidden for entrepreneurs, only shown to other users -->
+          <!-- Laundry Staff Dashboard - Only for laundry staff -->
           <div
-            v-if="!isEntrepreneur"
+            v-if="isLaundryStaff"
+            class="starting:opacity-0 transition-all duration-500 bg-white rounded-2xl shadow-lg hover:shadow-2xl hover:ring-4 hover:ring-emerald-400/40 p-6 flex flex-col items-center m-4"
+            @click="$router.push('/laundry-staff/dashboard')"
+          >
+            <div class="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mb-4">
+              <span class="text-3xl text-emerald-600">🧼</span>
+            </div>
+            <h2 class="text-xl font-bold mb-2 text-gray-800">Staff Dashboard</h2>
+            <p class="text-gray-500 mb-4 text-center">Manage laundry categories and orders.</p>
+            <button
+              class="mt-auto px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition"
+            >
+              Manage Laundry
+            </button>
+          </div>
+
+          <!-- CDS Owner Dashboard - Only for CDS owners -->
+          <div
+            v-if="isCDSOwner"
+            class="starting:opacity-0 transition-all duration-500 bg-white rounded-2xl shadow-lg hover:shadow-2xl hover:ring-4 hover:ring-blue-400/40 p-6 flex flex-col items-center m-4"
+            @click="$router.push('/cds-owner/dashboard')"
+          >
+            <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-4">
+              <span class="text-3xl text-blue-600">🏪</span>
+            </div>
+            <h2 class="text-xl font-bold mb-2 text-gray-800">CDS Dashboard</h2>
+            <p class="text-gray-500 mb-4 text-center">Manage CDS items and orders.</p>
+            <button
+              class="mt-auto px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition"
+            >
+              Manage Store
+            </button>
+          </div>
+
+          <!-- E-Hub - Hidden for entrepreneurs, laundry staff, and CDS owners -->
+          <div
+            v-if="!isEntrepreneur && !isLaundryStaff && !isCDSOwner"
             class="starting:opacity-0 transition-all duration-500 bg-white rounded-2xl shadow-lg hover:shadow-2xl hover:ring-4 hover:ring-yellow-400/40 p-6 flex flex-col items-center m-4"
             @click="handleEntrepreneurHubClick"
           >
@@ -234,16 +271,20 @@ const year = computed(() => new Date().getFullYear())
 // Check if user is entrepreneur
 const isEntrepreneur = computed(() => authStore.user?.role === 'entrepreneur')
 
+// Check if user is laundry staff
+const isLaundryStaff = computed(() => authStore.user?.role === 'laundry_staff')
+
+// Check if user is CDS owner
+const isCDSOwner = computed(() => authStore.user?.role === 'cds_owner')
+
 const goToLogin = () => router.push('/login')
 const goToSignup = () => router.push('/register')
-const goTo = (path) => router.push(path)
 const scrollTo = (id) => {
   const el = document.getElementById(id)
   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
 const handleEntrepreneurHubClick = () => {
-  // Entrepreneurs can still view the public entrepreneur hub
   router.push('/entrepreneur-hub')
 }
 </script>

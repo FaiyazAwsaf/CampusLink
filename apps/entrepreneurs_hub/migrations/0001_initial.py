@@ -31,6 +31,27 @@ class Migration(migrations.Migration):
                 ('instagram_url', models.URLField(blank=True, null=True)),
                 ('website_url', models.URLField(blank=True, null=True)),
                 ('joined_date', models.DateTimeField(auto_now_add=True)),
+                ('user', models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='entrepreneur_profile', to=settings.AUTH_USER_MODEL)),
+            ],
+            options={
+                'verbose_name': 'Owner',
+                'verbose_name_plural': 'Owners',
+                'ordering': ['name'],
+            },
+        ),
+        migrations.CreateModel(
+            name='Owner',
+            fields=[
+                ('owner_id', models.AutoField(primary_key=True, serialize=False)),
+                ('name', models.CharField(max_length=100)),
+                ('image', models.URLField(blank=True, null=True)),
+                ('bio', models.TextField(blank=True, null=True)),
+                ('phone', models.CharField(blank=True, max_length=20, null=True)),
+                ('email', models.EmailField(blank=True, max_length=254, null=True)),
+                ('facebook_url', models.URLField(blank=True, null=True)),
+                ('instagram_url', models.URLField(blank=True, null=True)),
+                ('website_url', models.URLField(blank=True, null=True)),
+                ('joined_date', models.DateTimeField(auto_now_add=True)),
             ],
             options={
                 'verbose_name': 'Owner',

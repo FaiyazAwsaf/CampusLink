@@ -14,7 +14,7 @@ const router = createRouter({
       path: '/cds',
       name: 'cds',
       component: () => import('../views/CdsPage.vue'),
-      meta: { requiresAuth: true }
+      meta: { excludeRoles: ['entrepreneur'] }
     },
 
     {
@@ -28,19 +28,21 @@ const router = createRouter({
       path: '/entrepreneur-hub',
       name: 'entrepreneur-hub',
       component: () => import('../views/EntrepreneurHubPage.vue'),
-      meta: { requiresAuth: true }
+      meta: { excludeRoles: ['entrepreneur'] }
     },
 
     {
       path: '/entrepreneur-hub/product/:id',
       name: 'product-details',
       component: () => import('../views/ProductDetails.vue'),
+      meta: { excludeRoles: ['entrepreneur'] }
     },
 
     {
       path: '/entrepreneur-hub/store/:storeId',
       name: 'storefront-profile',
       component: () => import('../views/StorefrontProfile.vue'),
+      meta: { excludeRoles: ['entrepreneur'] }
     },
 
     {
@@ -74,6 +76,18 @@ const router = createRouter({
         component: () => import('../views/EntrepreneurDashboard.vue'),
         meta: { requiresAuth: true, role: 'entrepreneur' }
       },
+      {
+        path: '/laundry-staff/dashboard',
+        name: 'LaundryStaffDashboard',
+        component: () => import('../views/LaundryStaffDashboard.vue'),
+        meta: { requiresAuth: true, role: 'laundry_staff' }
+      },
+      {
+        path: '/cds-owner/dashboard',
+        name: 'CDSOwnerDashboard',
+        component: () => import('../views/CDSOwnerDashboard.vue'),
+        meta: { requiresAuth: true, role: 'cds_owner' }
+      },
   ],
 })
 
@@ -94,9 +108,13 @@ router.beforeEach((to, from, next) => {
   
   // Routes that require guest (not authenticated)
   if (to.meta.requiresGuest && isAuthenticated) {
-    // If user is entrepreneur, redirect to their dashboard
+    // Redirect based on user role
     if (userRole === 'entrepreneur') {
       next({ name: 'EntrepreneurDashboard' })
+    } else if (userRole === 'laundry_staff') {
+      next({ name: 'LaundryStaffDashboard' })
+    } else if (userRole === 'cds_owner') {
+      next({ name: 'CDSOwnerDashboard' })
     } else {
       next({ name: 'landing' })
     }
@@ -105,11 +123,56 @@ router.beforeEach((to, from, next) => {
   
   // Role-based access control
   if (isAuthenticated && userRole) {
+    // Check if route excludes certain roles
+    if (to.meta.excludeRoles && to.meta.excludeRoles.includes(userRole)) {
+      if (userRole === 'entrepreneur') {
+        next({ name: 'EntrepreneurDashboard' })
+      } else if (userRole === 'laundry_staff') {
+        next({ name: 'LaundryStaffDashboard' })
+      } else if (userRole === 'cds_owner') {
+        next({ name: 'CDSOwnerDashboard' })
+      } else {
+        next({ name: 'landing' })
+      }
+      return
+    }
+    
+    // Role-specific access restrictions
+    if (userRole === 'entrepreneur') {
+      // Entrepreneurs can only access their dashboard, profile, and landing page
+      const allowedRoutes = ['landing', 'EntrepreneurDashboard', 'profile']
+      
+      if (!allowedRoutes.includes(to.name)) {
+        next({ name: 'EntrepreneurDashboard' })
+        return
+      }
+    } else if (userRole === 'laundry_staff') {
+      // Laundry staff can only access their dashboard, profile, and landing page
+      const allowedRoutes = ['landing', 'LaundryStaffDashboard', 'profile']
+      
+      if (!allowedRoutes.includes(to.name)) {
+        next({ name: 'LaundryStaffDashboard' })
+        return
+      }
+    } else if (userRole === 'cds_owner') {
+      // CDS owners can only access their dashboard, profile, and landing page
+      const allowedRoutes = ['landing', 'CDSOwnerDashboard', 'profile']
+      
+      if (!allowedRoutes.includes(to.name)) {
+        next({ name: 'CDSOwnerDashboard' })
+        return
+      }
+    }
+    
     // Role-specific route requirements
     if (to.meta.role && to.meta.role !== userRole) {
       // User doesn't have required role for this route
       if (userRole === 'entrepreneur') {
         next({ name: 'EntrepreneurDashboard' })
+      } else if (userRole === 'laundry_staff') {
+        next({ name: 'LaundryStaffDashboard' })
+      } else if (userRole === 'cds_owner') {
+        next({ name: 'CDSOwnerDashboard' })
       } else {
         next({ name: 'landing' })
       }

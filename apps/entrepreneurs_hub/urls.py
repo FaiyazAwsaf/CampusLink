@@ -33,6 +33,6 @@ urlpatterns = [
 
 router = DefaultRouter()
 router.register(r'products/manage', ProductCRUDViewSet, basename='product-crud')
-router.register(r'storefronts', StorefrontViewSet, basename='storefront-crud')
+router.register(r'manage/storefronts', StorefrontViewSet, basename='storefront-crud')
 
 urlpatterns += router.urls

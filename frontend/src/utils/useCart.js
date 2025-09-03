@@ -75,6 +75,7 @@ export default function useCart() {
     updateQuantity,
     removeFromCart,
     clearCart,
+    updateCartQuantity,
     cdsItems,
     entrepreneurItems,
   }

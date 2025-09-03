@@ -322,10 +322,11 @@ import '@vueform/slider/themes/default.css'
 import Slider from '@vueform/slider'
 import debounce from 'lodash.debounce'
 import useCart from '@/utils/useCart.js'
+import { AuthService } from '@/utils/auth.js'
 
-const { addToCart: addToCartGlobal } = useCart()
 
 const router = useRouter()
+const { addToCart: addToCartGlobal } = useCart()
 
 const products = ref([])
 const currentPage = ref(1)
@@ -499,13 +500,20 @@ const showToastNotification = (message) => {
 }
 
 function onAddToCart(product){
-  addToCartGlobal(product, 'entrepreneur')
+  // Check if user is authenticated
+  if (!AuthService.isAuthenticated()) {
+    // Store current route to redirect back after login
+    const currentRoute = router.currentRoute.value.fullPath
+    router.push({
+      name: 'login',
+      query: { next: currentRoute }
+    })
+    return
+  }
   
-  addedItems.value.add(product.product_id)
-  
-  setTimeout(() => {
-    addedItems.value.delete(product.product_id)
-  }, 2000)
+  // Add to cart if authenticated
+  addToCartGlobal(product, 'entrepreneurs_hub')
+  alert(`Added "${product.name}" to cart!`)
 }
 
 const handleImageError = (event) =>{

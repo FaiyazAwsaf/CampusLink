@@ -273,6 +273,10 @@
 import NavBar from '@/components/NavBar.vue'
 import { ref, onMounted, computed, watch } from 'vue'
 import useCart from '@/utils/useCart.js'
+import { AuthService } from '@/utils/auth.js'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const items = ref([])
 const loading = ref(true)
@@ -370,13 +374,19 @@ const showToastNotification = (message) => {
 }
 
 const addToCart = (item) => {
+  // Check if user is authenticated
+  if (!AuthService.isAuthenticated()) {
+    // Store current route to redirect back after login
+    const currentRoute = router.currentRoute.value.fullPath
+    router.push({
+      name: 'login',
+      query: { next: currentRoute },
+    })
+    return
+  }
+
   addToCartGlobal(item, 'cds')
-  
-  addedItems.value.add(item.item_id)
-  
-  setTimeout(() => {
-    addedItems.value.delete(item.item_id)
-  }, 2000)
+  // alert(`Added "${item.name}" to cart!`)
 }
 
 onMounted(() => {
