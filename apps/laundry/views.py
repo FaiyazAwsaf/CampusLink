@@ -184,7 +184,7 @@ def manage_laundry_category(request, category_id):
     
     elif request.method == 'DELETE':
         category.delete()
-        return Response({'message': 'Category deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'message': 'Category deleted successfully'}, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

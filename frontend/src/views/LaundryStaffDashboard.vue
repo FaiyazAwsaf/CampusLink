@@ -338,15 +338,32 @@ const fetchCategories = async () => {
 
 const createCategory = async () => {
   error.value = ''
+  successMessage.value = ''
   try {
     const res = await fetch(CATEGORY_API_BASE, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(categoryForm.value)
     })
-    if (!res.ok) throw new Error('Create failed')
+    
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}))
+      throw new Error(errorData.error || 'Create failed')
+    }
+    
+    const newCategory = await res.json()
+    
     resetCategoryForm()
     await fetchCategories()
+    
+    // Show success message
+    successMessage.value = `Category "${newCategory.name}" created successfully.`
+    
+    // Clear success message after 5 seconds
+    setTimeout(() => {
+      successMessage.value = ''
+    }, 5000)
+    
   } catch (e) {
     error.value = 'Failed to create category.'
     console.error('Category create error:', e)
@@ -362,15 +379,32 @@ const editCategory = (category) => {
 
 const updateCategory = async () => {
   error.value = ''
+  successMessage.value = ''
   try {
     const res = await fetch(`${CATEGORY_API_BASE}${editCategoryId.value}/`, {
       method: 'PUT',
       headers: getAuthHeaders(),
       body: JSON.stringify(categoryForm.value)
     })
-    if (!res.ok) throw new Error('Update failed')
+    
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}))
+      throw new Error(errorData.error || 'Update failed')
+    }
+    
+    const updatedCategory = await res.json()
+    
     resetCategoryForm()
     await fetchCategories()
+    
+    // Show success message
+    successMessage.value = `Category "${updatedCategory.name}" updated successfully.`
+    
+    // Clear success message after 5 seconds
+    setTimeout(() => {
+      successMessage.value = ''
+    }, 5000)
+    
   } catch (e) {
     error.value = 'Failed to update category.'
     console.error('Category update error:', e)
@@ -383,13 +417,32 @@ const deleteCategory = async (id) => {
   }
   
   error.value = ''
+  successMessage.value = ''
   try {
     const res = await fetch(`${CATEGORY_API_BASE}${id}/`, {
       method: 'DELETE',
       headers: getAuthHeaders()
     })
-    if (!res.ok) throw new Error('Delete failed')
-    await fetchCategories()
+    
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}))
+      throw new Error(errorData.error || 'Delete failed')
+    }
+    
+    // Parse the success response
+    const data = await res.json().catch(() => ({}))
+    
+    // Remove the category from the list immediately
+    categories.value = categories.value.filter(category => category.id !== id)
+    
+    // Show success message
+    successMessage.value = data.message || 'Category deleted successfully.'
+    
+    // Clear success message after 5 seconds
+    setTimeout(() => {
+      successMessage.value = ''
+    }, 5000)
+    
   } catch (e) {
     error.value = 'Failed to delete category.'
     console.error('Category delete error:', e)
