@@ -25,6 +25,10 @@ urlpatterns = [
     path('search/advanced/', AdvancedSearchView.as_view(), name='advanced-search'),
     path('search/autocomplete/', AutocompleteView.as_view(), name='autocomplete'),
     path('search/suggestions/', SearchSuggestionsView.as_view(), name='search-suggestions'),
+    path('orders/submit/', SubmitEntrepreneurOrderAPIView.as_view(), name='submit-order'),
+    path('orders/', UserEntrepreneurOrdersAPIView.as_view(), name='user-orders'),
+    path('orders/<int:order_id>/', EntrepreneurOrderDetailAPIView.as_view(), name='order-detail'),
+    path('orders/<int:order_id>/status/', UpdateOrderStatusAPIView.as_view(), name='update-order-status'),
     ]
 
 router = DefaultRouter()

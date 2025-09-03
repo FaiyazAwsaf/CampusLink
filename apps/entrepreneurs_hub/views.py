@@ -1,6 +1,6 @@
 from django.shortcuts import render
-from .models import Product, Storefront, Rating
-from .serializers import ProductSerializer, StorefrontSerializer, RatingSerializer
+from .models import Product, Storefront, Rating, EntrepreneurOrder, EntrepreneurOrderItem
+from .serializers import ProductSerializer, StorefrontSerializer, RatingSerializer, EntrepreneurOrderSerializer, EntrepreneurOrderItemSerializer
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView
@@ -68,12 +68,12 @@ class ProductListAPIView(ListAPIView):
     
 class ProductDetailsAPIView(RetrieveAPIView):
     serializer_class = ProductSerializer
-    permission_classes = [AllowAny]  # Allow anonymous access to view product details
+    permission_classes = [AllowAny] 
     queryset = Product.objects.all()
     lookup_field = 'product_id'
 
 class StorefrontAPIView(APIView):
-    permission_classes = [AllowAny]  # Allow anonymous access to view storefronts
+    permission_classes = [AllowAny] 
     
     def get(self, request):
         store_names = Storefront.objects.values_list("name", flat=True).distinct()
@@ -97,11 +97,13 @@ class StorefrontsAPIView(ListAPIView):
 
 class StorefrontDetailAPIView(RetrieveAPIView):
     serializer_class = StorefrontSerializer
+    permission_classes = [AllowAny]  # Allow anonymous access to view storefront details
     queryset = Storefront.objects.all()
     lookup_field = 'store_id'
 
 class StorefrontProductsAPIView(ListAPIView):
     serializer_class = ProductSerializer
+    permission_classes = [AllowAny]  # Allow anonymous access to view storefront products
     pagination_class = ProductPagePagination
 
     def get_queryset(self):
@@ -270,5 +272,171 @@ class ProductCRUDViewSet(viewsets.ModelViewSet):
         serializer.save(store_id=storefront)
 
     def perform_update(self, serializer):
-        # Ensure only updating own products
         serializer.save()
+
+
+class SubmitEntrepreneurOrderAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        items = request.data.get('items', [])
+        payment_method = request.data.get('payment_method', 'cash')
+        delivery_address = request.data.get('delivery_address', '')
+        phone_number = request.data.get('phone_number', '')
+        notes = request.data.get('notes', '')
+        
+        if not items:
+            return Response({'error': 'No items provided.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        total_amount = 0
+        order_items = []
+        
+        for item in items:
+            try:
+                product = Product.objects.get(pk=item.get('product_id'))
+            except Product.DoesNotExist:
+                return Response({'error': f'Product with ID {item.get("product_id")} not found.'}, 
+                              status=status.HTTP_400_BAD_REQUEST)
+            
+            if not product.availability:
+                return Response({'error': f'Product "{product.name}" is not available.'}, 
+                              status=status.HTTP_400_BAD_REQUEST)
+            
+            quantity = item.get('quantity', 1)
+            if quantity <= 0:
+                return Response({'error': 'Quantity must be greater than 0.'}, 
+                              status=status.HTTP_400_BAD_REQUEST)
+            
+            item_total = float(product.price) * quantity
+            total_amount += item_total
+            order_items.append((product, quantity, product.price))
+        
+        order = EntrepreneurOrder.objects.create(
+            user=user,
+            payment_method=payment_method,
+            total_amount=total_amount,
+            delivery_address=delivery_address,
+            phone_number=phone_number,
+            notes=notes
+        )
+        
+        for product, quantity, price_at_time in order_items:
+            EntrepreneurOrderItem.objects.create(
+                order=order,
+                product=product,
+                quantity=quantity,
+                price_at_time=price_at_time
+            )
+        
+        return Response({
+            'success': True,
+            'order_id': order.id,
+            'total_amount': float(total_amount)
+        }, status=status.HTTP_201_CREATED)
+
+
+class UserEntrepreneurOrdersAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        orders = EntrepreneurOrder.objects.filter(user=user).order_by('-created_at')
+        
+        data = []
+        for order in orders:
+            order_data = {
+                'order_id': order.id,
+                'total_amount': float(order.total_amount),
+                'created_at': order.created_at,
+                'updated_at': order.updated_at,
+                'payment_method': order.payment_method,
+                'delivery_status': order.delivery_status,
+                'delivery_address': order.delivery_address,
+                'phone_number': order.phone_number,
+                'notes': order.notes,
+                'items': []
+            }
+            
+            for item in order.items.all():
+                order_data['items'].append({
+                    'product_id': item.product.product_id,
+                    'product_name': item.product.name,
+                    'store_name': item.product.store_id.name,
+                    'quantity': item.quantity,
+                    'price_at_time': float(item.price_at_time),
+                    'total_price': float(item.get_total_price()),
+                    'product_image': item.product.image
+                })
+            
+            data.append(order_data)
+        
+        return Response({'orders': data})
+
+
+class EntrepreneurOrderDetailAPIView(RetrieveAPIView):
+    serializer_class = EntrepreneurOrderSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        return EntrepreneurOrder.objects.filter(user=self.request.user)
+    
+    def get_object(self):
+        try:
+            return EntrepreneurOrder.objects.get(
+                id=self.kwargs['order_id'], 
+                user=self.request.user
+            )
+        except EntrepreneurOrder.DoesNotExist:
+            return None
+    
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance is None:
+            return Response({
+                'success': False,
+                'error': 'Order not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = self.get_serializer(instance)
+        return Response({
+            'success': True,
+            'order': serializer.data
+        })
+
+
+class UpdateOrderStatusAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, order_id):
+        try:
+            order = EntrepreneurOrder.objects.get(id=order_id)
+            
+            if request.user != order.user:
+                return Response({
+                    'success': False,
+                    'error': 'Permission denied'
+                }, status=status.HTTP_403_FORBIDDEN)
+            
+            new_status = request.data.get('delivery_status')
+            if new_status and new_status in ['cancelled']:
+                order.delivery_status = new_status
+                order.save()
+                
+                return Response({
+                    'success': True,
+                    'message': 'Order status updated successfully',
+                    'order_id': order.id,
+                    'new_status': order.delivery_status
+                })
+            else:
+                return Response({
+                    'success': False,
+                    'error': 'Invalid status or operation not allowed'
+                }, status=status.HTTP_400_BAD_REQUEST)
+                
+        except EntrepreneurOrder.DoesNotExist:
+            return Response({
+                'success': False,
+                'error': 'Order not found'
+            }, status=status.HTTP_404_NOT_FOUND)

@@ -22,12 +22,28 @@ function saveCart() {
 }
 
 // Add item to cart
-function addToCart(item, type) {
-  // Prevent duplicates by id+type
-  const exists = cart.value.find((i) => i.item_id === item.item_id && i.type === type)
-  if (!exists) {
-    cart.value.push({ ...item, type })
-    saveCart()
+function addToCart(item, type, quantity = 1) {
+  const existingIndex = cart.value.findIndex((i) => i.item_id === item.item_id && i.type === type)
+  
+  if (existingIndex !== -1) {
+    cart.value[existingIndex].quantity = (cart.value[existingIndex].quantity || 1) + quantity
+  } else {
+    cart.value.push({ ...item, type, quantity })
+  }
+  saveCart()
+}
+
+// Update item quantity
+function updateQuantity(item_id, type, quantity) {
+  const existingIndex = cart.value.findIndex((i) => i.item_id === item_id && i.type === type)
+  
+  if (existingIndex !== -1) {
+    if (quantity <= 0) {
+      removeFromCart(item_id, type)
+    } else {
+      cart.value[existingIndex].quantity = quantity
+      saveCart()
+    }
   }
 }
 
@@ -56,6 +72,7 @@ export default function useCart() {
   return {
     cart,
     addToCart,
+    updateQuantity,
     removeFromCart,
     clearCart,
     cdsItems,

@@ -98,6 +98,7 @@
                   v-for="product in products"
                   :key="product.product_id"
                   :product="product"
+                  :addedItems="addedItems"
                   @add-to-cart="onAddToCart"
                   @handle-image-error="handleImageError"
                 />
@@ -239,6 +240,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import NavBar from '@/components/NavBar.vue'
 import ProductCard from '@/components/ProductCard.vue'
+import { TokenManager } from '@/utils/auth.js'
+import useCart from '@/utils/useCart.js'
 
 const route = useRoute()
 const storeId = route.params.storeId
@@ -250,6 +253,10 @@ const productsLoading = ref(false)
 const currentPage = ref(1)
 const totalPages = ref(1)
 const sortOrder = ref('created_at')
+const addedItems = ref(new Set())
+
+// Initialize cart functionality
+const { addToCart } = useCart()
 
 const visiblePages = computed(() => {
   const pages = []
@@ -270,7 +277,15 @@ const visiblePages = computed(() => {
 
 const loadStore = async () => {
   try {
-    const response = await fetch(`/api/entrepreneurs_hub/storefronts/${storeId}/`)
+    const token = TokenManager.getAccessToken()
+    const headers = {}
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+
+    const response = await fetch(`/api/entrepreneurs_hub/storefronts/${storeId}/`, {
+      headers
+    })
     if (response.ok) {
       store.value = await response.json()
     } else {
@@ -286,12 +301,20 @@ const loadStore = async () => {
 const loadProducts = async () => {
   productsLoading.value = true
   try {
+    const token = TokenManager.getAccessToken()
+    const headers = {}
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+
     const params = new URLSearchParams({
       page: currentPage.value,
       ordering: sortOrder.value
     })
     
-    const response = await fetch(`/api/entrepreneurs_hub/storefronts/${storeId}/products/?${params}`)
+    const response = await fetch(`/api/entrepreneurs_hub/storefronts/${storeId}/products/?${params}`, {
+      headers
+    })
     if (response.ok) {
       const data = await response.json()
       products.value = data.results
@@ -326,7 +349,15 @@ const handleImageError = (event) => {
 }
 
 const onAddToCart = (product) => {
-  console.log('Added to cart:', product)
+  addToCart(product, 'entrepreneur')
+  
+  // Add visual feedback
+  addedItems.value.add(product.product_id)
+  
+  // Remove the visual feedback after 2 seconds
+  setTimeout(() => {
+    addedItems.value.delete(product.product_id)
+  }, 2000)
 }
 
 onMounted(() => {

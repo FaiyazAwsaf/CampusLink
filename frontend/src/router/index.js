@@ -105,17 +105,6 @@ router.beforeEach((to, from, next) => {
   
   // Role-based access control
   if (isAuthenticated && userRole) {
-    // Entrepreneur restrictions
-    if (userRole === 'entrepreneur') {
-      // Allow access only to landing page and entrepreneur dashboard
-      const allowedRoutes = ['landing', 'EntrepreneurDashboard', 'profile']
-      
-      if (!allowedRoutes.includes(to.name)) {
-        next({ name: 'EntrepreneurDashboard' })
-        return
-      }
-    }
-    
     // Role-specific route requirements
     if (to.meta.role && to.meta.role !== userRole) {
       // User doesn't have required role for this route

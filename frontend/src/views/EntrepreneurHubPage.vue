@@ -1,5 +1,17 @@
 <template>
   <NavBar />
+  
+  <!-- Toast Notification -->
+  <div v-if="showToast" class="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out"
+       :class="{ 'translate-x-0 opacity-100': showToast, 'translate-x-full opacity-0': !showToast }">
+    <div class="flex items-center">
+      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+      </svg>
+      {{ toastMessage }}
+    </div>
+  </div>
+
   <div class="min-h-screen bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-200">
     <div class="container mx-auto px-4 py-8">
 
@@ -231,6 +243,7 @@
                 v-for="product in products"
                   :key="product.id"
                   :product="product"
+                  :addedItems="addedItems"
                   @add-to-cart="onAddToCart"
                   @handle-image-error="handleImageError"
               />
@@ -308,6 +321,9 @@ import StockFilter from '@/components/StockFilter.vue'
 import '@vueform/slider/themes/default.css'
 import Slider from '@vueform/slider'
 import debounce from 'lodash.debounce'
+import useCart from '@/utils/useCart.js'
+
+const { addToCart: addToCartGlobal } = useCart()
 
 const router = useRouter()
 
@@ -337,6 +353,9 @@ const showSuggestions = ref(false)
 const searchLoading = ref(false)
 const searchFocused = ref(false)
 const showMobileFilters = ref(false)
+const showToast = ref(false)
+const toastMessage = ref('')
+const addedItems = ref(new Set())
 
 const visiblePages = computed(() => {
   const pages = []
@@ -471,8 +490,22 @@ const scrollRight = () => {
 }
 
 
+const showToastNotification = (message) => {
+  toastMessage.value = message
+  showToast.value = true
+  setTimeout(() => {
+    showToast.value = false
+  }, 3000)
+}
+
 function onAddToCart(product){
-  console.log("Added ", product, " to cart")
+  addToCartGlobal(product, 'entrepreneur')
+  
+  addedItems.value.add(product.product_id)
+  
+  setTimeout(() => {
+    addedItems.value.delete(product.product_id)
+  }, 2000)
 }
 
 const handleImageError = (event) =>{

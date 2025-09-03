@@ -2,6 +2,17 @@
   <div class="min-h-screen bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-200">
     <NavBar />
 
+    <!-- Toast Notification -->
+    <div v-if="showToast" class="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out"
+         :class="{ 'translate-x-0 opacity-100': showToast, 'translate-x-full opacity-0': !showToast }">
+      <div class="flex items-center">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        {{ toastMessage }}
+      </div>
+    </div>
+
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Loading State -->
@@ -167,15 +178,23 @@
                 <button
                   :disabled="!item.availability"
                   :class="[
-                    'w-full py-2 px-4 rounded-lg font-semibold transition-all duration-200 mt-auto',
+                    'w-full py-2 px-4 rounded-lg font-semibold transition-all duration-200 mt-auto flex items-center justify-center',
                     item.availability
-                      ? 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-md'
+                      ? addedItems.has(item.item_id)
+                        ? 'bg-green-600 text-white'
+                        : 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-md'
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed',
                   ]"
                   @click="addToCart(item)"
                 >
-                  <span v-if="item.availability"> Add to Cart </span>
-                  <span v-else> Out of Stock </span>
+                  <span v-if="!item.availability"> Out of Stock </span>
+                  <span v-else-if="addedItems.has(item.item_id)" class="flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Added!
+                  </span>
+                  <span v-else> Add to Cart </span>
                 </button>
               </div>
             </div>
@@ -265,6 +284,9 @@ const totalItems = ref(0)
 const pageSize = ref(12)
 const searchQuery = ref('')
 const availabilityFilter = ref('')
+const showToast = ref(false)
+const toastMessage = ref('')
+const addedItems = ref(new Set())
 
 const fetchItems = async () => {
   loading.value = true
@@ -338,9 +360,23 @@ const handleImageError = (event) => {
 }
 
 const { addToCart: addToCartGlobal } = useCart()
+
+const showToastNotification = (message) => {
+  toastMessage.value = message
+  showToast.value = true
+  setTimeout(() => {
+    showToast.value = false
+  }, 3000)
+}
+
 const addToCart = (item) => {
   addToCartGlobal(item, 'cds')
-  alert(`Added "${item.name}" to cart!`)
+  
+  addedItems.value.add(item.item_id)
+  
+  setTimeout(() => {
+    addedItems.value.delete(item.item_id)
+  }, 2000)
 }
 
 onMounted(() => {

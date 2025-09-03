@@ -72,15 +72,23 @@
             <button
                 :disabled="!product.availability"
                 :class="[
-                    'w-full py-2 px-4 rounded-lg font-semibold transition-all duration-200',
+                    'w-full py-2 px-4 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center',
                     product.availability
-                    ? 'bg-gray-700 hover:bg-gray-800 text-white hover:shadow-md'
+                    ? addedItems.has(product.product_id)
+                        ? 'bg-green-600 text-white'
+                        : 'bg-gray-700 hover:bg-gray-800 text-white hover:shadow-md'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed',
                 ]"
                 @click.stop="$emit('add-to-cart', product)"
                 >
-                <span v-if="product.availability">Add to Cart</span>
-                <span v-else>Out of Stock</span>
+                <span v-if="!product.availability">Out of Stock</span>
+                <span v-else-if="addedItems.has(product.product_id)" class="flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Added!
+                </span>
+                <span v-else>Add to Cart</span>
             </button>
         </div>
     </div>
@@ -98,6 +106,10 @@ const props = defineProps({
         type:Object,
         required:true,
     },
+    addedItems: {
+        type: Set,
+        default: () => new Set()
+    }
 })
 
 const navigateToProduct = () => {

@@ -182,8 +182,51 @@
           Entrepreneurs Hub Orders
           <span class="ml-2 text-sm text-gray-500">(click to toggle)</span>
         </summary>
-        <div class="p-3 text-gray-600">
-          No Entrepreneurs Hub order API found yet. We can wire this once the endpoint exists.
+        <div class="p-3">
+          <div v-if="entrepreneurHub.loading" class="text-gray-500">Loading…</div>
+          <div v-else-if="entrepreneurHub.error" class="text-red-600">{{ entrepreneurHub.error }}</div>
+          <div v-else-if="!entrepreneurHub.orders.length" class="text-gray-600">No Entrepreneur Hub orders yet.</div>
+          <div v-else class="grid gap-3">
+            <div
+              v-for="order in entrepreneurHub.orders"
+              :key="order.order_id"
+              class="rounded border p-3 hover:bg-gray-50"
+            >
+              <div class="flex justify-between items-center">
+                <div>
+                  <div class="font-semibold">Order #{{ order.order_id }}</div>
+                  <div class="text-sm text-gray-600">
+                    {{ formatDate(order.created_at) }} • {{ order.items.length }} items • Tk.
+                    {{ order.total_amount }}
+                  </div>
+                  <div class="text-xs mt-1">
+                    Payment: {{ order.payment_method }} | Status:
+                    <span :class="statusClass(order.delivery_status)">{{
+                      order.delivery_status
+                    }}</span>
+                  </div>
+                  <div v-if="order.delivery_address" class="text-xs text-gray-500 mt-1">
+                    Address: {{ order.delivery_address }}
+                  </div>
+                  <div v-if="order.phone_number" class="text-xs text-gray-500">
+                    Phone: {{ order.phone_number }}
+                  </div>
+                </div>
+              </div>
+              <ul class="mt-2 ml-2 text-sm text-gray-700">
+                <li v-for="item in order.items" :key="item.product_id">
+                  {{ item.product_name }} 
+                  <span class="text-gray-500">({{ item.store_name }})</span>
+                  <span v-if="item.quantity"> x{{ item.quantity }}</span> — Tk.
+                  {{ item.price_at_time }}
+                  <span v-if="item.quantity > 1" class="text-gray-500"> (Total: Tk. {{ item.total_price }})</span>
+                </li>
+              </ul>
+              <div v-if="order.notes" class="mt-2 text-xs text-gray-600 italic">
+                Notes: {{ order.notes }}
+              </div>
+            </div>
+          </div>
         </div>
       </details>
     </section>
@@ -213,6 +256,8 @@ const editing = ref(false)
 const laundry = ref({ orders: [], loading: false, error: '' })
 // CDS orders state
 const cds = ref({ orders: [], loading: false, error: '' })
+// Entrepreneur Hub orders state
+const entrepreneurHub = ref({ orders: [], loading: false, error: '' })
 async function loadCdsOrders() {
   cds.value.loading = true
   cds.value.error = ''
@@ -223,6 +268,19 @@ async function loadCdsOrders() {
     cds.value.error = e?.response?.data?.detail || 'Failed to load CDS orders'
   } finally {
     cds.value.loading = false
+  }
+}
+
+async function loadEntrepreneurHubOrders() {
+  entrepreneurHub.value.loading = true
+  entrepreneurHub.value.error = ''
+  try {
+    const res = await axios.get('/api/entrepreneurs_hub/orders/')
+    entrepreneurHub.value.orders = Array.isArray(res.data.orders) ? res.data.orders : []
+  } catch (e) {
+    entrepreneurHub.value.error = e?.response?.data?.detail || 'Failed to load Entrepreneur Hub orders'
+  } finally {
+    entrepreneurHub.value.loading = false
   }
 }
 
@@ -329,6 +387,7 @@ onMounted(async () => {
   }
   loadLaundryOrders()
   loadCdsOrders()
+  loadEntrepreneurHubOrders()
 })
 </script>
 

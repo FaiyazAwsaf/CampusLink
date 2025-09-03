@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Product, Storefront, Rating, Owner
+from .models import Product, Storefront, Rating, Owner, EntrepreneurOrder, EntrepreneurOrderItem
 
 class OwnerSerializer(serializers.ModelSerializer):
     class Meta:
@@ -97,3 +97,51 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def get_rating_count(self, obj):
         return obj.get_rating_count()
+
+
+class EntrepreneurOrderItemSerializer(serializers.ModelSerializer):
+    product_name = serializers.CharField(source='product.name', read_only=True)
+    product_image = serializers.URLField(source='product.image', read_only=True)
+    store_name = serializers.CharField(source='product.store_id.name', read_only=True)
+    total_price = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = EntrepreneurOrderItem
+        fields = [
+            'id',
+            'product',
+            'product_name',
+            'product_image',
+            'store_name',
+            'quantity',
+            'price_at_time',
+            'total_price'
+        ]
+    
+    def get_total_price(self, obj):
+        return obj.get_total_price()
+
+
+class EntrepreneurOrderSerializer(serializers.ModelSerializer):
+    items = EntrepreneurOrderItemSerializer(many=True, read_only=True)
+    user_name = serializers.CharField(source='user.name', read_only=True)
+    user_email = serializers.CharField(source='user.email', read_only=True)
+    
+    class Meta:
+        model = EntrepreneurOrder
+        fields = [
+            'id',
+            'user',
+            'user_name',
+            'user_email',
+            'total_amount',
+            'created_at',
+            'updated_at',
+            'payment_method',
+            'delivery_status',
+            'delivery_address',
+            'phone_number',
+            'notes',
+            'items'
+        ]
+        read_only_fields = ['id', 'user', 'created_at', 'updated_at']

@@ -222,7 +222,7 @@ const userRating = ref(0)
 const userReview = ref('')
 const submittingRating = ref(false)
 const ratingMessage = ref('')
-const ratingMessageType = ref('') 
+const ratingMessageType = ref('')
 
 const fetchProduct = async () => {
   loading.value = true
@@ -332,8 +332,22 @@ const submitRating = async () => {
 }
 
 const addToCart = () => {
-  console.log('Adding to cart:', product.value)
-  alert(`Added "${product.value.name}" to cart! (Cart functionality coming soon)`)
+  if (!product.value) return
+  
+  addToCartFunction({
+    id: product.value.product_id,
+    name: product.value.name,
+    price: product.value.price,
+    image: product.value.image,
+    store_name: product.value.store_name,
+    type: 'entrepreneur'
+  })
+  
+  addedToCart.value = true
+  
+  setTimeout(() => {
+    addedToCart.value = false
+  }, 2000)
 }
 
 const handleImageError = (event) => {
