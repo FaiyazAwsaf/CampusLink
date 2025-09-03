@@ -571,8 +571,8 @@ const handleRegister = async () => {
         // Entrepreneurs go directly to their dashboard
         router.push({ name: 'EntrepreneurDashboard' })
       } else if (result.user.role === 'laundry_staff') {
-        console.log('Redirecting laundry staff to laundry page')
-        router.push({ name: 'laundry' })
+        console.log('Redirecting laundry staff to dashboard')
+        router.push({ name: 'LaundryStaffDashboard' })
       } else if (result.user.role === 'cds_owner') {
         console.log('Redirecting CDS owner to CDS page')
         router.push({ name: 'cds' })

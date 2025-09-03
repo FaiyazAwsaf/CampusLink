@@ -153,7 +153,7 @@ const handleLogin = async () => {
         if (result.user.role === 'entrepreneur') {
           router.push({ name: 'EntrepreneurDashboard' })
         } else if (result.user.role === 'laundry_staff') {
-          router.push({ name: 'laundry' })
+          router.push({ name: 'LaundryStaffDashboard' })
         } else if (result.user.role === 'cds_owner') {
           router.push({ name: 'cds' })
         } else {
