@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import Product, Storefront, Rating, EntrepreneurOrder, EntrepreneurOrderItem
+from .models import Owner, Product, Storefront, Rating, EntrepreneurOrder, EntrepreneurOrderItem
 from .serializers import ProductSerializer, StorefrontSerializer, RatingSerializer, EntrepreneurOrderSerializer, EntrepreneurOrderItemSerializer
 from rest_framework import status
 from rest_framework.views import APIView
