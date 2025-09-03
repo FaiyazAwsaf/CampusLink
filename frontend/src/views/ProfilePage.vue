@@ -260,11 +260,9 @@ async function loadCdsOrders() {
 function statusClass(status) {
   const base = 'px-2 py-1 rounded text-xs capitalize'
   switch ((status || '').toLowerCase()) {
-    case 'pending':
+    case 'preparing':
       return base + ' bg-yellow-100 text-yellow-800'
-    case 'processing':
-      return base + ' bg-blue-100 text-blue-800'
-    case 'completed':
+    case 'ready':
       return base + ' bg-green-100 text-green-800'
     case 'cancelled':
       return base + ' bg-red-100 text-red-800'
@@ -354,7 +352,7 @@ function cancelEdit() {
 onMounted(async () => {
   try {
     await loadCurrentUser()
-  } catch (_) {
+  } catch (err) {
     router.push({ name: 'login', query: { next: '/profile' } })
     return
   }
