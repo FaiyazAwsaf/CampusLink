@@ -211,6 +211,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import NavBar from '@/components/NavBar.vue'
+import useCart from '@/utils/useCart.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -223,6 +224,9 @@ const userReview = ref('')
 const submittingRating = ref(false)
 const ratingMessage = ref('')
 const ratingMessageType = ref('')
+const addedToCart = ref(false)
+
+const { addToCart: addToCartFunction } = useCart()
 
 const fetchProduct = async () => {
   loading.value = true
@@ -334,14 +338,7 @@ const submitRating = async () => {
 const addToCart = () => {
   if (!product.value) return
   
-  addToCartFunction({
-    id: product.value.product_id,
-    name: product.value.name,
-    price: product.value.price,
-    image: product.value.image,
-    store_name: product.value.store_name,
-    type: 'entrepreneur'
-  })
+  addToCartFunction(product.value, 'entrepreneur')
   
   addedToCart.value = true
   
