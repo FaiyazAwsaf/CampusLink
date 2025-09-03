@@ -48,6 +48,8 @@
               <option disabled value="">Please select a role</option>
               <option value="student">Student</option>
               <option value="entrepreneur">Entrepreneur</option>
+              <option value="cds_owner">CDS Owner</option>
+              <option value="laundry_staff">Laundry Staff</option>
             </select>
           </div>
         </div>
@@ -150,6 +152,10 @@ const handleLogin = async () => {
         // Role-based default redirection only when no redirect is specified
         if (result.user.role === 'entrepreneur') {
           router.push({ name: 'EntrepreneurDashboard' })
+        } else if (result.user.role === 'laundry_staff') {
+          router.push({ name: 'LaundryStaffDashboard' })
+        } else if (result.user.role === 'cds_owner') {
+          router.push({ name: 'cds' })
         } else {
           router.push('/')
         }
