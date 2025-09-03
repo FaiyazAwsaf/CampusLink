@@ -76,6 +76,12 @@ const router = createRouter({
         component: () => import('../views/EntrepreneurDashboard.vue'),
         meta: { requiresAuth: true, role: 'entrepreneur' }
       },
+      {
+        path: '/laundry-staff/dashboard',
+        name: 'LaundryStaffDashboard',
+        component: () => import('../views/LaundryStaffDashboard.vue'),
+        meta: { requiresAuth: true, role: 'laundry_staff' }
+      },
   ],
 })
 
@@ -96,9 +102,11 @@ router.beforeEach((to, from, next) => {
   
   // Routes that require guest (not authenticated)
   if (to.meta.requiresGuest && isAuthenticated) {
-    // If user is entrepreneur, redirect to their dashboard
+    // Redirect based on user role
     if (userRole === 'entrepreneur') {
       next({ name: 'EntrepreneurDashboard' })
+    } else if (userRole === 'laundry_staff') {
+      next({ name: 'LaundryStaffDashboard' })
     } else {
       next({ name: 'landing' })
     }
@@ -111,19 +119,29 @@ router.beforeEach((to, from, next) => {
     if (to.meta.excludeRoles && to.meta.excludeRoles.includes(userRole)) {
       if (userRole === 'entrepreneur') {
         next({ name: 'EntrepreneurDashboard' })
+      } else if (userRole === 'laundry_staff') {
+        next({ name: 'LaundryStaffDashboard' })
       } else {
         next({ name: 'landing' })
       }
       return
     }
     
-    // Entrepreneur restrictions
+    // Role-specific access restrictions
     if (userRole === 'entrepreneur') {
       // Entrepreneurs can only access their dashboard, profile, and landing page
       const allowedRoutes = ['landing', 'EntrepreneurDashboard', 'profile']
       
       if (!allowedRoutes.includes(to.name)) {
         next({ name: 'EntrepreneurDashboard' })
+        return
+      }
+    } else if (userRole === 'laundry_staff') {
+      // Laundry staff can only access their dashboard, profile, and landing page
+      const allowedRoutes = ['landing', 'LaundryStaffDashboard', 'profile']
+      
+      if (!allowedRoutes.includes(to.name)) {
+        next({ name: 'LaundryStaffDashboard' })
         return
       }
     }
@@ -133,6 +151,8 @@ router.beforeEach((to, from, next) => {
       // User doesn't have required role for this route
       if (userRole === 'entrepreneur') {
         next({ name: 'EntrepreneurDashboard' })
+      } else if (userRole === 'laundry_staff') {
+        next({ name: 'LaundryStaffDashboard' })
       } else {
         next({ name: 'landing' })
       }
