@@ -1,3 +1,5 @@
+from django.utils import timezone
+from datetime import timedelta
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -222,7 +224,7 @@ def user_cds_orders(request):
             'total_amount': float(order.total_amount),
             'created_at': order.created_at,
             'payment_method': order.payment_method,
-            'delivery_status': order.delivery_status,
+            'delivery_status': order.delivery_status or 'pending',
             'items': [
                 {
                     'item_id': item.product.item_id,
@@ -235,6 +237,26 @@ def user_cds_orders(request):
         })
     return Response({'orders': data})
 
+# Cancel CDS order within 3 minutes of creation
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def cancel_cds_order(request):
+    order_id = request.data.get('order_id')
+    user = request.user
+    try:
+        order = CDSOrder.objects.get(id=order_id, user=user)
+    except CDSOrder.DoesNotExist:
+        return Response({'error': 'Order not found.'}, status=status.HTTP_404_NOT_FOUND)
+    # Check if within 3 minutes
+    if timezone.now() - order.created_at > timedelta(minutes=3):
+        return Response({'error': 'Order can only be cancelled within 3 minutes of placing.'}, status=status.HTTP_400_BAD_REQUEST)
+    if order.delivery_status == 'cancelled':
+        return Response({'error': 'Order already cancelled.'}, status=status.HTTP_400_BAD_REQUEST)
+    order.delivery_status = 'cancelled'
+    order.save()
+    return Response({'success': True, 'message': 'Order cancelled.'})
+
+  
 # CDS Owner Management Views
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
@@ -406,3 +428,4 @@ def delete_cds_order(request, order_id):
         return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+

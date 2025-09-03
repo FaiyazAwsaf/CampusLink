@@ -26,7 +26,20 @@ function addToCart(item, type) {
   // Prevent duplicates by id+type
   const exists = cart.value.find((i) => i.item_id === item.item_id && i.type === type)
   if (!exists) {
-    cart.value.push({ ...item, type })
+    cart.value.push({ ...item, type, quantity: item.quantity || 1 })
+    saveCart()
+  } else {
+    // If already exists, increase quantity
+    exists.quantity = (exists.quantity || 1) + 1
+    saveCart()
+  }
+}
+
+// Update quantity of item in cart
+function updateCartQuantity(item_id, type, delta) {
+  const item = cart.value.find((i) => i.item_id === item_id && i.type === type)
+  if (item) {
+    item.quantity = Math.max(1, (item.quantity || 1) + delta)
     saveCart()
   }
 }
@@ -58,6 +71,7 @@ export default function useCart() {
     addToCart,
     removeFromCart,
     clearCart,
+    updateCartQuantity,
     cdsItems,
     entrepreneurItems,
   }

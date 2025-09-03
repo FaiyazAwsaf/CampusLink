@@ -15,11 +15,26 @@
               :key="'cds-' + item.item_id"
               class="flex justify-between items-center border-b py-2 last:border-b-0"
             >
-              <div>
+              <div class="flex items-center space-x-2">
                 <span class="font-semibold">{{ item.name }}</span>
                 <span class="text-gray-500 ml-2">Tk. {{ item.price }}</span>
-                <span v-if="item.quantity" class="text-gray-400 ml-2">x{{ item.quantity }}</span>
               </div>
+              <span class="text-gray-400 ml-2 flex items-center">
+                <button
+                  @click="updateCartQuantity(item.item_id, 'cds', -1)"
+                  class="px-2 py-1 bg-blue-200 rounded-l hover:bg-gray-300"
+                  :disabled="item.quantity <= 1"
+                >
+                  -
+                </button>
+                <span class="px-2">{{ item.quantity }}</span>
+                <button
+                  @click="updateCartQuantity(item.item_id, 'cds', 1)"
+                  class="px-2 py-1 bg-blue-200 rounded-r hover:bg-gray-300"
+                >
+                  +
+                </button>
+              </span>
               <button
                 @click="removeFromCart(item.item_id, 'cds')"
                 class="text-red-500 hover:underline"
@@ -28,7 +43,7 @@
               </button>
             </div>
             <div class="flex justify-end mt-2">
-              <span class="font-bold text-lg">Total: Tk. {{ cdsTotal }}</span>
+              <span class="font-bold text-lg">Total: Tk. {{ cdsTotal.toFixed(2) }}</span>
             </div>
             <div class="mt-4 flex justify-end">
               <button
@@ -72,7 +87,7 @@
         <div class="flex justify-end mt-6">
           <button
             @click="clearCart"
-            class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
+            class="bg-red-500 text-white px-4 py-2 rounded hover:bg-gray-400"
           >
             Clear Cart
           </button>
@@ -162,16 +177,17 @@ import axios from 'axios'
 import { ref } from 'vue'
 import { computed } from 'vue'
 
-const { cart, cdsItems, entrepreneurItems, removeFromCart, clearCart } = useCart()
+const { cart, cdsItems, entrepreneurItems, removeFromCart, clearCart, updateCartQuantity } =
+  useCart()
 
 const showCdsOrder = ref(false)
 const showEntOrder = ref(false)
 const paymentMethod = ref('cash')
+const cdsInvoice = ref(null)
 
 const cdsTotal = computed(() => {
   return cdsItems.value.reduce((sum, item) => sum + item.price * (item.quantity || 1), 0)
 })
-const confirmedTotal = ref(null)
 
 async function confirmOrder(type) {
   try {
@@ -186,20 +202,48 @@ async function confirmOrder(type) {
       }
       const response = await axios.post('/api/cds/submit_order/', orderDetails)
       if (response.data.success) {
-        confirmedTotal.value = Number(response.data.total_amount).toFixed(2)
-        alert('Order placed successfully! Total: Tk. ' + confirmedTotal.value)
+        // Try to get invoice/order details (if not already in response)
+        let invoiceData = response.data.invoice || response.data.order || null
+        if (!invoiceData && response.data.order_number) {
+          // Try to fetch order details by order_number
+          try {
+            const detailsResp = await axios.get(
+              `/api/cds/orders/${encodeURIComponent(response.data.order_number)}/`,
+            )
+            invoiceData = detailsResp.data
+          } catch (err) {
+            // fallback: use what we have
+            invoiceData = {
+              order_number: response.data.order_number,
+              items: cdsItems.value.map((item) => ({
+                name: item.name,
+                quantity: item.quantity || 1,
+                price: item.price,
+              })),
+              total_amount: response.data.total_amount,
+              status: response.data.status || 'preparing',
+              created_at: response.data.created_at || new Date().toISOString(),
+            }
+          }
+        }
+        cdsInvoice.value = invoiceData
         clearCart()
         showCdsOrder.value = false
       } else {
-        alert('Order failed: ' + (response.data.error || 'Unknown error'))
+        // Optionally show error in UI
+        cdsInvoice.value = {
+          error: response.data.error || 'Unknown error',
+        }
       }
     } else if (type === 'entrepreneur') {
       // Handle Entrepreneur Hub order confirmation logic here
-      alert('Entrepreneur Hub Order Confirmed (not implemented)')
       showEntOrder.value = false
     }
   } catch (error) {
-    alert('Error confirming order: ' + (error.response?.data?.error || error.message))
+    // Optionally show error in UI
+    cdsInvoice.value = {
+      error: error.response?.data?.error || error.message,
+    }
     console.error('Error confirming order:', error)
   }
 }

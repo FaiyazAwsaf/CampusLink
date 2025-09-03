@@ -349,13 +349,13 @@ const addToCart = (item) => {
     const currentRoute = router.currentRoute.value.fullPath
     router.push({
       name: 'login',
-      query: { next: currentRoute }
+      query: { next: currentRoute },
     })
     return
   }
-  
+
   addToCartGlobal(item, 'cds')
-  alert(`Added "${item.name}" to cart!`)
+  // alert(`Added "${item.name}" to cart!`)
 }
 
 onMounted(() => {
