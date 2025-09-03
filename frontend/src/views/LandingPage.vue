@@ -56,9 +56,9 @@
         <p class="text-slate-600 mt-1">Choose a module to get started.</p>
 
         <div class="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          <!-- CDS - Hidden for entrepreneurs and laundry staff -->
+          <!-- CDS - Hidden for entrepreneurs, laundry staff, and CDS owners -->
           <div
-            v-if="!isEntrepreneur && !isLaundryStaff"
+            v-if="!isEntrepreneur && !isLaundryStaff && !isCDSOwner"
             class="starting:opacity-0 transition-all duration-500 bg-white rounded-2xl shadow-lg hover:shadow-2xl hover:ring-4 hover:ring-blue-400/40 p-6 flex flex-col items-center m-4"
             @click="$router.push('/cds')"
           >
@@ -76,9 +76,9 @@
             </button>
           </div>
 
-          <!-- Laundry - Hidden for entrepreneurs and laundry staff -->
+          <!-- Laundry - Hidden for entrepreneurs, laundry staff, and CDS owners -->
           <div
-            v-if="!isEntrepreneur && !isLaundryStaff"
+            v-if="!isEntrepreneur && !isLaundryStaff && !isCDSOwner"
             class="starting:opacity-0 transition-all duration-500 bg-white rounded-2xl shadow-lg hover:shadow-2xl hover:ring-4 hover:ring-green-400/40 p-6 flex flex-col items-center m-4"
             @click="$router.push('/laundry')"
           >
@@ -130,9 +130,27 @@
             </button>
           </div>
 
-          <!-- E-Hub - Hidden for entrepreneurs and laundry staff, only shown to other users -->
+          <!-- CDS Owner Dashboard - Only for CDS owners -->
           <div
-            v-if="!isEntrepreneur && !isLaundryStaff"
+            v-if="isCDSOwner"
+            class="starting:opacity-0 transition-all duration-500 bg-white rounded-2xl shadow-lg hover:shadow-2xl hover:ring-4 hover:ring-blue-400/40 p-6 flex flex-col items-center m-4"
+            @click="$router.push('/cds-owner/dashboard')"
+          >
+            <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-4">
+              <span class="text-3xl text-blue-600">🏪</span>
+            </div>
+            <h2 class="text-xl font-bold mb-2 text-gray-800">CDS Dashboard</h2>
+            <p class="text-gray-500 mb-4 text-center">Manage CDS items and orders.</p>
+            <button
+              class="mt-auto px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition"
+            >
+              Manage Store
+            </button>
+          </div>
+
+          <!-- E-Hub - Hidden for entrepreneurs, laundry staff, and CDS owners -->
+          <div
+            v-if="!isEntrepreneur && !isLaundryStaff && !isCDSOwner"
             class="starting:opacity-0 transition-all duration-500 bg-white rounded-2xl shadow-lg hover:shadow-2xl hover:ring-4 hover:ring-yellow-400/40 p-6 flex flex-col items-center m-4"
             @click="handleEntrepreneurHubClick"
           >
@@ -256,6 +274,9 @@ const isEntrepreneur = computed(() => authStore.user?.role === 'entrepreneur')
 // Check if user is laundry staff
 const isLaundryStaff = computed(() => authStore.user?.role === 'laundry_staff')
 
+// Check if user is CDS owner
+const isCDSOwner = computed(() => authStore.user?.role === 'cds_owner')
+
 const goToLogin = () => router.push('/login')
 const goToSignup = () => router.push('/register')
 const scrollTo = (id) => {
@@ -264,7 +285,6 @@ const scrollTo = (id) => {
 }
 
 const handleEntrepreneurHubClick = () => {
-  // Entrepreneurs can still view the public entrepreneur hub
   router.push('/entrepreneur-hub')
 }
 </script>

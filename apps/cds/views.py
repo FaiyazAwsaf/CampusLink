@@ -8,6 +8,7 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator
 from django.db.models import Q
+from apps.accounts.decorators import role_required
 import json
 
 @require_http_methods(["GET"])
@@ -233,3 +234,175 @@ def user_cds_orders(request):
             ]
         })
     return Response({'orders': data})
+
+# CDS Owner Management Views
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+@role_required(['cds_owner'])
+def manage_cds_items(request):
+    """Manage CDS items - GET all or POST new item"""
+    if request.method == 'GET':
+        items = CDS_Item.objects.all().order_by('-item_id')
+        data = [{
+            'item_id': item.item_id,
+            'name': item.name,
+            'description': item.description,
+            'price': float(item.price),
+            'image': item.image,
+            'availability': item.availability,
+            'category': item.category,
+        } for item in items]
+        return Response(data)
+    
+    elif request.method == 'POST':
+        try:
+            data = request.data
+            item = CDS_Item.objects.create(
+                name=data.get('name'),
+                description=data.get('description'),
+                price=data.get('price'),
+                image=data.get('image', ''),
+                availability=data.get('availability', True),
+                category=data.get('category', '')
+            )
+            return Response({
+                'item_id': item.item_id,
+                'name': item.name,
+                'description': item.description,
+                'price': float(item.price),
+                'image': item.image,
+                'availability': item.availability,
+                'category': item.category,
+            }, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
+@role_required(['cds_owner'])
+def manage_cds_item(request, item_id):
+    """Update or delete a specific CDS item"""
+    try:
+        item = CDS_Item.objects.get(item_id=item_id)
+    except CDS_Item.DoesNotExist:
+        return Response({'error': 'Item not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    if request.method == 'PUT':
+        try:
+            data = request.data
+            item.name = data.get('name', item.name)
+            item.description = data.get('description', item.description)
+            item.price = data.get('price', item.price)
+            item.image = data.get('image', item.image)
+            item.availability = data.get('availability', item.availability)
+            item.category = data.get('category', item.category)
+            item.save()
+            
+            return Response({
+                'item_id': item.item_id,
+                'name': item.name,
+                'description': item.description,
+                'price': float(item.price),
+                'image': item.image,
+                'availability': item.availability,
+                'category': item.category,
+            })
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
+    elif request.method == 'DELETE':
+        item.delete()
+        return Response({'message': 'Item deleted successfully'}, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@role_required(['cds_owner'])
+def get_all_cds_orders(request):
+    """Get all CDS orders for owner to manage"""
+    orders = CDSOrder.objects.all().order_by('-created_at')
+    data = [{
+        'order_id': order.id,
+        'user_name': order.user.name,
+        'user_email': order.user.email,
+        'total_amount': float(order.total_amount),
+        'created_at': order.created_at,
+        'payment_method': order.payment_method,
+        'delivery_status': order.delivery_status,
+        'items_count': order.items.count()
+    } for order in orders]
+    
+    return Response(data)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+@role_required(['cds_owner'])
+def update_cds_order_status(request, order_id):
+    """Update CDS order delivery status"""
+    try:
+        order = CDSOrder.objects.get(id=order_id)
+        new_status = request.data.get('delivery_status')
+        
+        if new_status not in ['preparing', 'ready']:
+            return Response({'error': 'Invalid delivery status'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        order.delivery_status = new_status
+        order.save()
+        
+        return Response({
+            'order_id': order.id,
+            'delivery_status': order.delivery_status,
+            'updated_at': order.created_at  # Note: using created_at as there's no updated_at field
+        })
+    except CDSOrder.DoesNotExist:
+        return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@role_required(['cds_owner'])
+def get_cds_order_details_owner(request, order_id):
+    """Get detailed order information for owner"""
+    try:
+        order = CDSOrder.objects.get(id=order_id)
+        items = order.items.all()
+        
+        items_data = [{
+            'item_name': item.product.name,
+            'quantity': item.quantity,
+            'unit_price': float(item.product.price),
+            'subtotal': float(item.product.price) * item.quantity
+        } for item in items]
+        
+        data = {
+            'order_id': order.id,
+            'user_name': order.user.name,
+            'user_email': order.user.email,
+            'total_amount': float(order.total_amount),
+            'created_at': order.created_at,
+            'payment_method': order.payment_method,
+            'delivery_status': order.delivery_status,
+            'items': items_data
+        }
+        
+        return Response(data)
+    except CDSOrder.DoesNotExist:
+        return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+@role_required(['cds_owner'])
+def delete_cds_order(request, order_id):
+    """Delete a CDS order (owner only)"""
+    try:
+        order = CDSOrder.objects.get(id=order_id)
+        order_id_str = f"Order #{order.id}"
+        order.delete()
+        
+        return Response({
+            'message': f'{order_id_str} has been successfully deleted'
+        }, status=status.HTTP_200_OK)
+    except CDSOrder.DoesNotExist:
+        return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

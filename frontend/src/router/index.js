@@ -82,6 +82,12 @@ const router = createRouter({
         component: () => import('../views/LaundryStaffDashboard.vue'),
         meta: { requiresAuth: true, role: 'laundry_staff' }
       },
+      {
+        path: '/cds-owner/dashboard',
+        name: 'CDSOwnerDashboard',
+        component: () => import('../views/CDSOwnerDashboard.vue'),
+        meta: { requiresAuth: true, role: 'cds_owner' }
+      },
   ],
 })
 
@@ -107,6 +113,8 @@ router.beforeEach((to, from, next) => {
       next({ name: 'EntrepreneurDashboard' })
     } else if (userRole === 'laundry_staff') {
       next({ name: 'LaundryStaffDashboard' })
+    } else if (userRole === 'cds_owner') {
+      next({ name: 'CDSOwnerDashboard' })
     } else {
       next({ name: 'landing' })
     }
@@ -121,6 +129,8 @@ router.beforeEach((to, from, next) => {
         next({ name: 'EntrepreneurDashboard' })
       } else if (userRole === 'laundry_staff') {
         next({ name: 'LaundryStaffDashboard' })
+      } else if (userRole === 'cds_owner') {
+        next({ name: 'CDSOwnerDashboard' })
       } else {
         next({ name: 'landing' })
       }
@@ -144,6 +154,14 @@ router.beforeEach((to, from, next) => {
         next({ name: 'LaundryStaffDashboard' })
         return
       }
+    } else if (userRole === 'cds_owner') {
+      // CDS owners can only access their dashboard, profile, and landing page
+      const allowedRoutes = ['landing', 'CDSOwnerDashboard', 'profile']
+      
+      if (!allowedRoutes.includes(to.name)) {
+        next({ name: 'CDSOwnerDashboard' })
+        return
+      }
     }
     
     // Role-specific route requirements
@@ -153,6 +171,8 @@ router.beforeEach((to, from, next) => {
         next({ name: 'EntrepreneurDashboard' })
       } else if (userRole === 'laundry_staff') {
         next({ name: 'LaundryStaffDashboard' })
+      } else if (userRole === 'cds_owner') {
+        next({ name: 'CDSOwnerDashboard' })
       } else {
         next({ name: 'landing' })
       }
